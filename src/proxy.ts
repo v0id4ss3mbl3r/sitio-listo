@@ -46,9 +46,10 @@ export async function proxy(req: NextRequest) {
     );
   }
 
-  // 2. Dominio principal o localhost → Landing Page
+  // 2. Dominio principal, localhost o www → Landing Page
   if (
     currentHost === 'sitiolisto.com.ar' ||
+    currentHost === 'www' ||
     currentHost === 'localhost:3000' ||
     currentHost === 'localhost'
   ) {
