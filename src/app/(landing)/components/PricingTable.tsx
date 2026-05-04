@@ -77,7 +77,7 @@ export default function PricingTable() {
             </ul>
 
             <a
-              href="/registro"
+              href={`${process.env.NEXT_PUBLIC_APP_URL}/registro`}
               className={plan.highlighted ? 'btn-primary' : 'btn-outline'}
               style={{ marginTop: '2rem', textAlign: 'center', width: '100%' }}
               id={`cta-plan-${plan.slug}`}

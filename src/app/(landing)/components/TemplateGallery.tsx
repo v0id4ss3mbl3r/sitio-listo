@@ -65,7 +65,7 @@ export default function TemplateGallery() {
                 {TEMPLATE_CATEGORIES.find((c) => c.slug === tpl.category)?.name || tpl.category}
               </p>
               <a
-                href="/registro"
+                href={`${process.env.NEXT_PUBLIC_APP_URL}/registro`}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginTop: '1rem',
                   fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-primary-light)', textDecoration: 'none',

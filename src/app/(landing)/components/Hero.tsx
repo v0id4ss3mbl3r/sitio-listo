@@ -121,7 +121,7 @@ export default function Hero() {
             justifyContent: 'center',
           }}
         >
-          <a href="#precios" className="btn-primary" id="cta-empezar">
+          <a href={`${process.env.NEXT_PUBLIC_APP_URL}/registro`} className="btn-primary" id="cta-empezar">
             Empezar ahora
             <svg
               width="16"

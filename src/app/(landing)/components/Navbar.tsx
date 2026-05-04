@@ -130,7 +130,7 @@ export default function Navbar() {
         >
           <ThemeToggle />
           <a
-            href="/login"
+            href={`${process.env.NEXT_PUBLIC_APP_URL}/login`}
             style={{
               color: 'var(--text-secondary)',
               textDecoration: 'none',
@@ -230,7 +230,7 @@ export default function Navbar() {
               <ThemeToggle />
             </div>
             <a
-              href="/login"
+              href={`${process.env.NEXT_PUBLIC_APP_URL}/login`}
               className="btn-outline"
               style={{ fontSize: '0.875rem' }}
             >

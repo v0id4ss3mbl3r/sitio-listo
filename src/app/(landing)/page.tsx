@@ -72,7 +72,7 @@ export default function LandingPage() {
               marginTop: '2rem',
             }}
           >
-            <a href="/registro" className="btn-primary" id="cta-final-empezar">
+            <a href={`${process.env.NEXT_PUBLIC_APP_URL}/registro`} className="btn-primary" id="cta-final-empezar">
               Crear mi sitio
               <svg
                 width="16"
