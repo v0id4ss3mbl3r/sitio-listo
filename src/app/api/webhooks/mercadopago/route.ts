@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Usamos el cliente con service_role key porque estamos en un contexto de backend sin usuario autenticado
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function POST(req: Request) {
+  // Usamos el cliente con service_role key porque estamos en un contexto de backend sin usuario autenticado
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:54321',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || 'dummy_key'
+  );
   try {
     const url = new URL(req.url);
     // Para suscripciones, MercadoPago usa 'type=subscription_preapproval'
