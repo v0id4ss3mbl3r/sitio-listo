@@ -42,7 +42,7 @@ export default async function PanelPage() {
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
             Aún no has configurado tu sitio. Elegí una plantilla y un subdominio para empezar.
           </p>
-          <a href="/editor" className="btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '0.9rem' }}>
+          <a href="/editor" className="btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '0.9rem', textAlign: 'center', display: 'block', boxSizing: 'border-box' }}>
             Configurar Sitio
           </a>
         </div>
@@ -58,7 +58,7 @@ export default async function PanelPage() {
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
             Plan Gratuito (Demo). No tenés ninguna suscripción activa en MercadoPago.
           </p>
-          <a href="/cuenta" className="btn-outline" style={{ width: '100%', padding: '0.75rem', fontSize: '0.9rem' }}>
+          <a href="/cuenta" className="btn-outline" style={{ width: '100%', padding: '0.75rem', fontSize: '0.9rem', textAlign: 'center', display: 'block', boxSizing: 'border-box' }}>
             Ver Planes
           </a>
         </div>
