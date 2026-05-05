@@ -12,7 +12,7 @@ export const config = {
   ],
 };
 
-export async function proxy(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const url = req.nextUrl;
   const hostname = req.headers.get('host') || 'sitiolisto.com.ar';
 
