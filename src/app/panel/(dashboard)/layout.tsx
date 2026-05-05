@@ -1,7 +1,7 @@
 'use client';
 
 import { createClient } from '@/lib/supabase/browser';
-import { LogOut, Home, Palette, CreditCard, Menu, X } from 'lucide-react';
+import { LogOut, Home, Palette, CreditCard, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -14,12 +14,27 @@ export default function PanelLayout({
 }) {
   const supabase = createClient();
   const pathname = usePathname();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detectar si es móvil para el comportamiento inicial
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) setIsSidebarOpen(false);
+      else setIsSidebarOpen(true);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Cerrar menú móvil al cambiar de ruta
   useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
+    if (isMobile) setIsSidebarOpen(false);
+  }, [pathname, isMobile]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -46,9 +61,9 @@ export default function PanelLayout({
   return (
     <div style={{ minHeight: '100vh', display: 'flex', background: 'var(--bg-dark)' }}>
       {/* Overlay para móvil */}
-      {isMobileMenuOpen && (
+      {isMobile && isSidebarOpen && (
         <div 
-          onClick={() => setIsMobileMenuOpen(false)}
+          onClick={() => setIsSidebarOpen(false)}
           style={{
             position: 'fixed',
             inset: 0,
@@ -56,48 +71,49 @@ export default function PanelLayout({
             zIndex: 40,
             backdropFilter: 'blur(4px)'
           }}
-          className="md:hidden"
         />
       )}
 
       {/* Sidebar */}
       <aside
         style={{
-          width: '260px',
+          width: isSidebarOpen ? '260px' : '0px',
           background: 'var(--bg-card)',
-          borderRight: '1px solid var(--border-subtle)',
-          padding: '2rem 1rem',
+          borderRight: isSidebarOpen ? '1px solid var(--border-subtle)' : 'none',
+          padding: isSidebarOpen ? '2rem 1rem' : '0px',
           display: 'flex',
           flexDirection: 'column',
-          position: 'fixed',
+          position: isMobile ? 'fixed' : 'sticky',
           top: 0,
           bottom: 0,
-          left: isMobileMenuOpen ? 0 : '-260px',
+          left: isMobile ? (isSidebarOpen ? 0 : '-260px') : 0,
           height: '100vh',
           zIndex: 50,
-          transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          overflow: 'hidden',
+          opacity: isSidebarOpen ? 1 : (isMobile ? 1 : 0),
         }}
-        className="md:sticky md:left-0"
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2.5rem', padding: '0 0.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2.5rem', padding: '0 0.5rem', minWidth: '220px' }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
             <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 700, color: 'white' }}>
               S
             </div>
             <span style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>
               Sitio<span style={{ color: 'var(--color-primary-light)' }}>Listo</span>
             </span>
-          </div>
-          <button 
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="md:hidden"
-            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
-          >
-            <X size={20} />
-          </button>
+          </Link>
+          {isMobile && (
+            <button 
+              onClick={() => setIsSidebarOpen(false)}
+              style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+            >
+              <X size={20} />
+            </button>
+          )}
         </div>
 
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1 }}>
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, minWidth: '220px' }}>
           <Link href="/" style={getLinkStyle('/')}>
             <Home size={18} />
             Dashboard
@@ -123,29 +139,32 @@ export default function PanelLayout({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 1rem',
+          padding: '0 1.5rem',
           position: 'sticky',
           top: 0,
           zIndex: 30,
-        }} className="md:px-8">
+        }}>
           <button 
-            onClick={() => setIsMobileMenuOpen(true)}
-            className="md:hidden"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             style={{ 
-              background: 'transparent', 
-              border: 'none', 
-              color: 'var(--text-primary)', 
+              background: 'rgba(99, 102, 241, 0.1)', 
+              border: '1px solid var(--border-subtle)', 
+              color: 'var(--color-primary)', 
               cursor: 'pointer',
               display: 'flex',
-              alignItems: 'center'
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              transition: 'all 0.2s ease'
             }}
           >
-            <Menu size={24} />
+            {isSidebarOpen ? <ChevronLeft size={20} /> : <Menu size={20} />}
           </button>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginLeft: 'auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }} className="hidden sm:inline">Tema</span>
               <ThemeToggle />
             </div>
             
@@ -154,8 +173,6 @@ export default function PanelLayout({
             <button
               onClick={handleLogout}
               style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: 'none', color: '#ef4444', fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer', transition: 'opacity 0.2s ease' }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
             >
               <LogOut size={16} />
               <span className="hidden sm:inline">Salir</span>
@@ -164,7 +181,7 @@ export default function PanelLayout({
         </header>
 
         {/* Content */}
-        <main style={{ flex: 1 }} className="p-4 sm:p-8 md:p-12">
+        <main style={{ flex: 1, padding: isMobile ? '1.5rem' : '3rem' }}>
           {children}
         </main>
       </div>

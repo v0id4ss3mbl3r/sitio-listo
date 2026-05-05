@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/browser';
+import { Save, ExternalLink, CheckCircle, AlertCircle } from 'lucide-react';
 
 const TEMPLATES = [
   { id: 'restaurant-01', name: 'Restaurante Clásico', type: 'restaurant', plan: 'basic' },
@@ -63,7 +64,7 @@ export default function EditorPage() {
         setHeroSubtitle(data.site.config?.content?.heroSubtitle || '');
         setAboutText(data.site.config?.content?.aboutText || '');
 
-        setSubdomainStatus('available'); // Si ya tiene su sitio, asumimos disponible
+        setSubdomainStatus('available');
       }
       setLoading(false);
     }
@@ -119,7 +120,7 @@ export default function EditorPage() {
       if (data.error) {
         alert(data.error);
       } else {
-        alert('Sitio guardado y publicado correctamente!');
+        alert('¡Sitio guardado y publicado correctamente!');
       }
     } catch (error) {
       alert('Error al guardar el sitio');
@@ -132,61 +133,59 @@ export default function EditorPage() {
 
   if (loading) {
     return (
-      <div style={{ maxWidth: '900px', margin: '0 auto', opacity: 0.7, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
-        <div style={{ height: '40px', width: '30%', background: 'var(--bg-card)', borderRadius: '8px', marginBottom: '2rem' }}></div>
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-          <div style={{ height: '40px', width: '120px', background: 'var(--bg-card)', borderRadius: '8px' }}></div>
-          <div style={{ height: '40px', width: '120px', background: 'var(--bg-card)', borderRadius: '8px' }}></div>
-          <div style={{ height: '40px', width: '120px', background: 'var(--bg-card)', borderRadius: '8px' }}></div>
+      <div style={{ maxWidth: '900px', margin: '2rem auto', padding: '0 1rem' }}>
+        <div style={{ height: '48px', width: '250px', background: 'var(--bg-card)', borderRadius: '12px', marginBottom: '1rem', animation: 'pulse 2s infinite' }}></div>
+        <div style={{ height: '24px', width: '350px', background: 'var(--bg-card)', borderRadius: '8px', marginBottom: '3rem', animation: 'pulse 2s infinite' }}></div>
+        
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
+          {[1, 2, 3].map(i => (
+            <div key={i} style={{ height: '45px', width: '120px', background: 'var(--bg-card)', borderTopLeftRadius: '8px', borderTopRightRadius: '8px', animation: 'pulse 2s infinite', opacity: 1 - i * 0.2 }}></div>
+          ))}
         </div>
-        <div style={{ height: '200px', width: '100%', background: 'var(--bg-card)', borderRadius: '12px', marginBottom: '2rem' }}></div>
-        <div style={{ height: '300px', width: '100%', background: 'var(--bg-card)', borderRadius: '12px' }}></div>
+        
+        <div style={{ height: '300px', width: '100%', background: 'var(--bg-card)', borderRadius: '16px', animation: 'pulse 2s infinite' }}></div>
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight text-[var(--text-primary)]">
-            Editor Visual
-          </h1>
-          <p className="text-[var(--text-secondary)] mt-1">Configurá la apariencia y el dominio de tu sitio.</p>
-        </div>
-        <div className="flex gap-3">
-          {subdomain && subdomainStatus === 'available' && (
-            <a 
-              href={process.env.NODE_ENV === 'production' ? `https://${subdomain}.sitiolisto.com.ar` : `http://${subdomain}.localhost:3000`} 
-              target="_blank" 
-              rel="noreferrer"
-              className="btn-outline flex-1 sm:flex-none text-center py-2.5 px-6"
-            >
-              Ver sitio
-            </a>
-          )}
-          <button 
-            onClick={handleSave} 
-            disabled={saving || subdomainStatus === 'taken'} 
-            className="btn-primary flex-1 sm:flex-none py-2.5 px-6"
-          >
-            {saving ? 'Guardando...' : 'Guardar y Publicar'}
-          </button>
-        </div>
+    <div style={{ maxWidth: '900px', margin: '0 auto', paddingBottom: '100px' }}>
+      <header style={{ marginBottom: '3rem' }}>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
+          Editor Visual
+        </h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginTop: '0.5rem' }}>
+          Personalizá tu sitio y gestioná tu identidad online.
+        </p>
       </header>
 
-      {/* Tabs con scroll horizontal en móvil */}
-      <div className="flex gap-2 border-b border-[var(--border-subtle)] mb-10 overflow-x-auto no-scrollbar scroll-smooth">
+      {/* Tabs Estilizadas */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '0.5rem', 
+        marginBottom: '2.5rem', 
+        borderBottom: '1px solid var(--border-subtle)',
+        overflowX: 'auto',
+        scrollbarWidth: 'none'
+      }}>
         {(['appearance', 'content', 'domain'] as TabType[]).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`
-              whitespace-nowrap px-6 py-4 border-b-2 font-bold transition-all text-sm uppercase tracking-widest
-              ${activeTab === tab 
-                ? 'border-[var(--color-primary)] text-[var(--color-primary)]' 
-                : 'border-transparent text-[var(--text-secondary)] opacity-60 hover:opacity-100'}
-            `}
+            style={{
+              padding: '1rem 1.5rem',
+              fontSize: '0.85rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: `3px solid ${activeTab === tab ? 'var(--color-primary)' : 'transparent'}`,
+              color: activeTab === tab ? 'var(--text-primary)' : 'var(--text-muted)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              whiteSpace: 'nowrap'
+            }}
           >
             {tab === 'appearance' && 'Apariencia'}
             {tab === 'content' && 'Contenido'}
@@ -201,39 +200,73 @@ export default function EditorPage() {
         {activeTab === 'appearance' && (
           <>
             <div className="glass-card" style={{ padding: '2rem' }}>
-              <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--text-primary)' }}>Identidad del Sitio</h2>
+              <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>Identidad del Sitio</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Nombre del Sitio / Marca</label>
-                  <input type="text" value={siteName} onChange={(e) => setSiteName(e.target.value)} placeholder="Ej: Mi Restaurante Increíble" style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none' }} required />
+                  <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Nombre del Sitio / Marca</label>
+                  <input 
+                    type="text" 
+                    value={siteName} 
+                    onChange={(e) => setSiteName(e.target.value)} 
+                    placeholder="Ej: Mi Restaurante Increíble" 
+                    style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem', transition: 'border-color 0.2s' }} 
+                    onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
+                    onBlur={(e) => e.target.style.borderColor = 'var(--border-subtle)'}
+                    required 
+                  />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Color Principal</label>
+                  <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Color Principal</label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} style={{ width: '50px', height: '50px', padding: 0, border: 'none', borderRadius: '8px', cursor: 'pointer', background: 'none' }} />
-                    <span style={{ color: 'var(--text-muted)' }}>{primaryColor}</span>
+                    <div style={{ position: 'relative', width: '60px', height: '60px', borderRadius: '12px', overflow: 'hidden', border: '2px solid var(--border-subtle)' }}>
+                      <input 
+                        type="color" 
+                        value={primaryColor} 
+                        onChange={(e) => setPrimaryColor(e.target.value)} 
+                        style={{ position: 'absolute', top: '-10px', left: '-10px', width: '80px', height: '80px', padding: 0, border: 'none', cursor: 'pointer', background: 'none' }} 
+                      />
+                    </div>
+                    <span style={{ fontFamily: 'monospace', fontSize: '1rem', color: 'var(--text-primary)', fontWeight: 600 }}>{primaryColor.toUpperCase()}</span>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="glass-card" style={{ padding: '2rem' }}>
-              <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--text-primary)' }}>Seleccionar Plantilla</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+              <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>Seleccionar Plantilla</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
                 {TEMPLATES.map(tpl => {
-                  const isLocked = tpl.plan === 'pro' && userPlan !== 'pro' && userPlan !== 'agency';
+                  const isLocked = tpl.id === 'ecommerce-01' && userPlan === 'free';
                   const isSelected = templateId === tpl.id;
                   return (
-                    <div key={tpl.id} onClick={() => !isLocked && setTemplateId(tpl.id)} style={{ padding: '1.5rem 1rem', borderRadius: '12px', border: `2px solid ${isSelected ? 'var(--color-primary)' : 'var(--border-subtle)'}`, background: isSelected ? 'rgba(99, 102, 241, 0.1)' : 'var(--bg-dark-secondary)', cursor: isLocked ? 'not-allowed' : 'pointer', opacity: isLocked ? 0.6 : 1, position: 'relative', transition: 'all 0.2s' }}>
-                      {isLocked && <div style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#f59e0b', color: 'white', fontSize: '0.7rem', fontWeight: 700, padding: '0.2rem 0.5rem', borderRadius: '10px' }}>PRO</div>}
-                      <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>{tpl.name}</h3>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{tpl.type.toUpperCase()}</span>
+                    <div 
+                      key={tpl.id} 
+                      onClick={() => !isLocked && setTemplateId(tpl.id)} 
+                      style={{ 
+                        padding: '1.5rem', 
+                        borderRadius: '16px', 
+                        border: `2px solid ${isSelected ? 'var(--color-primary)' : 'var(--border-subtle)'}`, 
+                        background: isSelected ? 'rgba(99, 102, 241, 0.05)' : 'var(--bg-dark-secondary)', 
+                        cursor: isLocked ? 'not-allowed' : 'pointer', 
+                        opacity: isLocked ? 0.6 : 1, 
+                        position: 'relative', 
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        transform: isSelected ? 'translateY(-4px)' : 'none',
+                        boxShadow: isSelected ? '0 10px 25px -5px rgba(99, 102, 241, 0.2)' : 'none'
+                      }}
+                    >
+                      {isLocked && <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: 'white', fontSize: '0.65rem', fontWeight: 800, padding: '0.25rem 0.6rem', borderRadius: '20px', letterSpacing: '0.05em' }}>PRO</div>}
+                      <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.4rem' }}>{tpl.name}</h3>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{tpl.type}</span>
                     </div>
                   );
                 })}
               </div>
-              {userPlan !== 'pro' && userPlan !== 'agency' && (
-                <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#f59e0b' }}>Para desbloquear las plantillas PRO necesitás mejorar tu suscripción.</p>
+              {userPlan === 'free' && (
+                <div style={{ marginTop: '1.5rem', padding: '1rem', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.05)', border: '1px solid rgba(245, 158, 11, 0.2)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <AlertCircle size={18} color="#f59e0b" />
+                  <p style={{ fontSize: '0.85rem', color: '#f59e0b', fontWeight: 500 }}>Mejorá tu suscripción para desbloquear plantillas premium.</p>
+                </div>
               )}
             </div>
           </>
@@ -242,19 +275,35 @@ export default function EditorPage() {
         {/* TAB: CONTENIDO */}
         {activeTab === 'content' && (
           <div className="glass-card" style={{ padding: '2rem' }}>
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--text-primary)' }}>Textos de la Plantilla</h2>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>Textos de la Plantilla</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Título Principal (Hero)</label>
-                <input type="text" value={heroTitle} onChange={(e) => setHeroTitle(e.target.value)} placeholder="Ej: Las mejores pizzas de la ciudad" style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none' }} />
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Título Principal (Hero)</label>
+                <input 
+                  type="text" 
+                  value={heroTitle} 
+                  onChange={(e) => setHeroTitle(e.target.value)} 
+                  placeholder="Ej: Las mejores pizzas de la ciudad" 
+                  style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem' }} 
+                />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Subtítulo</label>
-                <textarea value={heroSubtitle} onChange={(e) => setHeroSubtitle(e.target.value)} placeholder="Ej: Vení a disfrutar con amigos o pedí a domicilio." style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', minHeight: '80px', resize: 'vertical' }} />
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Subtítulo</label>
+                <textarea 
+                  value={heroSubtitle} 
+                  onChange={(e) => setHeroSubtitle(e.target.value)} 
+                  placeholder="Ej: Vení a disfrutar con amigos o pedí a domicilio." 
+                  style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem', minHeight: '100px', resize: 'vertical' }} 
+                />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Texto "Sobre Nosotros" / "Acerca de"</label>
-                <textarea value={aboutText} onChange={(e) => setAboutText(e.target.value)} placeholder="Ej: Somos un emprendimiento familiar nacido en 2010..." style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', minHeight: '120px', resize: 'vertical' }} />
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Texto "Sobre Nosotros"</label>
+                <textarea 
+                  value={aboutText} 
+                  onChange={(e) => setAboutText(e.target.value)} 
+                  placeholder="Ej: Somos un emprendimiento familiar nacido en 2010..." 
+                  style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem', minHeight: '150px', resize: 'vertical' }} 
+                />
               </div>
             </div>
           </div>
@@ -264,51 +313,172 @@ export default function EditorPage() {
         {activeTab === 'domain' && (
           <>
             <div className="glass-card" style={{ padding: '2rem' }}>
-              <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--text-primary)' }}>Subdominio Gratuito</h2>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-3">Elegí tu subdominio (solo letras, números y guiones)</label>
-                <div className="flex flex-col sm:flex-row sm:items-stretch overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-dark-secondary)]">
-                  <input 
-                    type="text" 
-                    value={subdomain} 
-                    onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} 
-                    placeholder="mitienda" 
-                    className="flex-1 p-4 bg-transparent outline-none text-[var(--text-primary)] min-w-0" 
-                    required 
-                  />
-                  <div className="bg-[var(--bg-dark)] px-4 py-3 flex items-center gap-3 border-t sm:border-t-0 sm:border-l border-[var(--border-subtle)] shrink-0">
-                    <span className="text-sm font-medium text-[var(--text-muted)]">.sitiolisto.com.ar</span>
-                    {subdomainStatus === 'checking' && <span className="animate-spin">⏳</span>}
-                    {subdomainStatus === 'available' && <span className="text-emerald-500 font-bold text-xs">DISPONIBLE</span>}
-                    {subdomainStatus === 'taken' && <span className="text-rose-500 font-bold text-xs">OCUPADO</span>}
+              <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>Subdominio Gratuito</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>
+                  Tu dirección en SitioListo
+                </label>
+                <div style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  borderRadius: '12px', 
+                  overflow: 'hidden', 
+                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--bg-dark-secondary)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                    <input 
+                      type="text" 
+                      value={subdomain} 
+                      onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} 
+                      placeholder="tunegocio" 
+                      style={{ flex: 1, padding: '1rem 1.25rem', background: 'transparent', border: 'none', color: 'var(--text-primary)', outline: 'none', fontSize: '1.1rem', fontWeight: 500 }} 
+                      required 
+                    />
+                    <div style={{ 
+                      padding: '0 1.25rem', 
+                      height: '100%', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      background: 'var(--bg-dark)', 
+                      borderLeft: '1px solid var(--border-subtle)',
+                      color: 'var(--text-muted)',
+                      fontWeight: 600,
+                      fontSize: '0.9rem'
+                    }}>
+                      .sitiolisto.com.ar
+                    </div>
+                  </div>
+                  <div style={{ 
+                    padding: '0.75rem 1.25rem', 
+                    background: 'var(--bg-dark)', 
+                    borderTop: '1px solid var(--border-subtle)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Estado del subdominio:</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      {subdomainStatus === 'checking' && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Verificando...</span>}
+                      {subdomainStatus === 'available' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#10b981' }}>
+                          <CheckCircle size={14} />
+                          <span style={{ fontSize: '0.75rem', fontWeight: 800 }}>DISPONIBLE</span>
+                        </div>
+                      )}
+                      {subdomainStatus === 'taken' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#ef4444' }}>
+                          <AlertCircle size={14} />
+                          <span style={{ fontSize: '0.75rem', fontWeight: 800 }}>OCUPADO</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="glass-card" style={{ padding: '2rem' }}>
-              <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--text-primary)' }}>Dominio Personalizado (PRO)</h2>
+              <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>Dominio Personalizado (PRO)</h2>
               <div>
-                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Si compraste un dominio propio (ej: www.miempresa.com), ingresalo aquí:</label>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Usar un dominio propio (ej: www.miempresa.com):</label>
                 <input 
                   type="text" 
                   value={customDomain} 
                   onChange={(e) => setCustomDomain(e.target.value)} 
                   placeholder="www.mitienda.com.ar" 
-                  disabled={userPlan !== 'pro' && userPlan !== 'agency'}
-                  style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', opacity: userPlan !== 'pro' && userPlan !== 'agency' ? 0.6 : 1 }} 
+                  disabled={userPlan === 'free'}
+                  style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', opacity: userPlan === 'free' ? 0.6 : 1, fontSize: '1rem' }} 
                 />
-                <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                  <strong>Instrucciones DNS:</strong> Para que funcione, debés configurar en el panel de tu dominio (ej: Nic.ar o GoDaddy) un Registro CNAME apuntando a <code>cname.vercel-dns.com</code>.
-                </p>
-                {userPlan !== 'pro' && userPlan !== 'agency' && (
-                  <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#f59e0b' }}>Esta función es exclusiva para planes PRO.</p>
+                <div style={{ marginTop: '1.5rem', padding: '1.25rem', borderRadius: '12px', background: 'var(--bg-dark)', border: '1px solid var(--border-subtle)' }}>
+                  <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Configuración DNS</h4>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                    Apuntá un Registro <strong>CNAME</strong> de tu dominio a: <code style={{ color: 'var(--color-primary-light)', background: 'rgba(99, 102, 241, 0.1)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>cname.vercel-dns.com</code>
+                  </p>
+                </div>
+                {userPlan === 'free' && (
+                  <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#f59e0b', fontWeight: 500 }}>Esta función requiere un Plan PRO.</p>
                 )}
               </div>
             </div>
           </>
         )}
 
+      </div>
+
+      {/* Floating Action Bar (Sticky Bottom) */}
+      <div style={{ 
+        position: 'fixed', 
+        bottom: '2rem', 
+        left: '50%', 
+        transform: 'translateX(-50%)', 
+        width: 'calc(100% - 3rem)',
+        maxWidth: '850px',
+        background: 'rgba(23, 23, 23, 0.8)',
+        backdropFilter: 'blur(16px)',
+        border: '1px solid var(--border-subtle)',
+        padding: '1rem 1.5rem',
+        borderRadius: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        zIndex: 100,
+        boxShadow: '0 20px 50px -12px rgba(0,0,0,0.5)'
+      }}>
+        <div style={{ display: 'none' }} className="sm:block">
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Los cambios se publican al instante.</p>
+        </div>
+        <div style={{ display: 'flex', gap: '0.75rem', width: '100%', justifyContent: 'flex-end' }} className="sm:w-auto">
+          {subdomain && subdomainStatus === 'available' && (
+            <a 
+              href={process.env.NODE_ENV === 'production' ? `https://${subdomain}.sitiolisto.com.ar` : `http://${subdomain}.localhost:3000`} 
+              target="_blank" 
+              rel="noreferrer"
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem', 
+                padding: '0.75rem 1.25rem', 
+                borderRadius: '12px', 
+                border: '1px solid var(--border-subtle)', 
+                color: 'var(--text-primary)', 
+                textDecoration: 'none', 
+                fontSize: '0.9rem', 
+                fontWeight: 600,
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-dark-secondary)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+            >
+              <ExternalLink size={16} />
+              Ver sitio
+            </a>
+          )}
+          <button 
+            onClick={handleSave} 
+            disabled={saving || subdomainStatus === 'taken'} 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.5rem', 
+              padding: '0.75rem 1.5rem', 
+              borderRadius: '12px', 
+              background: 'var(--gradient-primary)', 
+              color: 'white', 
+              border: 'none', 
+              fontSize: '0.9rem', 
+              fontWeight: 700, 
+              cursor: (saving || subdomainStatus === 'taken') ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+              opacity: (saving || subdomainStatus === 'taken') ? 0.6 : 1,
+              flex: 1
+            }}
+            className="sm:flex-none"
+          >
+            <Save size={16} />
+            {saving ? 'Guardando...' : 'Guardar y Publicar'}
+          </button>
+        </div>
       </div>
     </div>
   );

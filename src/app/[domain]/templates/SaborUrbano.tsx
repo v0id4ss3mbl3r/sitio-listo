@@ -16,93 +16,128 @@ export default function SaborUrbano({
   aboutText 
 }: TemplateProps) {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-indigo-500/30 font-sans">
+      {/* Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div 
+          className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[120px] opacity-20"
+          style={{ backgroundColor: primaryColor }}
+        />
+        <div 
+          className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full blur-[100px] opacity-10"
+          style={{ backgroundColor: primaryColor }}
+        />
+      </div>
+
       {/* Dynamic Navigation */}
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-md bg-black/20 border-b border-white/5">
+      <nav className="fixed top-0 w-full z-50 px-6 py-6 md:px-12 flex justify-between items-center backdrop-blur-xl bg-black/40 border-b border-white/5">
         <h1 className="text-2xl font-black tracking-tighter" style={{ color: primaryColor }}>
           {siteName.toUpperCase()}
         </h1>
-        <div className="hidden md:flex gap-8 text-sm font-medium uppercase tracking-widest text-gray-400">
-          <a href="#menu" className="hover:text-white transition-colors">Menú</a>
+        <div className="hidden md:flex gap-10 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
+          <a href="#menu" className="hover:text-white transition-colors">Carta</a>
           <a href="#about" className="hover:text-white transition-colors">Nosotros</a>
-          <a href="#contact" className="hover:text-white transition-colors">Contacto</a>
+          <a href="#contact" className="hover:text-white transition-colors">Ubicación</a>
         </div>
         <button 
-          className="px-6 py-2 rounded-full text-sm font-bold transition-all hover:scale-105 active:scale-95 shadow-lg"
+          className="px-8 py-2.5 rounded-full text-xs font-black transition-all hover:scale-105 active:scale-95 shadow-[0_10px_20px_-5px_rgba(0,0,0,0.3)] uppercase tracking-widest"
           style={{ backgroundColor: primaryColor }}
         >
-          RESERVAR
+          Reservar
         </button>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative h-screen flex items-center justify-center text-center px-6">
         <div 
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105"
+          className="absolute inset-0 bg-cover bg-center"
           style={{ 
             backgroundImage: "url('/templates/restaurant_hero.png')",
-            filter: 'brightness(0.3)'
+            filter: 'brightness(0.25) contrast(1.1)'
           }}
         />
-        <div className="relative z-10 text-center px-4 max-w-4xl">
-          <span 
-            className="inline-block px-4 py-1 rounded-full text-xs font-bold tracking-[0.2em] mb-6 border animate-fade-in"
-            style={{ borderColor: `${primaryColor}40`, color: primaryColor }}
+        <div className="relative z-10 max-w-5xl">
+          <div 
+            className="inline-block px-4 py-1.5 rounded-full text-[10px] font-black tracking-[0.3em] mb-8 border backdrop-blur-md uppercase"
+            style={{ borderColor: `${primaryColor}40`, color: primaryColor, background: `${primaryColor}10` }}
           >
-            BIENVENIDOS A {siteName}
-          </span>
-          <h2 className="text-6xl md:text-8xl font-black mb-6 tracking-tighter leading-none">
-            {heroTitle}
+            Experiencia Gastronómica
+          </div>
+          <h2 className="text-6xl md:text-8xl lg:text-9xl font-black mb-8 tracking-tighter leading-[0.9] uppercase">
+            {heroTitle || "Sabor que cautiva"}
           </h2>
-          <p className="text-xl md:text-2xl text-gray-400 mb-10 font-light leading-relaxed max-w-2xl mx-auto">
-            {heroSubtitle}
+          <p className="text-lg md:text-xl text-gray-300 mb-12 font-medium leading-relaxed max-w-2xl mx-auto opacity-80">
+            {heroSubtitle || "Descubrí una fusión única de ingredientes locales y técnicas internacionales."}
           </p>
-          <div className="flex flex-col md:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a 
               href="#menu"
-              className="px-10 py-4 rounded-full font-bold transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] border border-white/10 bg-white/5 backdrop-blur-sm"
+              className="px-12 py-5 rounded-full font-black text-xs uppercase tracking-widest transition-all hover:bg-white hover:text-black border border-white/20 backdrop-blur-sm"
             >
-              VER MENÚ
+              Explorar Menú
             </a>
           </div>
         </div>
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-30">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
+        
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-20">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
         </div>
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-32 px-6">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-20 items-center">
-          <div className="relative group">
-            <div className="absolute -inset-4 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-2xl opacity-10 blur-2xl group-hover:opacity-20 transition-opacity" />
-            <div className="relative aspect-square rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-               <img src="/templates/restaurant_hero.png" alt="About" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
+      <section id="about" className="py-32 md:py-48 px-6 relative">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 md:gap-24 items-center">
+          <div className="relative">
+            <div 
+              className="absolute -inset-6 rounded-3xl opacity-20 blur-3xl"
+              style={{ backgroundColor: primaryColor }}
+            />
+            <div className="relative aspect-[4/5] md:aspect-square rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+               <img src="/templates/restaurant_hero.png" alt="About" className="w-full h-full object-cover grayscale brightness-75 hover:grayscale-0 hover:brightness-100 transition-all duration-1000" />
             </div>
           </div>
-          <div>
-            <h3 className="text-4xl font-bold mb-8 tracking-tight">Nuestra Historia</h3>
-            <p className="text-xl text-gray-400 leading-relaxed font-light mb-8">
-              {aboutText}
+          <div className="flex flex-col gap-8">
+            <h3 className="text-5xl md:text-6xl font-black tracking-tighter uppercase italic">Nuestra Historia</h3>
+            <p className="text-lg md:text-xl text-gray-400 leading-relaxed font-medium">
+              {aboutText || "Llevamos más de una década perfeccionando el arte de la cocina urbana, combinando tradición con un toque moderno."}
             </p>
-            <div className="grid grid-cols-2 gap-8 py-8 border-y border-white/5">
+            <div className="grid grid-cols-2 gap-10 py-10 border-y border-white/10">
               <div>
-                <span className="block text-3xl font-bold mb-1" style={{ color: primaryColor }}>15+</span>
-                <span className="text-xs uppercase tracking-widest text-gray-500">Años de experiencia</span>
+                <span className="block text-4xl font-black mb-2" style={{ color: primaryColor }}>15+</span>
+                <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500">Años de pasión</span>
               </div>
               <div>
-                <span className="block text-3xl font-bold mb-1" style={{ color: primaryColor }}>4.9/5</span>
-                <span className="text-xs uppercase tracking-widest text-gray-500">Puntaje Clientes</span>
+                <span className="block text-4xl font-black mb-2" style={{ color: primaryColor }}>4.9/5</span>
+                <span className="text-[10px] uppercase tracking-widest font-bold text-gray-500">Reseñas Google</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
+      {/* CTA Footer Section */}
+      <section className="py-32 px-6 text-center bg-white text-black">
+        <h3 className="text-4xl md:text-6xl font-black mb-10 tracking-tighter uppercase italic">¿Listo para visitarnos?</h3>
+        <p className="text-lg md:text-xl font-medium mb-12 max-w-2xl mx-auto opacity-70">
+          Reservá tu mesa ahora y asegurate un lugar en nuestra mesa.
+        </p>
+        <button 
+          className="px-16 py-6 rounded-full text-white font-black text-xs uppercase tracking-widest transition-all hover:scale-105 shadow-2xl"
+          style={{ backgroundColor: primaryColor }}
+        >
+          Hacer Reserva
+        </button>
+      </section>
+
       {/* Footer */}
-      <footer className="py-20 border-t border-white/5 text-center">
-        <h4 className="text-xl font-bold mb-6 tracking-tighter">{siteName}</h4>
-        <p className="text-gray-500 text-sm tracking-widest">© {new Date().getFullYear()} — DISEÑADO CON SITIOLISTO</p>
+      <footer id="contact" className="py-20 bg-[#050505] text-center border-t border-white/5">
+        <h4 className="text-2xl font-black mb-8 tracking-tighter uppercase" style={{ color: primaryColor }}>{siteName}</h4>
+        <div className="flex justify-center gap-10 text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-10">
+          <a href="#" className="hover:text-white">Instagram</a>
+          <a href="#" className="hover:text-white">Facebook</a>
+          <a href="#" className="hover:text-white">TripAdvisor</a>
+        </div>
+        <p className="text-gray-600 text-[10px] font-bold tracking-[0.4em] uppercase">© {new Date().getFullYear()} — DISEÑADO CON SITIOLISTO</p>
       </footer>
     </div>
   );
