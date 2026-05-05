@@ -16,6 +16,16 @@ export default function PanelLayout({
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Detectar scroll para achicar topbar
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Detectar si es móvil para el comportamiento inicial
   useEffect(() => {
@@ -133,16 +143,19 @@ export default function PanelLayout({
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         {/* Top Navbar */}
         <header style={{
-          height: '70px',
+          height: scrolled ? '60px' : '75px',
           borderBottom: '1px solid var(--border-subtle)',
           background: 'var(--bg-card)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 1.5rem',
+          padding: scrolled ? '0 1.5rem' : '0 2rem',
           position: 'sticky',
           top: 0,
           zIndex: 30,
+          transition: 'all 0.3s ease',
+          backdropFilter: 'blur(12px)',
+          backgroundColor: 'rgba(15, 15, 15, 0.8)'
         }}>
           <button 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -154,13 +167,13 @@ export default function PanelLayout({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '36px',
-              height: '36px',
+              width: scrolled ? '34px' : '40px',
+              height: scrolled ? '34px' : '40px',
               borderRadius: '10px',
               transition: 'all 0.2s ease'
             }}
           >
-            {isSidebarOpen ? <ChevronLeft size={20} /> : <Menu size={20} />}
+            {isSidebarOpen ? <ChevronLeft size={scrolled ? 18 : 20} /> : <Menu size={scrolled ? 18 : 20} />}
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
