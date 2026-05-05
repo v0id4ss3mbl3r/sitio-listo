@@ -30,6 +30,9 @@ export default function EditorPage() {
   const [heroSubtitle, setHeroSubtitle] = useState('');
   const [aboutText, setAboutText] = useState('');
 
+  // Validation State
+  const [subdomainStatus, setSubdomainStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+
   useEffect(() => {
     async function loadData() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -59,11 +62,34 @@ export default function EditorPage() {
         setHeroTitle(data.site.config?.content?.heroTitle || '');
         setHeroSubtitle(data.site.config?.content?.heroSubtitle || '');
         setAboutText(data.site.config?.content?.aboutText || '');
+
+        setSubdomainStatus('available'); // Si ya tiene su sitio, asumimos disponible
       }
       setLoading(false);
     }
     loadData();
   }, [supabase]);
+
+  // Debounce para checkear subdominio
+  useEffect(() => {
+    if (!subdomain) {
+      setSubdomainStatus('idle');
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setSubdomainStatus('checking');
+      try {
+        const res = await fetch(`/api/sites/check?subdomain=${subdomain}`);
+        const data = await res.json();
+        setSubdomainStatus(data.available ? 'available' : 'taken');
+      } catch (err) {
+        setSubdomainStatus('idle');
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [subdomain]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,7 +155,7 @@ export default function EditorPage() {
           <p style={{ color: 'var(--text-secondary)' }}>Configurá la apariencia, contenido y dominio de tu sitio.</p>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
-          {subdomain && (
+          {subdomain && subdomainStatus === 'available' && (
             <a 
               href={process.env.NODE_ENV === 'production' ? `https://${subdomain}.sitiolisto.com.ar` : `http://${subdomain}.localhost:3000`} 
               target="_blank" 
@@ -139,7 +165,7 @@ export default function EditorPage() {
               Ver sitio
             </a>
           )}
-          <button onClick={handleSave} disabled={saving} className="btn-primary">
+          <button onClick={handleSave} disabled={saving || subdomainStatus === 'taken'} className="btn-primary">
             {saving ? 'Guardando...' : 'Guardar y Publicar'}
           </button>
         </div>
@@ -243,8 +269,13 @@ export default function EditorPage() {
               <div>
                 <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Elegí tu subdominio (solo letras, números y guiones)</label>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <input type="text" value={subdomain} onChange={(e) => setSubdomain(e.target.value)} placeholder="mitienda" style={{ flex: 1, padding: '0.75rem', borderRadius: '8px 0 0 8px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none' }} required />
-                  <div style={{ padding: '0.75rem 1rem', background: 'var(--bg-dark)', border: '1px solid var(--border-subtle)', borderLeft: 'none', borderRadius: '0 8px 8px 0', color: 'var(--text-muted)' }}>.sitiolisto.com.ar</div>
+                  <input type="text" value={subdomain} onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} placeholder="mitienda" style={{ flex: 1, padding: '0.75rem', borderRadius: '8px 0 0 8px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none' }} required />
+                  <div style={{ padding: '0.75rem 1rem', background: 'var(--bg-dark)', border: '1px solid var(--border-subtle)', borderLeft: 'none', borderRadius: '0 8px 8px 0', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    .sitiolisto.com.ar
+                    {subdomainStatus === 'checking' && <span style={{ fontSize: '0.8rem', color: '#3b82f6' }}>⏳</span>}
+                    {subdomainStatus === 'available' && <span style={{ fontSize: '0.8rem', color: '#10b981' }}>✔️ Disponible</span>}
+                    {subdomainStatus === 'taken' && <span style={{ fontSize: '0.8rem', color: '#ef4444' }}>❌ Ocupado</span>}
+                  </div>
                 </div>
               </div>
             </div>

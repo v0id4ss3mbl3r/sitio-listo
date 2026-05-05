@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { subdomain, template_id, config } = body;
+    const { subdomain, custom_domain, template_id, config } = body;
 
     if (!subdomain || !template_id) {
       return NextResponse.json({ error: 'Faltan datos obligatorios' }, { status: 400 });
@@ -43,6 +43,7 @@ export async function POST(req: Request) {
         .from('sites')
         .update({
           subdomain,
+          custom_domain,
           template_id,
           config,
           updated_at: new Date().toISOString(),
@@ -57,6 +58,7 @@ export async function POST(req: Request) {
         .insert({
           user_id: user.id,
           subdomain,
+          custom_domain,
           template_id,
           config,
           is_active: true, // Asumimos activo por defecto, o basado en suscripción
@@ -68,9 +70,9 @@ export async function POST(req: Request) {
     if (result.error) throw result.error;
 
     return NextResponse.json({ success: true, site: result.data });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Sites API Error:', error);
-    return NextResponse.json({ error: 'Error al guardar el sitio' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Error al guardar el sitio' }, { status: 500 });
   }
 }
 

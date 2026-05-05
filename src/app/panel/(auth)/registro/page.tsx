@@ -48,10 +48,10 @@ export default function RegisterPage() {
       } else {
         setError('Ocurrió un error al crear la cuenta. Intentá nuevamente.');
       }
+      setLoading(false);
     } else {
-      setSuccess(true);
+      window.location.href = '/';
     }
-    setLoading(false);
   };
 
   const handleGoogleLogin = async () => {
@@ -84,13 +84,7 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {success ? (
-          <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', color: '#10b981', padding: '1rem', borderRadius: '8px', fontSize: '0.9rem', textAlign: 'center' }}>
-            ¡Cuenta creada! Revisá tu email para confirmar tu correo y poder iniciar sesión.
-          </div>
-        ) : (
-          <>
-            <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Nombre completo</label>
                 <input type="text" value={fullName} onChange={handleNameChange} required style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none' }} placeholder="Juan Pérez" />
@@ -124,8 +118,6 @@ export default function RegisterPage() {
               </svg>
               Google
             </button>
-          </>
-        )}
 
         <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
           ¿Ya tenés cuenta?{' '}
