@@ -116,7 +116,7 @@ export default function CuentaPage() {
             </div>
             <button 
               onClick={handleCancel}
-              disabled={loading}
+              disabled={loading !== null}
               style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '0.5rem 1rem', borderRadius: '8px', cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 500, transition: 'all 0.2s' }}
               onMouseEnter={(e) => {
                 if (!loading) {

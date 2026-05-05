@@ -105,7 +105,18 @@ export default function EditorPage() {
   const userPlan = subscription?.status === 'authorized' ? subscription.plan_type : 'free';
 
   if (loading) {
-    return <div style={{ padding: '2rem' }}>Cargando editor...</div>;
+    return (
+      <div style={{ maxWidth: '900px', margin: '0 auto', opacity: 0.7, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+        <div style={{ height: '40px', width: '30%', background: 'var(--bg-card)', borderRadius: '8px', marginBottom: '2rem' }}></div>
+        <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+          <div style={{ height: '40px', width: '120px', background: 'var(--bg-card)', borderRadius: '8px' }}></div>
+          <div style={{ height: '40px', width: '120px', background: 'var(--bg-card)', borderRadius: '8px' }}></div>
+          <div style={{ height: '40px', width: '120px', background: 'var(--bg-card)', borderRadius: '8px' }}></div>
+        </div>
+        <div style={{ height: '200px', width: '100%', background: 'var(--bg-card)', borderRadius: '12px', marginBottom: '2rem' }}></div>
+        <div style={{ height: '300px', width: '100%', background: 'var(--bg-card)', borderRadius: '12px' }}></div>
+      </div>
+    );
   }
 
   return (

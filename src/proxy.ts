@@ -36,7 +36,11 @@ export async function proxy(req: NextRequest) {
 
     if (user && isAuthPage) {
       // Ya está logueado y quiere acceder a login/registro -> dashboard
-      return NextResponse.redirect(new URL('/dashboard', req.url));
+      return NextResponse.redirect(new URL('/', req.url));
+    }
+
+    if (url.pathname === '/dashboard') {
+      return NextResponse.redirect(new URL('/', req.url));
     }
 
     // Reescribir internamente a la carpeta /panel manteniendo las cookies refrescadas

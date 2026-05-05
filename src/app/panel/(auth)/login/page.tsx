@@ -32,7 +32,7 @@ export default function LoginPage() {
       }
       setLoading(false);
     } else {
-      window.location.href = '/dashboard';
+      window.location.href = '/';
     }
   };
 

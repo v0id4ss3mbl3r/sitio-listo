@@ -16,7 +16,10 @@ export default async function PanelPage() {
     .eq('id', user.id)
     .single();
 
-  const firstName = profile?.full_name?.split(' ')[0] || 'Emprendedor';
+  const firstName = profile?.full_name?.split(' ')[0] 
+    || user.user_metadata?.full_name?.split(' ')[0] 
+    || user.user_metadata?.name?.split(' ')[0] 
+    || 'Emprendedor';
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
