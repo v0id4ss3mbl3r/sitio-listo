@@ -9,7 +9,7 @@ export async function generateMetadata({ params }: { params: Promise<{ domain: s
   const { data: site } = await supabase
     .from('sites')
     .select('config, is_active')
-    .eq('subdomain', domain)
+    .or(`subdomain.eq.${domain},custom_domain.eq.${domain}`)
     .single();
 
   if (!site || !site.is_active) {
@@ -33,7 +33,7 @@ export default async function TenantPage({
   const { data: site } = await supabase
     .from('sites')
     .select('*')
-    .eq('subdomain', domain)
+    .or(`subdomain.eq.${domain},custom_domain.eq.${domain}`)
     .single();
 
   // Si no existe o no está activo (suscripción vencida), mostrar página por defecto
@@ -62,6 +62,11 @@ export default async function TenantPage({
   const { template_id, config } = site;
   const siteName = config?.name || 'Mi Nuevo Sitio';
   const primaryColor = config?.primaryColor || '#6366f1';
+  
+  // Extraer contenido dinámico
+  const heroTitle = config?.content?.heroTitle || 'Una experiencia inolvidable';
+  const heroSubtitle = config?.content?.heroSubtitle || 'Descubrí lo mejor de nuestros servicios.';
+  const aboutText = config?.content?.aboutText || 'Somos una empresa dedicada a brindar el mejor servicio a nuestros clientes.';
 
   // Renderizado dinámico según la plantilla elegida
   // En una app real esto sería un switch gigante o importación dinámica de componentes
@@ -83,10 +88,10 @@ export default async function TenantPage({
         <div style={{ height: '70vh', background: '#111827', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '2rem' }}>
           <div style={{ maxWidth: '800px' }}>
             <h2 style={{ fontSize: '3.5rem', color: 'white', fontWeight: 800, marginBottom: '1rem' }}>
-              Una experiencia culinaria inolvidable
+              {heroTitle}
             </h2>
             <p style={{ fontSize: '1.25rem', color: '#9ca3af', marginBottom: '2.5rem' }}>
-              Descubrí los mejores sabores preparados por chefs internacionales en un ambiente exclusivo.
+              {heroSubtitle}
             </p>
             <button style={{ padding: '1rem 2.5rem', fontSize: '1.1rem', background: primaryColor, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
               Hacer una reserva

@@ -53,6 +53,27 @@ export default function CuentaPage() {
     }
   };
 
+  const handleCancel = async () => {
+    if (!confirm('¿Estás seguro de que querés cancelar tu suscripción? Tu sitio web dejará de estar online inmediatamente.')) return;
+    
+    setLoading('cancel');
+    try {
+      const res = await fetch('/api/checkout/cancel', {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.error) {
+        alert(data.error);
+      } else {
+        alert('Suscripción cancelada correctamente.');
+        window.location.reload();
+      }
+    } catch (err) {
+      alert('Error al cancelar');
+    }
+    setLoading(null);
+  };
+
   const plans = Object.values(PLANS);
 
   return (
@@ -86,6 +107,32 @@ export default function CuentaPage() {
                 Pendiente de pago
               </span>
             )}
+          </div>
+          
+          <div style={{ padding: '1.5rem', background: 'rgba(239, 68, 68, 0.05)', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Zona de Peligro</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Al cancelar, tu sitio se desactivará inmediatamente.</p>
+            </div>
+            <button 
+              onClick={handleCancel}
+              disabled={loading}
+              style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '0.5rem 1rem', borderRadius: '8px', cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 500, transition: 'all 0.2s' }}
+              onMouseEnter={(e) => {
+                if (!loading) {
+                  e.currentTarget.style.background = '#ef4444';
+                  e.currentTarget.style.color = 'white';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading) {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = '#ef4444';
+                }
+              }}
+            >
+              {loading ? 'Cancelando...' : 'Cancelar Suscripción'}
+            </button>
           </div>
         </div>
         {currentSubscription?.status === 'authorized' && (
