@@ -23,7 +23,13 @@ export default function LoginPage() {
     });
 
     if (error) {
-      setError(error.message);
+      if (error.message.includes('Invalid login credentials')) {
+        setError('El correo o la contraseña son incorrectos.');
+      } else if (error.message.includes('Email not confirmed')) {
+        setError('Por favor, confirmá tu cuenta con el link que enviamos a tu email.');
+      } else {
+        setError('Ocurrió un error al intentar iniciar sesión.');
+      }
       setLoading(false);
     } else {
       window.location.href = '/dashboard';

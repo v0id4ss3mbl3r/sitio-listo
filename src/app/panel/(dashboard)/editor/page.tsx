@@ -206,12 +206,12 @@ export default function EditorPage() {
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
           {subdomain && (
             <a 
-              href={`http://${subdomain}.localhost:3000`} 
+              href={process.env.NODE_ENV === 'production' ? `https://${subdomain}.sitiolisto.com.ar` : `http://${subdomain}.localhost:3000`} 
               target="_blank" 
               rel="noreferrer"
               className="btn-outline"
             >
-              Ver sitio local
+              Ver sitio
             </a>
           )}
           <button type="submit" disabled={saving} className="btn-primary">

@@ -12,6 +12,16 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/[0-9]/g, ''); // No números
+    setFullName(val);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/\s/g, ''); // No espacios
+    setPassword(val);
+  };
+
   const supabase = createClient();
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -31,7 +41,13 @@ export default function RegisterPage() {
     });
 
     if (error) {
-      setError(error.message);
+      if (error.message.includes('already registered')) {
+        setError('Este email ya está registrado.');
+      } else if (error.message.includes('Password should be')) {
+        setError('La contraseña debe tener al menos 6 caracteres.');
+      } else {
+        setError('Ocurrió un error al crear la cuenta. Intentá nuevamente.');
+      }
     } else {
       setSuccess(true);
     }
@@ -77,7 +93,7 @@ export default function RegisterPage() {
             <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Nombre completo</label>
-                <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none' }} placeholder="Juan Pérez" />
+                <input type="text" value={fullName} onChange={handleNameChange} required style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none' }} placeholder="Juan Pérez" />
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Email</label>
@@ -85,7 +101,8 @@ export default function RegisterPage() {
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Contraseña</label>
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none' }} placeholder="••••••••" />
+                <input type="password" value={password} onChange={handlePasswordChange} required minLength={6} style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none' }} placeholder="••••••••" />
+                <span style={{ fontSize: '0.75rem', color: password.length > 0 && password.length < 6 ? '#ef4444' : 'var(--text-muted)', marginTop: '0.25rem', display: 'block' }}>Mínimo 6 caracteres, sin espacios.</span>
               </div>
               <button type="submit" disabled={loading} className="btn-primary" style={{ width: '100%', marginTop: '0.5rem' }}>
                 {loading ? 'Creando cuenta...' : 'Crear cuenta'}
