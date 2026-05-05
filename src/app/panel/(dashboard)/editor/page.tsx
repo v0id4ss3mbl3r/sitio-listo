@@ -313,21 +313,84 @@ export default function EditorPage() {
         {activeTab === 'domain' && (
           <>
             <div className="glass-card" style={{ padding: '2rem' }}>
-              <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>Subdominio Gratuito</h2>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Elegí tu subdominio (solo letras, números y guiones)</label>
-              <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-dark-secondary)', borderRadius: '12px', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
-                <input 
-                  type="text" 
-                  value={subdomain} 
-                  onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} 
-                  placeholder="mitienda" 
-                  style={{ flex: 1, padding: '1rem', background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: '1rem', outline: 'none' }}
-                />
-                <div style={{ padding: '0 1rem', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  .sitiolisto.com.ar
-                  {subdomainStatus === 'checking' && <span style={{ fontSize: '0.8rem' }}>⏳</span>}
-                  {subdomainStatus === 'available' && <span style={{ color: '#10b981', fontSize: '0.7rem', fontWeight: 800 }}>DISPONIBLE</span>}
-                  {subdomainStatus === 'taken' && <span style={{ color: '#f43f5e', fontSize: '0.7rem', fontWeight: 800 }}>OCUPADO</span>}
+              <h2 style={{ fontSize: '1.5rem', marginBottom: '2rem', fontWeight: 800, color: 'var(--text-primary)' }}>Subdominio Gratuito</h2>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <label style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)' }}>
+                  Tu dirección en SitioListo
+                </label>
+                
+                <div style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  borderRadius: '16px', 
+                  overflow: 'hidden', 
+                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--bg-dark-secondary)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', minHeight: '60px' }}>
+                    <input 
+                      type="text" 
+                      value={subdomain} 
+                      onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} 
+                      placeholder="mi-negocio" 
+                      style={{ 
+                        flex: 1, 
+                        padding: '1.25rem', 
+                        background: 'transparent', 
+                        border: 'none', 
+                        color: 'var(--text-primary)', 
+                        fontSize: '1.1rem', 
+                        fontWeight: 600,
+                        outline: 'none' 
+                      }}
+                      required 
+                    />
+                    <div style={{ 
+                      padding: '0 1.5rem', 
+                      height: '60px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      background: 'rgba(0,0,0,0.2)', 
+                      borderLeft: '1px solid var(--border-subtle)',
+                      color: 'var(--text-muted)',
+                      fontWeight: 700,
+                      fontSize: '0.9rem'
+                    }}>
+                      .sitiolisto.com.ar
+                    </div>
+                  </div>
+                  
+                  <div style={{ 
+                    padding: '1rem 1.25rem', 
+                    background: 'rgba(0,0,0,0.1)', 
+                    borderTop: '1px solid var(--border-subtle)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>Estado del subdominio:</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                      {subdomainStatus === 'checking' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)' }}>
+                           <span className="animate-spin text-sm">⏳</span>
+                           <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>VERIFICANDO...</span>
+                        </div>
+                      )}
+                      {subdomainStatus === 'available' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#10b981' }}>
+                          <CheckCircle size={14} />
+                          <span style={{ fontSize: '0.75rem', fontWeight: 800 }}>DISPONIBLE</span>
+                        </div>
+                      )}
+                      {subdomainStatus === 'taken' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#ef4444' }}>
+                          <AlertCircle size={14} />
+                          <span style={{ fontSize: '0.75rem', fontWeight: 800 }}>OCUPADO</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

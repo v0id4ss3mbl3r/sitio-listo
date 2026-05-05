@@ -16,55 +16,63 @@ export default function PortfolioMinimal({
   aboutText 
 }: TemplateProps) {
   return (
-    <div className="min-h-screen bg-white text-black font-sans selection:bg-gray-100 selection:text-black">
-      {/* Header */}
-      <header className="fixed top-0 w-full z-50 px-6 py-6 md:px-12 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <span className="text-lg font-bold tracking-tight">{siteName}</span>
-        <nav className="hidden sm:flex gap-8 text-xs font-medium uppercase tracking-widest text-gray-500">
-          <a href="#work" className="hover:text-black transition-colors">Trabajos</a>
-          <a href="#about" className="hover:text-black transition-colors">Sobre mí</a>
-          <a href="#contact" className="hover:text-black transition-colors">Contacto</a>
+    <div className="min-h-screen bg-[#fcfcfc] text-[#111111] font-sans selection:bg-black selection:text-white">
+      {/* Navigation */}
+      <header className="fixed top-0 w-full z-50 px-6 py-6 md:px-12 flex justify-between items-center bg-white/80 backdrop-blur-xl border-b border-black/5">
+        <span className="text-xl font-black tracking-tighter uppercase italic">{siteName}</span>
+        <nav className="hidden sm:flex gap-12 text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">
+          <a href="#work" className="hover:text-black transition-colors">Portfolio</a>
+          <a href="#about" className="hover:text-black transition-colors">About</a>
+          <a href="#contact" className="hover:text-black transition-colors">Contact</a>
         </nav>
       </header>
 
-      {/* Hero */}
-      <section className="pt-40 md:pt-60 pb-20 px-6 md:px-12 max-w-7xl mx-auto">
+      {/* Hero Section */}
+      <section className="pt-48 md:pt-64 pb-32 px-6 md:px-12 max-w-7xl mx-auto">
         <div className="max-w-4xl">
-          <h2 className="text-5xl md:text-8xl font-bold leading-tight tracking-tighter mb-8">
+          <div 
+            className="inline-block px-3 py-1 rounded-full text-[9px] font-black tracking-[0.2em] mb-10 border border-black/5 uppercase"
+            style={{ color: primaryColor, backgroundColor: `${primaryColor}10` }}
+          >
+            Digital Studio
+          </div>
+          <h2 className="text-6xl md:text-8xl lg:text-[10rem] font-black leading-[0.85] tracking-tighter mb-12 break-words">
             {heroTitle || siteName}
           </h2>
-          <p className="text-xl md:text-2xl text-gray-500 leading-relaxed max-w-2xl mb-12">
-            {heroSubtitle || "Diseñador independiente enfocado en crear soluciones digitales minimalistas y funcionales."}
+          <p className="text-xl md:text-3xl font-medium leading-tight max-w-2xl text-gray-400">
+            {heroSubtitle || "Diseño y estrategia para marcas que buscan destacar en la era digital."}
           </p>
-          <div className="h-px w-20 bg-gray-200" />
         </div>
       </section>
 
       {/* Work Grid */}
-      <section id="work" className="px-6 md:px-12 py-20 border-t border-gray-100 bg-gray-50/30">
+      <section id="work" className="px-6 md:px-12 py-32 bg-[#111111] text-white">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-end mb-16">
-            <h3 className="text-3xl font-bold">Proyectos</h3>
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">2024 — 2026</span>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-24 gap-6">
+            <h3 className="text-4xl md:text-7xl font-black tracking-tight italic uppercase">Featured Works</h3>
+            <span className="text-[9px] font-bold uppercase tracking-[0.4em] opacity-30">Selection 2024</span>
           </div>
           
-          <div className="grid sm:grid-cols-2 gap-8">
+          <div className="grid sm:grid-cols-2 gap-12 lg:gap-20">
             {[
-              { title: 'Identidad Visual', category: 'Design' },
-              { title: 'Plataforma Web', category: 'Development' },
-              { title: 'App Mobile', category: 'UX/UI' },
-              { title: 'E-commerce', category: 'Shopify' }
-            ].map((item, idx) => (
-              <div key={idx} className="group">
-                <div className="aspect-[16/10] bg-gray-100 rounded-xl mb-6 overflow-hidden border border-gray-100">
-                   {/* Imagen Placeholder */}
-                   <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-300 font-medium italic">
-                      Project {idx + 1}
+              { id: '01', title: 'Brand Identity', category: 'Creative Direction' },
+              { id: '02', title: 'E-commerce', category: 'Web Development' },
+              { id: '03', title: 'App Concept', category: 'Product Design' },
+              { id: '04', title: 'Marketing', category: 'Social Strategy' }
+            ].map((item) => (
+              <div key={item.id} className="group">
+                <div className="aspect-[16/10] relative overflow-hidden rounded-2xl bg-white/5 border border-white/5 mb-10">
+                   <div className="w-full h-full flex items-center justify-center text-gray-800 text-6xl font-black italic">
+                     {item.id}
                    </div>
+                   <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-5 transition-opacity" />
                 </div>
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-1">{item.category}</span>
-                  <h4 className="text-xl font-bold group-hover:underline underline-offset-4 decoration-2" style={{ textDecorationColor: primaryColor }}>{item.title}</h4>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-gray-500 mb-2 block">{item.category}</span>
+                    <h4 className="text-3xl font-bold tracking-tight">{item.title}</h4>
+                  </div>
+                  <div className="h-px w-12 mt-4 bg-white/20 group-hover:bg-white transition-colors" style={{ height: '2px' }} />
                 </div>
               </div>
             ))}
@@ -73,34 +81,32 @@ export default function PortfolioMinimal({
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-32 px-6 md:px-12 border-t border-gray-100">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-20">
-          <h3 className="text-3xl font-bold">Sobre mí</h3>
-          <div className="space-y-8">
-            <p className="text-xl md:text-2xl text-gray-600 leading-relaxed">
-              {aboutText || "Ayudo a marcas y startups a destacar a través de un diseño limpio y una estrategia sólida."}
-            </p>
-            <button 
-              className="px-8 py-3 rounded-lg text-white font-bold text-sm transition-all hover:opacity-90 active:scale-95"
-              style={{ backgroundColor: primaryColor }}
-            >
-              Hablemos hoy
-            </button>
+      <section id="about" className="py-48 px-6 border-b border-black/5">
+        <div className="max-w-5xl mx-auto flex flex-col items-center text-center">
+          <div className="mb-14 inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-black text-white shadow-2xl">
+             <span className="text-2xl font-black italic">S</span>
           </div>
+          <p className="text-3xl md:text-5xl lg:text-7xl font-bold leading-[1.05] tracking-tighter mb-20">
+            {aboutText || "Soy un diseñador independiente ayudando a marcas visionarias a transformar sus ideas en productos digitales icónicos."}
+          </p>
+          <button 
+            className="px-16 py-6 rounded-full font-black uppercase tracking-[0.2em] text-[10px] transition-all hover:scale-105 active:scale-95 shadow-2xl text-white"
+            style={{ backgroundColor: primaryColor }}
+          >
+            Hablemos hoy
+          </button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer id="contact" className="py-20 border-t border-gray-100 bg-white">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-10">
-          <span className="text-lg font-bold">{siteName}</span>
-          <div className="flex gap-10 text-xs font-bold text-gray-400 uppercase tracking-widest">
-            <a href="#" className="hover:text-black">Instagram</a>
-            <a href="#" className="hover:text-black">LinkedIn</a>
-            <a href="#" className="hover:text-black">Behance</a>
-          </div>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">© {new Date().getFullYear()} — SitioListo</p>
+      <footer id="contact" className="py-24 px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-12 bg-white">
+        <span className="text-2xl font-black tracking-tighter uppercase italic">{siteName}</span>
+        <div className="flex gap-12 text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">
+          <a href="#" className="hover:text-black transition-colors">Twitter</a>
+          <a href="#" className="hover:text-black transition-colors">Instagram</a>
+          <a href="#" className="hover:text-black transition-colors">LinkedIn</a>
         </div>
+        <p className="text-[9px] font-bold text-gray-300 tracking-[0.3em] uppercase">© {new Date().getFullYear()} {siteName} / SitioListo</p>
       </footer>
     </div>
   );
