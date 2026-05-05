@@ -149,7 +149,7 @@ export default function EditorPage() {
   }
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', paddingBottom: '120px' }}>
+    <div style={{ maxWidth: '900px', margin: '0 auto', paddingBottom: '100px' }}>
       <header style={{ marginBottom: '3rem' }}>
         <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
           Editor Visual
@@ -314,23 +314,20 @@ export default function EditorPage() {
           <>
             <div className="glass-card" style={{ padding: '2rem' }}>
               <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>Subdominio Gratuito</h2>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-3">Elegí tu subdominio (solo letras, números y guiones)</label>
-                <div className="flex flex-col sm:flex-row sm:items-stretch overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-dark-secondary)]">
-                  <input 
-                    type="text" 
-                    value={subdomain} 
-                    onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} 
-                    placeholder="mitienda" 
-                    className="flex-1 p-4 bg-transparent outline-none text-[var(--text-primary)] min-w-0" 
-                    required 
-                  />
-                  <div className="bg-[var(--bg-dark)] px-4 py-3 flex items-center gap-3 border-t sm:border-t-0 sm:border-l border-[var(--border-subtle)] shrink-0">
-                    <span className="text-sm font-medium text-[var(--text-muted)]">.sitiolisto.com.ar</span>
-                    {subdomainStatus === 'checking' && <span className="animate-spin">⏳</span>}
-                    {subdomainStatus === 'available' && <span className="text-emerald-500 font-bold text-xs">DISPONIBLE</span>}
-                    {subdomainStatus === 'taken' && <span className="text-rose-500 font-bold text-xs">OCUPADO</span>}
-                  </div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Elegí tu subdominio (solo letras, números y guiones)</label>
+              <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-dark-secondary)', borderRadius: '12px', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
+                <input 
+                  type="text" 
+                  value={subdomain} 
+                  onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} 
+                  placeholder="mitienda" 
+                  style={{ flex: 1, padding: '1rem', background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: '1rem', outline: 'none' }}
+                />
+                <div style={{ padding: '0 1rem', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  .sitiolisto.com.ar
+                  {subdomainStatus === 'checking' && <span style={{ fontSize: '0.8rem' }}>⏳</span>}
+                  {subdomainStatus === 'available' && <span style={{ color: '#10b981', fontSize: '0.7rem', fontWeight: 800 }}>DISPONIBLE</span>}
+                  {subdomainStatus === 'taken' && <span style={{ color: '#f43f5e', fontSize: '0.7rem', fontWeight: 800 }}>OCUPADO</span>}
                 </div>
               </div>
             </div>
@@ -363,79 +360,64 @@ export default function EditorPage() {
 
       </div>
 
-      {/* Floating Action Bar (Sticky Bottom) */}
+      {/* Floating Action Buttons */}
       <div style={{ 
         position: 'fixed', 
-        bottom: '2rem', 
-        left: '50%', 
-        transform: 'translateX(-50%)', 
-        width: 'calc(100% - 3rem)',
-        maxWidth: '850px',
-        background: 'rgba(23, 23, 23, 0.85)',
-        backdropFilter: 'blur(20px)',
-        border: '1px solid var(--border-subtle)',
-        padding: '1rem 1.5rem',
-        borderRadius: '24px',
+        bottom: '2.5rem', 
+        right: '2.5rem', 
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        flexDirection: 'column',
+        gap: '0.75rem',
         zIndex: 100,
-        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)'
       }}>
-        <div style={{ display: 'none' }} className="sm:block">
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Los cambios se publican al instante.</p>
-        </div>
-        <div style={{ display: 'flex', gap: '0.75rem', width: '100%', justifyContent: 'flex-end' }} className="sm:w-auto">
-          {subdomain && subdomainStatus === 'available' && (
-            <a 
-              href={process.env.NODE_ENV === 'production' ? `https://${subdomain}.sitiolisto.com.ar` : `http://${subdomain}.localhost:3000`} 
-              target="_blank" 
-              rel="noreferrer"
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.6rem', 
-                padding: '0.8rem 1.5rem', 
-                borderRadius: '14px', 
-                border: '1px solid var(--border-subtle)', 
-                color: 'var(--text-primary)', 
-                textDecoration: 'none', 
-                fontSize: '0.9rem', 
-                fontWeight: 700,
-                transition: 'all 0.2s',
-                background: 'rgba(255, 255, 255, 0.05)'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
-              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
-            >
-              <ExternalLink size={16} />
-              Ver sitio
-            </a>
-          )}
-          <button 
-            onClick={handleSave} 
-            disabled={saving || subdomainStatus === 'taken'} 
+        {subdomain && subdomainStatus === 'available' && (
+          <a 
+            href={process.env.NODE_ENV === 'production' ? `https://${subdomain}.sitiolisto.com.ar` : `http://${subdomain}.localhost:3000`} 
+            target="_blank" 
+            rel="noreferrer"
             style={{ 
               display: 'flex', 
               alignItems: 'center', 
               gap: '0.6rem', 
-              padding: '0.8rem 2rem', 
-              borderRadius: '14px', 
-              background: 'var(--gradient-primary)', 
-              color: 'white', 
-              border: 'none', 
-              fontSize: '0.9rem', 
-              fontWeight: 800, 
-              cursor: (saving || subdomainStatus === 'taken') ? 'not-allowed' : 'pointer',
+              padding: '0.75rem 1.25rem', 
+              borderRadius: '12px', 
+              border: '1px solid var(--border-subtle)', 
+              color: 'var(--text-primary)', 
+              textDecoration: 'none', 
+              fontSize: '0.85rem', 
+              fontWeight: 700,
               transition: 'all 0.2s',
-              opacity: (saving || subdomainStatus === 'taken') ? 0.6 : 1,
-              boxShadow: '0 10px 20px -5px rgba(99, 102, 241, 0.4)'
+              background: 'var(--bg-card)',
+              boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)'
             }}
           >
-            <Save size={16} />
-            {saving ? 'Guardando...' : 'Guardar y Publicar'}
-          </button>
-        </div>
+            <ExternalLink size={16} />
+            Ver sitio
+          </a>
+        )}
+        <button 
+          onClick={handleSave} 
+          disabled={saving || subdomainStatus === 'taken'} 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.6rem', 
+            padding: '0.85rem 1.5rem', 
+            borderRadius: '12px', 
+            background: 'var(--gradient-primary)', 
+            color: 'white', 
+            border: 'none', 
+            fontSize: '0.9rem', 
+            fontWeight: 800, 
+            cursor: (saving || subdomainStatus === 'taken') ? 'not-allowed' : 'pointer',
+            transition: 'all 0.2s',
+            opacity: (saving || subdomainStatus === 'taken') ? 0.6 : 1,
+            boxShadow: '0 15px 30px -5px rgba(99, 102, 241, 0.4)'
+          }}
+        >
+          <Save size={18} />
+          {saving ? 'Guardando...' : 'Guardar y Publicar'}
+        </button>
       </div>
     </div>
   );

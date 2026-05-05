@@ -1,7 +1,7 @@
 'use client';
 
 import { createClient } from '@/lib/supabase/browser';
-import { LogOut, Home, Palette, CreditCard, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LogOut, Home, Palette, CreditCard, Menu, X, ChevronLeft } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -18,7 +18,6 @@ export default function PanelLayout({
   const [isMobile, setIsMobile] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  // Detectar scroll para achicar topbar
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -27,7 +26,6 @@ export default function PanelLayout({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Detectar si es móvil para el comportamiento inicial
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth < 768;
@@ -41,7 +39,6 @@ export default function PanelLayout({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Cerrar menú móvil al cambiar de ruta
   useEffect(() => {
     if (isMobile) setIsSidebarOpen(false);
   }, [pathname, isMobile]);
@@ -113,14 +110,23 @@ export default function PanelLayout({
               Sitio<span style={{ color: 'var(--color-primary-light)' }}>Listo</span>
             </span>
           </Link>
-          {isMobile && (
-            <button 
-              onClick={() => setIsSidebarOpen(false)}
-              style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
-            >
-              <X size={20} />
-            </button>
-          )}
+          <button 
+            onClick={() => setIsSidebarOpen(false)}
+            style={{ 
+              background: 'transparent', 
+              border: 'none', 
+              color: 'var(--text-secondary)', 
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0.5rem',
+              borderRadius: '8px',
+            }}
+            className="hover:bg-[var(--border-subtle)] transition-colors"
+          >
+            {isMobile ? <X size={20} /> : <ChevronLeft size={20} />}
+          </button>
         </div>
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, minWidth: '220px' }}>
@@ -154,27 +160,29 @@ export default function PanelLayout({
           top: 0,
           zIndex: 30,
           transition: 'all 0.3s ease',
-          backdropFilter: 'blur(12px)',
-          backgroundColor: 'rgba(15, 15, 15, 0.8)'
         }}>
-          <button 
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            style={{ 
-              background: 'rgba(99, 102, 241, 0.1)', 
-              border: '1px solid var(--border-subtle)', 
-              color: 'var(--color-primary)', 
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: scrolled ? '34px' : '40px',
-              height: scrolled ? '34px' : '40px',
-              borderRadius: '10px',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            {isSidebarOpen ? <ChevronLeft size={scrolled ? 18 : 20} /> : <Menu size={scrolled ? 18 : 20} />}
-          </button>
+          <div>
+            {!isSidebarOpen && (
+              <button 
+                onClick={() => setIsSidebarOpen(true)}
+                style={{ 
+                  background: 'rgba(99, 102, 241, 0.1)', 
+                  border: '1px solid var(--border-subtle)', 
+                  color: 'var(--color-primary)', 
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: scrolled ? '34px' : '40px',
+                  height: scrolled ? '34px' : '40px',
+                  borderRadius: '10px',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <Menu size={scrolled ? 18 : 20} />
+              </button>
+            )}
+          </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

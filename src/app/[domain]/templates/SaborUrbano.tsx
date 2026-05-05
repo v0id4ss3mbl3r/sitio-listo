@@ -16,126 +16,95 @@ export default function SaborUrbano({
   aboutText 
 }: TemplateProps) {
   return (
-    <div className="min-h-screen bg-[#080808] text-[#f5f5f5] selection:bg-white selection:text-black font-serif">
-      {/* Dynamic Navigation */}
-      <nav className="fixed top-0 w-full z-50 px-8 py-8 flex justify-between items-center bg-transparent">
-        <h1 className="text-3xl font-black tracking-tighter mix-blend-difference" style={{ color: primaryColor }}>
-          {siteName.toUpperCase()}
+    <div className="min-h-screen bg-white text-[#1a1a1a] font-sans selection:bg-orange-50 selection:text-orange-900">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 px-6 py-6 md:px-12 flex justify-between items-center bg-white/90 backdrop-blur-md border-b border-gray-100">
+        <h1 className="text-xl font-bold tracking-tight uppercase" style={{ color: primaryColor }}>
+          {siteName}
         </h1>
-        <div className="hidden lg:flex gap-12 text-[10px] font-black uppercase tracking-[0.3em] backdrop-blur-md bg-white/5 px-10 py-4 rounded-full border border-white/10">
-          <a href="#menu" className="hover:opacity-50 transition-opacity">Menu</a>
-          <a href="#about" className="hover:opacity-50 transition-opacity">Legacy</a>
-          <a href="#contact" className="hover:opacity-50 transition-opacity">Location</a>
+        <div className="hidden md:flex gap-10 text-[10px] font-bold uppercase tracking-widest text-gray-500">
+          <a href="#menu" className="hover:text-black">Menú</a>
+          <a href="#about" className="hover:text-black">Nosotros</a>
+          <a href="#contact" className="hover:text-black">Contacto</a>
         </div>
         <button 
-          className="px-10 py-4 rounded-full text-[10px] font-black transition-all hover:scale-105 active:scale-95 shadow-2xl uppercase tracking-widest text-white"
+          className="px-6 py-2.5 rounded-lg text-white text-xs font-bold transition-all hover:opacity-90 active:scale-95 shadow-sm uppercase tracking-widest"
           style={{ backgroundColor: primaryColor }}
         >
-          Book a Table
+          Reservar
         </button>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center text-center px-6 overflow-hidden">
+      <section className="relative h-[80vh] flex items-center justify-center text-center px-6 bg-gray-900 overflow-hidden">
         <div 
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-[10s] scale-110 animate-slow-zoom"
+          className="absolute inset-0 bg-cover bg-center opacity-40"
           style={{ 
             backgroundImage: "url('/templates/restaurant_hero.png')",
-            filter: 'brightness(0.3) contrast(1.2)'
           }}
         />
-        <div className="relative z-10 max-w-6xl">
-          <div className="flex justify-center mb-10 overflow-hidden">
-             <div className="h-px w-12 bg-white/30 self-center" />
-             <span className="px-6 text-[10px] font-black tracking-[0.5em] uppercase opacity-70">Exquisite Dining</span>
-             <div className="h-px w-12 bg-white/30 self-center" />
-          </div>
-          <h2 className="text-7xl md:text-9xl lg:text-[11rem] font-black mb-12 tracking-tighter leading-[0.8] italic">
-            {heroTitle || "The Art of Taste"}
+        <div className="relative z-10 max-w-4xl text-white">
+          <h2 className="text-5xl md:text-8xl font-black mb-8 tracking-tighter leading-none">
+            {heroTitle || "Una experiencia única"}
           </h2>
-          <p className="text-xl md:text-3xl text-gray-300 mb-16 font-light leading-tight max-w-3xl mx-auto opacity-80 serif italic">
-            {heroSubtitle || "A culinary journey where tradition meets avant-garde techniques."}
+          <p className="text-xl md:text-2xl mb-12 font-medium opacity-90 max-w-2xl mx-auto">
+            {heroSubtitle || "Disfrutá de la mejor gastronomía en un ambiente relajado y moderno."}
           </p>
           <a 
             href="#menu"
-            className="group relative inline-flex items-center gap-4 px-12 py-5 border border-white/20 rounded-full transition-all hover:border-white overflow-hidden"
+            className="inline-block px-10 py-4 bg-white text-black rounded-lg font-bold text-sm uppercase tracking-widest hover:bg-gray-100 transition-colors"
           >
-            <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-            <span className="relative text-[10px] font-black uppercase tracking-[0.3em] group-hover:text-black transition-colors">Discover the Menu</span>
+            Ver la Carta
           </a>
-        </div>
-        
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 opacity-20 flex flex-col items-center gap-4">
-           <span className="text-[8px] font-black uppercase tracking-[0.5em]">Scroll</span>
-           <div className="h-12 w-px bg-gradient-to-b from-white to-transparent" />
         </div>
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-40 md:py-60 px-8 relative overflow-hidden bg-[#0a0a0a]">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 lg:gap-40 items-center">
-          <div className="relative order-2 lg:order-1">
-            <div className="absolute -inset-10 border border-white/5 rounded-[40px] pointer-events-none" />
-            <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)]">
-               <img src="/templates/restaurant_hero.png" alt="Legacy" className="w-full h-full object-cover brightness-75 hover:brightness-100 transition-all duration-[2s]" />
-            </div>
-            <div 
-              className="absolute -bottom-10 -right-10 w-48 h-48 rounded-full border border-white/10 backdrop-blur-xl flex items-center justify-center text-[10px] font-black tracking-[0.3em] text-center p-8 uppercase italic leading-loose"
-              style={{ color: primaryColor }}
-            >
-              Est. Since 2010
-            </div>
+      <section id="about" className="py-24 md:py-32 px-6 md:px-12 bg-white">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+          <div className="aspect-square rounded-2xl overflow-hidden shadow-xl border border-gray-100 bg-gray-50">
+             <img src="/templates/restaurant_hero.png" alt="Nosotros" className="w-full h-full object-cover" />
           </div>
-          <div className="flex flex-col gap-12 order-1 lg:order-2">
-            <div className="space-y-4">
-               <span className="text-[10px] font-black tracking-[0.4em] uppercase" style={{ color: primaryColor }}>Our Heritage</span>
-               <h3 className="text-6xl md:text-8xl font-black tracking-tighter leading-none italic">A Century of Passion</h3>
-            </div>
-            <p className="text-xl md:text-2xl text-gray-400 leading-relaxed font-light italic">
-              {aboutText || "From humble beginnings to a gastronomic landmark, our kitchen has always been a sanctuary for those who seek the extraordinary."}
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-[0.3em] mb-4 block" style={{ color: primaryColor }}>Desde 2010</span>
+            <h3 className="text-4xl md:text-5xl font-bold mb-8 tracking-tight">Nuestra Historia</h3>
+            <p className="text-lg text-gray-600 leading-relaxed mb-10">
+              {aboutText || "Nacimos con la pasión de llevar los sabores más auténticos a tu mesa, utilizando ingredientes frescos y técnicas artesanales."}
             </p>
-            <div className="grid grid-cols-2 gap-16 py-16 border-y border-white/5">
+            <div className="grid grid-cols-2 gap-10 py-10 border-t border-gray-100">
               <div>
-                <span className="block text-5xl font-black mb-3 italic">150+</span>
-                <span className="text-[9px] uppercase tracking-widest font-black text-gray-500">Unique Recipes</span>
+                <span className="block text-3xl font-bold mb-1" style={{ color: primaryColor }}>12k+</span>
+                <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Clientes felices</span>
               </div>
               <div>
-                <span className="block text-5xl font-black mb-3 italic">3★</span>
-                <span className="text-[9px] uppercase tracking-widest font-black text-gray-500">Global Accolades</span>
+                <span className="block text-3xl font-bold mb-1" style={{ color: primaryColor }}>4.9/5</span>
+                <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Puntaje Google</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Experience */}
-      <section className="py-40 px-8 text-center bg-white text-black relative">
-        <div className="absolute top-0 left-0 w-full h-px bg-black/5" />
-        <span className="text-[10px] font-black tracking-[0.6em] uppercase mb-12 block opacity-40 italic">Reservations</span>
-        <h3 className="text-6xl md:text-9xl font-black mb-16 tracking-tighter italic leading-none uppercase">Join our table</h3>
+      {/* CTA Footer Section */}
+      <section className="py-24 px-6 text-center bg-gray-50 border-y border-gray-100">
+        <h3 className="text-3xl md:text-5xl font-bold mb-10 tracking-tight">¿Buscás una mesa?</h3>
         <button 
-          className="group relative px-20 py-8 overflow-hidden rounded-full transition-all hover:scale-105"
+          className="px-12 py-5 rounded-lg text-white font-bold text-sm uppercase tracking-widest transition-all hover:opacity-90 shadow-lg"
           style={{ backgroundColor: primaryColor }}
         >
-          <div className="absolute inset-0 bg-black translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
-          <span className="relative z-10 text-white text-[10px] font-black uppercase tracking-[0.4em]">Inquire for a Table</span>
+          Hacer Reserva
         </button>
       </section>
 
       {/* Footer */}
-      <footer id="contact" className="py-32 bg-[#080808] border-t border-white/5 relative">
-        <div className="max-w-7xl mx-auto px-8 flex flex-col items-center">
-           <h4 className="text-4xl font-black mb-12 tracking-tighter uppercase italic" style={{ color: primaryColor }}>{siteName}</h4>
-           <div className="flex gap-16 text-[10px] font-black uppercase tracking-[0.5em] text-gray-500 mb-20">
-             <a href="#" className="hover:text-white transition-colors">Instagram</a>
-             <a href="#" className="hover:text-white transition-colors">Facebook</a>
-             <a href="#" className="hover:text-white transition-colors">Contact</a>
-           </div>
-           <div className="w-full flex justify-between items-center opacity-30">
-              <span className="text-[8px] font-black tracking-[0.5em] uppercase">© {new Date().getFullYear()}</span>
-              <span className="text-[8px] font-black tracking-[0.5em] uppercase">SitioListo Premium Experience</span>
-           </div>
+      <footer id="contact" className="py-20 bg-white text-center">
+        <h4 className="text-xl font-bold mb-8 uppercase tracking-widest" style={{ color: primaryColor }}>{siteName}</h4>
+        <div className="flex justify-center gap-10 text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-10">
+          <a href="#" className="hover:text-black">Instagram</a>
+          <a href="#" className="hover:text-black">Facebook</a>
+          <a href="#" className="hover:text-black">TripAdvisor</a>
         </div>
+        <p className="text-gray-400 text-[10px] font-bold tracking-[0.4em] uppercase">© {new Date().getFullYear()} — SITIO LISTO</p>
       </footer>
     </div>
   );
