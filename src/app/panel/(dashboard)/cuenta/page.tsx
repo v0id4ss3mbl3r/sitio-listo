@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { PLANS, PlanType } from '@/lib/constants';
 import { createClient } from '@/lib/supabase/browser';
-import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function CuentaPage() {
   const [loading, setLoading] = useState<string | null>(null);
@@ -42,7 +41,7 @@ export default function CuentaPage() {
       const data = await response.json();
       
       if (data.url) {
-        window.location.href = data.url; // Redirigir a MercadoPago
+        window.location.href = data.url;
       } else {
         alert(data.error || 'Ocurrió un error al generar el checkout');
       }
@@ -77,114 +76,87 @@ export default function CuentaPage() {
   const plans = Object.values(PLANS);
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-      <header style={{ marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-            Tu Suscripción
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem', fontSize: '1.1rem' }}>
-            Gestioná tu plan y métodos de pago
-          </p>
-        </div>
+    <div className="max-w-5xl mx-auto px-4 sm:px-0">
+      <header className="mb-12">
+        <h1 className="text-3xl font-black tracking-tight text-[var(--text-primary)]">
+          Tu Suscripción
+        </h1>
+        <p className="text-[var(--text-secondary)] mt-1">Gestioná tu plan y métodos de pago</p>
       </header>
 
       {/* Estado actual */}
-      <div className="glass-card" style={{ padding: '2rem', marginBottom: '3rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Plan Actual</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
-            <span style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-              {currentSubscription ? PLANS[currentSubscription.plan_type as PlanType]?.name : 'Plan Gratuito (Demo)'}
-            </span>
-            {currentSubscription?.status === 'authorized' && (
-              <span style={{ padding: '0.25rem 0.75rem', borderRadius: '9999px', fontSize: '0.8rem', fontWeight: 600, background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
-                Activo
+      <div className="glass-card p-6 sm:p-10 mb-12">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+          <div className="space-y-2">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)]">Plan Actual</h3>
+            <div className="flex items-center gap-4">
+              <span className="text-2xl sm:text-3xl font-black text-[var(--text-primary)] tracking-tight">
+                {currentSubscription ? PLANS[currentSubscription.plan_type as PlanType]?.name : 'Plan Gratuito'}
               </span>
-            )}
-            {currentSubscription?.status === 'pending' && (
-              <span style={{ padding: '0.25rem 0.75rem', borderRadius: '9999px', fontSize: '0.8rem', fontWeight: 600, background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' }}>
-                Pendiente de pago
+              <span className={`
+                px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase
+                ${currentSubscription?.status === 'authorized' ? 'bg-emerald-500/15 text-emerald-500' : 'bg-amber-500/15 text-amber-500'}
+              `}>
+                {currentSubscription?.status === 'authorized' ? 'Activo' : 'Sin suscripción'}
               </span>
-            )}
-          </div>
-          
-          <div style={{ padding: '1.5rem', background: 'rgba(239, 68, 68, 0.05)', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Zona de Peligro</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Al cancelar, tu sitio se desactivará inmediatamente.</p>
             </div>
-            <button 
-              onClick={handleCancel}
-              disabled={loading !== null}
-              style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '0.5rem 1rem', borderRadius: '8px', cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 500, transition: 'all 0.2s' }}
-              onMouseEnter={(e) => {
-                if (!loading) {
-                  e.currentTarget.style.background = '#ef4444';
-                  e.currentTarget.style.color = 'white';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!loading) {
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = '#ef4444';
-                }
-              }}
-            >
-              {loading ? 'Cancelando...' : 'Cancelar Suscripción'}
-            </button>
           </div>
+
+          {currentSubscription?.status === 'authorized' && (
+            <div className="p-4 sm:p-6 bg-rose-500/5 border border-rose-500/10 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+              <div className="space-y-1">
+                <h4 className="text-rose-500 text-sm font-bold tracking-tight">Zona de Peligro</h4>
+                <p className="text-xs text-[var(--text-secondary)]">Al cancelar, tu sitio se desactivará inmediatamente.</p>
+              </div>
+              <button 
+                onClick={handleCancel}
+                disabled={loading !== null}
+                className="whitespace-nowrap px-6 py-2.5 rounded-xl border border-rose-500/30 text-rose-500 text-xs font-bold uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all disabled:opacity-50"
+              >
+                {loading === 'cancel' ? 'Cancelando...' : 'Cancelar Suscripción'}
+              </button>
+            </div>
+          )}
         </div>
-        {currentSubscription?.status === 'authorized' && (
-          <button className="btn-outline" style={{ padding: '0.6rem 1.25rem', fontSize: '0.9rem' }}>
-            Cancelar suscripción
-          </button>
-        )}
       </div>
 
-      {/* Pricing Table (Reutilizada adaptada para Panel) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', alignItems: 'stretch' }}>
+      <h2 className="text-xl font-bold mb-8 text-[var(--text-primary)] tracking-tight">Elegir un nuevo plan</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {plans.map((plan) => {
           const isCurrentPlan = currentSubscription?.plan_type === plan.slug && currentSubscription?.status === 'authorized';
 
           return (
             <div
               key={plan.slug}
-              className="glass-card"
-              style={{
-                padding: '2.5rem 2rem',
-                display: 'flex',
-                flexDirection: 'column',
-                position: 'relative',
-                overflow: 'hidden',
-                ...(plan.highlighted ? { border: '1px solid rgba(99, 102, 241, 0.4)', boxShadow: '0 0 40px rgba(99, 102, 241, 0.1)' } : {}),
-              }}
+              className={`
+                glass-card p-8 flex flex-col relative overflow-hidden transition-all
+                ${plan.highlighted ? 'border-indigo-500/40 shadow-glow scale-[1.02] z-10' : 'hover:scale-[1.01]'}
+              `}
             >
               {plan.highlighted && (
-                <div style={{ position: 'absolute', top: '1rem', right: '-2rem', background: 'var(--gradient-primary)', color: 'white', fontSize: '0.75rem', fontWeight: 600, padding: '0.25rem 3rem', transform: 'rotate(45deg)' }}>
-                  Recomendado
+                <div className="absolute top-0 right-0 bg-indigo-500 text-white text-[10px] font-black px-8 py-1 tracking-widest transform rotate-45 translate-x-8 translate-y-4">
+                  PRO
                 </div>
               )}
 
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-primary-light)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                {plan.name}
-              </span>
-
-              <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
-                <span style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>{plan.priceDisplay}</span>
-                <span style={{ fontSize: '0.95rem', color: 'var(--text-muted)' }}>/mes</span>
+              <div className="mb-6">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">
+                  {plan.name}
+                </span>
+                <div className="mt-2 flex items-baseline gap-1">
+                  <span className="text-4xl font-black text-[var(--text-primary)] tracking-tighter">{plan.priceDisplay}</span>
+                  <span className="text-xs font-bold text-[var(--text-muted)] tracking-widest uppercase">/mes</span>
+                </div>
               </div>
 
-              <p style={{ color: 'var(--text-secondary)', marginTop: '0.75rem', fontSize: '0.95rem', lineHeight: 1.5 }}>
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-8 flex-1">
                 {plan.description}
               </p>
 
-              <div style={{ width: '100%', height: '1px', background: 'var(--border-subtle)', margin: '1.5rem 0' }} />
-
-              <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1 }}>
+              <ul className="space-y-3 mb-10">
                 {plan.features.map((feature) => (
-                  <li key={feature} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary-light)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <li key={feature} className="flex items-start gap-3 text-xs text-[var(--text-secondary)] font-medium">
+                    <svg className="mt-0.5 shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                     {feature}
@@ -195,10 +167,13 @@ export default function CuentaPage() {
               <button
                 onClick={() => handleSubscribe(plan.slug as PlanType)}
                 disabled={isCurrentPlan || loading !== null}
-                className={plan.highlighted ? 'btn-primary' : 'btn-outline'}
-                style={{ marginTop: '2rem', width: '100%', opacity: isCurrentPlan ? 0.5 : 1, cursor: isCurrentPlan ? 'not-allowed' : 'pointer' }}
+                className={`
+                  w-full py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all
+                  ${plan.highlighted ? 'btn-primary' : 'btn-outline'}
+                  ${isCurrentPlan ? 'opacity-50 cursor-not-allowed' : ''}
+                `}
               >
-                {loading === plan.slug ? 'Generando...' : isCurrentPlan ? 'Plan Actual' : `Suscribirme a ${plan.name}`}
+                {loading === plan.slug ? 'Generando...' : isCurrentPlan ? 'Tu Plan Actual' : `Elegir ${plan.name}`}
               </button>
             </div>
           );

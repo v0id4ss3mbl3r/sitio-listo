@@ -147,47 +147,46 @@ export default function EditorPage() {
 
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-      <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
         <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+          <h1 className="text-3xl font-black tracking-tight text-[var(--text-primary)]">
             Editor Visual
           </h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Configurá la apariencia, contenido y dominio de tu sitio.</p>
+          <p className="text-[var(--text-secondary)] mt-1">Configurá la apariencia y el dominio de tu sitio.</p>
         </div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div className="flex gap-3">
           {subdomain && subdomainStatus === 'available' && (
             <a 
               href={process.env.NODE_ENV === 'production' ? `https://${subdomain}.sitiolisto.com.ar` : `http://${subdomain}.localhost:3000`} 
               target="_blank" 
               rel="noreferrer"
-              className="btn-outline"
+              className="btn-outline flex-1 sm:flex-none text-center py-2.5 px-6"
             >
               Ver sitio
             </a>
           )}
-          <button onClick={handleSave} disabled={saving || subdomainStatus === 'taken'} className="btn-primary">
+          <button 
+            onClick={handleSave} 
+            disabled={saving || subdomainStatus === 'taken'} 
+            className="btn-primary flex-1 sm:flex-none py-2.5 px-6"
+          >
             {saving ? 'Guardando...' : 'Guardar y Publicar'}
           </button>
         </div>
       </header>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--border-subtle)', marginBottom: '2rem' }}>
+      {/* Tabs con scroll horizontal en móvil */}
+      <div className="flex gap-2 border-b border-[var(--border-subtle)] mb-10 overflow-x-auto no-scrollbar scroll-smooth">
         {(['appearance', 'content', 'domain'] as TabType[]).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            style={{
-              padding: '0.75rem 1.5rem',
-              background: 'transparent',
-              border: 'none',
-              borderBottom: activeTab === tab ? '2px solid var(--color-primary)' : '2px solid transparent',
-              color: activeTab === tab ? 'var(--color-primary)' : 'var(--text-secondary)',
-              fontWeight: activeTab === tab ? 600 : 500,
-              cursor: 'pointer',
-              fontSize: '1rem',
-              transition: 'all 0.2s'
-            }}
+            className={`
+              whitespace-nowrap px-6 py-4 border-b-2 font-bold transition-all text-sm uppercase tracking-widest
+              ${activeTab === tab 
+                ? 'border-[var(--color-primary)] text-[var(--color-primary)]' 
+                : 'border-transparent text-[var(--text-secondary)] opacity-60 hover:opacity-100'}
+            `}
           >
             {tab === 'appearance' && 'Apariencia'}
             {tab === 'content' && 'Contenido'}
@@ -267,14 +266,21 @@ export default function EditorPage() {
             <div className="glass-card" style={{ padding: '2rem' }}>
               <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--text-primary)' }}>Subdominio Gratuito</h2>
               <div>
-                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Elegí tu subdominio (solo letras, números y guiones)</label>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <input type="text" value={subdomain} onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} placeholder="mitienda" style={{ flex: 1, padding: '0.75rem', borderRadius: '8px 0 0 8px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none' }} required />
-                  <div style={{ padding: '0.75rem 1rem', background: 'var(--bg-dark)', border: '1px solid var(--border-subtle)', borderLeft: 'none', borderRadius: '0 8px 8px 0', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    .sitiolisto.com.ar
-                    {subdomainStatus === 'checking' && <span style={{ fontSize: '0.8rem', color: '#3b82f6' }}>⏳</span>}
-                    {subdomainStatus === 'available' && <span style={{ fontSize: '0.8rem', color: '#10b981' }}>✔️ Disponible</span>}
-                    {subdomainStatus === 'taken' && <span style={{ fontSize: '0.8rem', color: '#ef4444' }}>❌ Ocupado</span>}
+                <label className="block text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-3">Elegí tu subdominio (solo letras, números y guiones)</label>
+                <div className="flex flex-col sm:flex-row sm:items-stretch overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-dark-secondary)]">
+                  <input 
+                    type="text" 
+                    value={subdomain} 
+                    onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} 
+                    placeholder="mitienda" 
+                    className="flex-1 p-4 bg-transparent outline-none text-[var(--text-primary)] min-w-0" 
+                    required 
+                  />
+                  <div className="bg-[var(--bg-dark)] px-4 py-3 flex items-center gap-3 border-t sm:border-t-0 sm:border-l border-[var(--border-subtle)] shrink-0">
+                    <span className="text-sm font-medium text-[var(--text-muted)]">.sitiolisto.com.ar</span>
+                    {subdomainStatus === 'checking' && <span className="animate-spin">⏳</span>}
+                    {subdomainStatus === 'available' && <span className="text-emerald-500 font-bold text-xs">DISPONIBLE</span>}
+                    {subdomainStatus === 'taken' && <span className="text-rose-500 font-bold text-xs">OCUPADO</span>}
                   </div>
                 </div>
               </div>
