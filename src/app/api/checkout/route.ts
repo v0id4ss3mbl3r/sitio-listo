@@ -33,7 +33,9 @@ export async function POST(req: Request) {
         transaction_amount: plan.price,
         currency_id: 'ARS',
       },
-      back_url: `${process.env.NEXT_PUBLIC_APP_URL}/cuenta?status=success`,
+      back_url: process.env.NODE_ENV === 'production' 
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/cuenta?status=success`
+        : `https://app.sitiolisto.com.ar/cuenta?status=success`,
       payer_email: user.email,
       external_reference: user.id, // Para identificar de quién es en el webhook
     };

@@ -2,8 +2,8 @@ export const PLANS = {
   test: {
     name: 'Prueba (Test)',
     slug: 'test',
-    price: 10,
-    priceDisplay: '$10',
+    price: 100,
+    priceDisplay: '$100',
     description: 'Plan de prueba para verificar MercadoPago',
     features: ['Suscripción de prueba de 10 pesos'],
     highlighted: false,
