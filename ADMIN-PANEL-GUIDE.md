@@ -60,7 +60,7 @@ CREATE POLICY "Admins can manage templates" ON public.templates
 -- 4. Asignar el primer admin
 -- Obtener el UUID desde: Supabase Dashboard > Authentication > Users
 -- Reemplazar '<UUID_DEL_ADMIN>' con el UUID real
-UPDATE public.profiles SET role = 'admin' WHERE id = '<UUID_DEL_ADMIN>';
+UPDATE public.profiles SET role = 'admin' WHERE id = '5ec34b3f-f271-4efc-9d19-fe31b3c143b6';
 ```
 
 **Verificación:** Ejecutar `SELECT id, email, role FROM public.profiles;` y confirmar que el admin tiene `role = 'admin'`.

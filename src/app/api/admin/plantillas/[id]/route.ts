@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -14,6 +14,7 @@ export async function PATCH(
     .from('profiles').select('role').eq('id', user.id).single();
   if (profile?.role !== 'admin') return NextResponse.json({ error: 'Prohibido' }, { status: 403 });
 
+  const { id } = await params;
   const body = await request.json();
   const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (typeof body.is_active === 'boolean') updateData.is_active = body.is_active;
@@ -23,7 +24,7 @@ export async function PATCH(
   const { error } = await adminClient
     .from('templates')
     .update(updateData)
-    .eq('id', params.id);
+    .eq('id', id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
