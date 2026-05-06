@@ -9,11 +9,11 @@ export default async function AdminOverviewPage() {
   const adminClient = createAdminClient();
 
   const [
-    { count: totalUsers },
-    { count: activeSubs },
-    { data: mrrRows },
-    { count: activeSites },
-    { count: newUsers },
+    { count: totalUsers, error: e1 },
+    { count: activeSubs, error: e2 },
+    { data: mrrRows, error: e3 },
+    { count: activeSites, error: e4 },
+    { count: newUsers, error: e5 },
   ] = await Promise.all([
     adminClient.from('profiles').select('*', { count: 'exact', head: true }),
     adminClient.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'authorized'),
@@ -24,6 +24,7 @@ export default async function AdminOverviewPage() {
   ]);
 
   const mrr = mrrRows?.reduce((sum, s) => sum + Number(s.amount), 0) ?? 0;
+  const allErrors = [e1, e2, e3, e4, e5].filter(e => e);
 
   const metrics = [
     { label: 'Usuarios totales', value: totalUsers ?? 0, suffix: '' },
@@ -35,6 +36,19 @@ export default async function AdminOverviewPage() {
 
   return (
     <div>
+      {allErrors.length > 0 && (
+        <div style={{
+          padding: '1rem 1.5rem',
+          borderRadius: '8px',
+          background: 'rgba(239, 68, 68, 0.1)',
+          border: '1px solid rgba(239, 68, 68, 0.3)',
+          marginBottom: '1.5rem',
+          color: '#ef4444',
+          fontSize: '0.875rem'
+        }}>
+          <strong>⚠️ Error en datos:</strong> {allErrors.map(e => e?.message).filter(Boolean).join('; ')}
+        </div>
+      )}
       <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
         Panel de Administración
       </h1>

@@ -7,7 +7,9 @@ import { Save, ExternalLink, CheckCircle, AlertCircle } from 'lucide-react';
 const TEMPLATES = [
   { id: 'restaurant-01', name: 'Restaurante Clásico', type: 'restaurant', plan: 'basic' },
   { id: 'portfolio-01', name: 'Portfolio Minimalista', type: 'portfolio', plan: 'basic' },
-  { id: 'ecommerce-01', name: 'Tienda Avanzada', type: 'ecommerce', plan: 'pro' },
+  { id: 'landing-pro', name: 'Landing Pro', type: 'landing', plan: 'basic' },
+  { id: 'servicios-pro', name: 'Servicios Pro', type: 'services', plan: 'basic' },
+  { id: 'tienda-express', name: 'Tienda Express', type: 'ecommerce', plan: 'pro' },
 ];
 
 type TabType = 'appearance' | 'content' | 'domain';
@@ -25,11 +27,22 @@ export default function EditorPage() {
   const [templateId, setTemplateId] = useState('restaurant-01');
   const [siteName, setSiteName] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#6366f1');
-  
+  const [secondaryColor, setSecondaryColor] = useState('#f59e0b');
+  const [logoUrl, setLogoUrl] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+
   // Content State
   const [heroTitle, setHeroTitle] = useState('');
   const [heroSubtitle, setHeroSubtitle] = useState('');
   const [aboutText, setAboutText] = useState('');
+
+  // Template-specific fields
+  const [ctaText, setCtaText] = useState('Comenzar Ahora');
+  const [tagline, setTagline] = useState('');
+  const [skills, setSkills] = useState('');
+  const [openingHours, setOpeningHours] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
 
   // Validation State
   const [subdomainStatus, setSubdomainStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
@@ -58,11 +71,22 @@ export default function EditorPage() {
         setTemplateId(data.site.template_id || 'restaurant-01');
         setSiteName(data.site.config?.name || '');
         setPrimaryColor(data.site.config?.primaryColor || '#6366f1');
-        
+        setSecondaryColor(data.site.config?.secondaryColor || '#f59e0b');
+        setLogoUrl(data.site.config?.logoUrl || '');
+        setPhone(data.site.config?.phone || '');
+        setAddress(data.site.config?.address || '');
+
         // Content
         setHeroTitle(data.site.config?.content?.heroTitle || '');
         setHeroSubtitle(data.site.config?.content?.heroSubtitle || '');
         setAboutText(data.site.config?.content?.aboutText || '');
+
+        // Template-specific fields
+        setCtaText(data.site.config?.content?.ctaText || 'Comenzar Ahora');
+        setTagline(data.site.config?.content?.tagline || '');
+        setSkills(data.site.config?.content?.skills || '');
+        setOpeningHours(data.site.config?.content?.openingHours || '');
+        setWhatsapp(data.site.config?.content?.whatsapp || '');
 
         setSubdomainStatus('available');
       }
@@ -107,10 +131,19 @@ export default function EditorPage() {
           config: {
             name: siteName,
             primaryColor,
+            secondaryColor,
+            logoUrl,
+            phone,
+            address,
             content: {
               heroTitle,
               heroSubtitle,
-              aboutText
+              aboutText,
+              ctaText,
+              tagline,
+              skills,
+              openingHours,
+              whatsapp
             }
           }
         }),
@@ -219,15 +252,59 @@ export default function EditorPage() {
                   <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Color Principal</label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <div style={{ position: 'relative', width: '60px', height: '60px', borderRadius: '12px', overflow: 'hidden', border: '2px solid var(--border-subtle)' }}>
-                      <input 
-                        type="color" 
-                        value={primaryColor} 
-                        onChange={(e) => setPrimaryColor(e.target.value)} 
-                        style={{ position: 'absolute', top: '-10px', left: '-10px', width: '80px', height: '80px', padding: 0, border: 'none', cursor: 'pointer', background: 'none' }} 
+                      <input
+                        type="color"
+                        value={primaryColor}
+                        onChange={(e) => setPrimaryColor(e.target.value)}
+                        style={{ position: 'absolute', top: '-10px', left: '-10px', width: '80px', height: '80px', padding: 0, border: 'none', cursor: 'pointer', background: 'none' }}
                       />
                     </div>
                     <span style={{ fontFamily: 'monospace', fontSize: '1rem', color: 'var(--text-primary)', fontWeight: 600 }}>{primaryColor.toUpperCase()}</span>
                   </div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Color Secundario</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ position: 'relative', width: '60px', height: '60px', borderRadius: '12px', overflow: 'hidden', border: '2px solid var(--border-subtle)' }}>
+                      <input
+                        type="color"
+                        value={secondaryColor}
+                        onChange={(e) => setSecondaryColor(e.target.value)}
+                        style={{ position: 'absolute', top: '-10px', left: '-10px', width: '80px', height: '80px', padding: 0, border: 'none', cursor: 'pointer', background: 'none' }}
+                      />
+                    </div>
+                    <span style={{ fontFamily: 'monospace', fontSize: '1rem', color: 'var(--text-primary)', fontWeight: 600 }}>{secondaryColor.toUpperCase()}</span>
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>URL del Logo / Imagen de Marca</label>
+                  <input
+                    type="url"
+                    value={logoUrl}
+                    onChange={(e) => setLogoUrl(e.target.value)}
+                    placeholder="https://ejemplo.com/logo.png"
+                    style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Teléfono de Contacto</label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+54 9 11 2345-6789"
+                    style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Dirección Física</label>
+                  <input
+                    type="text"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Av. Ejemplo 1234, CABA, Argentina"
+                    style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem' }}
+                  />
                 </div>
               </div>
             </div>
@@ -298,13 +375,78 @@ export default function EditorPage() {
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Texto "Sobre Nosotros"</label>
-                <textarea 
-                  value={aboutText} 
-                  onChange={(e) => setAboutText(e.target.value)} 
-                  placeholder="Ej: Somos un emprendimiento familiar nacido in 2010..." 
-                  style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem', minHeight: '150px', resize: 'vertical' }} 
+                <textarea
+                  value={aboutText}
+                  onChange={(e) => setAboutText(e.target.value)}
+                  placeholder="Ej: Somos un emprendimiento familiar nacido in 2010..."
+                  style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem', minHeight: '150px', resize: 'vertical' }}
                 />
               </div>
+
+              {/* Campos específicos por plantilla */}
+              {templateId === 'landing-pro' && (
+                <>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Texto del Botón CTA</label>
+                    <input
+                      type="text"
+                      value={ctaText}
+                      onChange={(e) => setCtaText(e.target.value)}
+                      placeholder="Ej: Comenzar Ahora"
+                      style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem' }}
+                    />
+                  </div>
+                </>
+              )}
+
+              {(templateId === 'portfolio-01' || templateId === 'portfolio-minimal') && (
+                <>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Tagline Profesional</label>
+                    <input
+                      type="text"
+                      value={tagline}
+                      onChange={(e) => setTagline(e.target.value)}
+                      placeholder="Ej: Diseñador especializado en marcas disruptivas"
+                      style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Skills (separados por comas)</label>
+                    <textarea
+                      value={skills}
+                      onChange={(e) => setSkills(e.target.value)}
+                      placeholder="Ej: Diseño UX/UI, Branding, Web Design, Motion Design"
+                      style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem', minHeight: '80px', resize: 'vertical' }}
+                    />
+                  </div>
+                </>
+              )}
+
+              {(templateId === 'restaurant-01' || templateId === 'sabor-urbano') && (
+                <>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Horario de Apertura</label>
+                    <input
+                      type="text"
+                      value={openingHours}
+                      onChange={(e) => setOpeningHours(e.target.value)}
+                      placeholder="Ej: Lunes a Viernes 11:00-23:00, Sábados 12:00-00:00"
+                      style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>WhatsApp para Reservas</label>
+                    <input
+                      type="tel"
+                      value={whatsapp}
+                      onChange={(e) => setWhatsapp(e.target.value)}
+                      placeholder="+54 9 11 2345-6789"
+                      style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', fontSize: '1rem' }}
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}

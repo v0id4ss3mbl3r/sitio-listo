@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import SaborUrbano from './templates/SaborUrbano';
 import PortfolioMinimal from './templates/PortfolioMinimal';
+import LandingPro from './templates/LandingPro';
+import ServiciosPro from './templates/ServiciosPro';
+import TiendaExpress from './templates/TiendaExpress';
 
 export async function generateMetadata({ params }: { params: Promise<{ domain: string }> }): Promise<Metadata> {
   const { domain } = await params;
@@ -62,11 +65,15 @@ export default async function TenantPage({
   const { template_id, config } = site;
   const siteName = config?.name || 'Mi Nuevo Sitio';
   const primaryColor = config?.primaryColor || '#6366f1';
-  
+
   // Extraer contenido dinámico
   const content = {
     siteName,
     primaryColor,
+    secondaryColor: config?.secondaryColor || '#f59e0b',
+    logoUrl: config?.logoUrl || '',
+    phone: config?.phone || '',
+    address: config?.address || '',
     heroTitle: config?.content?.heroTitle || 'Una experiencia inolvidable',
     heroSubtitle: config?.content?.heroSubtitle || 'Descubrí lo mejor de nuestros servicios.',
     aboutText: config?.content?.aboutText || 'Somos una empresa dedicada a brindar el mejor servicio a nuestros clientes.'
@@ -81,6 +88,18 @@ export default async function TenantPage({
 
   if (template_id === 'portfolio-minimal' || template_id === 'portfolio-01') {
     return <PortfolioMinimal {...content} />;
+  }
+
+  if (template_id === 'landing-pro') {
+    return <LandingPro {...content} ctaText={config?.content?.ctaText} features={config?.content?.features} />;
+  }
+
+  if (template_id === 'servicios-pro') {
+    return <ServiciosPro {...content} services={config?.content?.services} />;
+  }
+
+  if (template_id === 'tienda-express') {
+    return <TiendaExpress {...content} />;
   }
 
   // Plantilla por defecto si el ID no matchea
