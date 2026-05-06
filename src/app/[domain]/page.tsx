@@ -74,6 +74,7 @@ export default async function TenantPage({
     logoUrl: config?.logoUrl || '',
     phone: config?.phone || '',
     address: config?.address || '',
+    planType: site.plan_type || 'basic',
     heroTitle: config?.content?.heroTitle || 'Una experiencia inolvidable',
     heroSubtitle: config?.content?.heroSubtitle || 'Descubrí lo mejor de nuestros servicios.',
     aboutText: config?.content?.aboutText || 'Somos una empresa dedicada a brindar el mejor servicio a nuestros clientes.'

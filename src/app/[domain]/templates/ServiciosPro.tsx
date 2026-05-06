@@ -6,6 +6,7 @@ interface TemplateProps {
   siteName?: string;
   primaryColor?: string;
   secondaryColor?: string;
+  planType?: string;
   heroTitle?: string;
   aboutText?: string;
   phone?: string;
@@ -26,6 +27,7 @@ export default function ServiciosPro({
   siteName = 'Mi Estudio',
   primaryColor = '#6366f1',
   secondaryColor = '#f59e0b',
+  planType,
   heroTitle,
   aboutText,
   phone = '',
@@ -307,7 +309,7 @@ export default function ServiciosPro({
         color: '#9ca3af',
         fontSize: '0.85rem'
       }}>
-        <p>© {new Date().getFullYear()} {siteName} — Creado con SitioListo</p>
+        <p>© {new Date().getFullYear()} {siteName}{(!planType || planType === 'basic') && ' — Creado con SitioListo'}</p>
       </footer>
     </div>
   );

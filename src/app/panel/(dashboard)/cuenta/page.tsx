@@ -73,7 +73,9 @@ export default function CuentaPage() {
     setLoading(null);
   };
 
-  const plans = Object.values(PLANS);
+  const plans = Object.values(PLANS).filter(
+    (p) => p.slug !== 'test' && p.slug !== 'personalizado'
+  );
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -244,6 +246,62 @@ export default function CuentaPage() {
             </div>
           );
         })}
+
+        {/* Card Plan Personalizado */}
+        <div
+          className="glass-card"
+          style={{
+            padding: '2rem',
+            display: 'flex',
+            flexDirection: 'column',
+            position: 'relative',
+            overflow: 'hidden',
+            border: '1px solid rgba(99, 102, 241, 0.1)',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <div style={{ marginBottom: '1.5rem' }}>
+            <span style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-primary)' }}>
+              Personalizado
+            </span>
+            <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
+              <span style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--text-primary)' }}>A consultar</span>
+            </div>
+          </div>
+
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: '1.5rem', marginBottom: '2rem', flex: 1 }}>
+            {PLANS.personalizado.description}
+          </p>
+
+          <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '2rem' }}>
+            {PLANS.personalizado.features.map((feature) => (
+              <li key={feature} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                <svg style={{ marginTop: '0.125rem', flexShrink: 0 }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                {feature}
+              </li>
+            ))}
+          </ul>
+
+          <a
+            href="mailto:contacto@sitiolisto.com.ar?subject=Plan%20Personalizado%20SitioListo"
+            className="btn-outline"
+            style={{
+              width: '100%',
+              padding: '1rem',
+              fontSize: '0.8rem',
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              textAlign: 'center',
+              textDecoration: 'none',
+              display: 'block',
+            }}
+          >
+            Contactar
+          </a>
+        </div>
       </div>
     </div>
   );

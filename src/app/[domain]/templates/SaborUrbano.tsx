@@ -18,6 +18,7 @@ export interface MenuCategory {
 interface TemplateProps {
   siteName?: string;
   primaryColor?: string;
+  planType?: string;
   heroTitle?: string;
   heroSubtitle?: string;
   aboutText?: string;
@@ -53,6 +54,7 @@ const ITEM_COLORS = ['#1a1a1a', '#141414', '#111111'];
 export default function SaborUrbano({
   siteName = "Sabor Urbano",
   primaryColor = "#ff4500",
+  planType,
   heroTitle = "Sabor que conecta",
   heroSubtitle = "Artesanía en cada mordida. Ingredientes reales, recetas propias y la mejor vibra de la ciudad.",
   aboutText = "Nuestra mística nace de la paciencia. Seleccionamos cada corte, horneamos nuestro propio pan y creamos salsas que no existen en ningún otro lugar.",
@@ -475,7 +477,8 @@ export default function SaborUrbano({
         </div>
 
         <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.4em', textTransform: 'uppercase', color: '#2a2a2a' }}>
-          © {new Date().getFullYear()} {siteName} — Powered by SitioListo
+          © {new Date().getFullYear()} {siteName}
+          {(!planType || planType === 'basic') && ' — Powered by SitioListo'}
         </p>
       </footer>
     </div>

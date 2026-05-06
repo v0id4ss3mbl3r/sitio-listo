@@ -6,6 +6,7 @@ interface TemplateProps {
   siteName?: string;
   primaryColor?: string;
   secondaryColor?: string;
+  planType?: string;
   heroTitle?: string;
   heroSubtitle?: string;
   phone?: string;
@@ -25,6 +26,7 @@ export default function TiendaExpress({
   siteName = 'Mi Tienda',
   primaryColor = '#6366f1',
   secondaryColor = '#f59e0b',
+  planType,
   heroTitle,
   heroSubtitle,
   phone = '',
@@ -303,7 +305,7 @@ export default function TiendaExpress({
         color: '#9ca3af',
         fontSize: '0.85rem'
       }}>
-        <p>© {new Date().getFullYear()} {siteName} — Creado con SitioListo</p>
+        <p>© {new Date().getFullYear()} {siteName}{(!planType || planType === 'basic') && ' — Creado con SitioListo'}</p>
       </footer>
     </div>
   );

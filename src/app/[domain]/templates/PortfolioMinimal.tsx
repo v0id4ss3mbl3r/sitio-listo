@@ -5,6 +5,7 @@ import React from 'react';
 interface TemplateProps {
   siteName?: string;
   primaryColor?: string;
+  planType?: string;
   heroTitle?: string;
   heroSubtitle?: string;
   aboutText?: string;
@@ -17,9 +18,10 @@ const PROJECTS = [
   { id: '04', title: 'Campaña Digital', category: 'Estrategia', year: '2023' }
 ];
 
-export default function PortfolioMinimal({ 
+export default function PortfolioMinimal({
   siteName = 'Tu Nombre',
   primaryColor = '#6366f1',
+  planType,
   heroTitle,
   heroSubtitle,
   aboutText
@@ -216,7 +218,8 @@ export default function PortfolioMinimal({
           ))}
         </div>
         <p style={{ fontSize: 9, fontWeight: 700, color: '#ccc', letterSpacing: '0.3em', textTransform: 'uppercase' }}>
-          © {new Date().getFullYear()} — SitioListo
+          © {new Date().getFullYear()}
+          {(!planType || planType === 'basic') && ' — SitioListo'}
         </p>
       </footer>
     </div>

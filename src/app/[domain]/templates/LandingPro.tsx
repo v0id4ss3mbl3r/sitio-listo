@@ -6,6 +6,7 @@ interface TemplateProps {
   siteName?: string;
   primaryColor?: string;
   secondaryColor?: string;
+  planType?: string;
   heroTitle?: string;
   heroSubtitle?: string;
   ctaText?: string;
@@ -22,6 +23,7 @@ export default function LandingPro({
   siteName = 'Tu Marca',
   primaryColor = '#6366f1',
   secondaryColor = '#f59e0b',
+  planType,
   heroTitle,
   heroSubtitle,
   ctaText = 'Comenzar Ahora',
@@ -236,7 +238,7 @@ export default function LandingPro({
           color: '#94a3b8',
           fontSize: '0.85rem'
         }}>
-          <p>© {new Date().getFullYear()} {siteName} — Creado con SitioListo</p>
+          <p>© {new Date().getFullYear()} {siteName}{(!planType || planType === 'basic') && ' — Creado con SitioListo'}</p>
         </footer>
       </section>
     </div>

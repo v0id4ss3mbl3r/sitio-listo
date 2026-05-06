@@ -28,6 +28,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'El subdominio ya está en uso' }, { status: 409 });
     }
 
+    // Obtener el plan actual del usuario
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('plan_type')
+      .eq('user_id', user.id)
+      .eq('status', 'authorized')
+      .single();
+
+    const userPlanType = subscription?.plan_type || 'basic';
+
     // Upsert (crear o actualizar) el sitio del usuario
     // Como la regla es 1 sitio por usuario en el plan básico, buscamos su sitio actual
     const { data: userSite } = await supabase
@@ -46,6 +56,7 @@ export async function POST(req: Request) {
           custom_domain,
           template_id,
           config,
+          plan_type: userPlanType,
           updated_at: new Date().toISOString(),
         })
         .eq('id', userSite.id)
@@ -61,7 +72,8 @@ export async function POST(req: Request) {
           custom_domain,
           template_id,
           config,
-          is_active: true, // Asumimos activo por defecto, o basado en suscripción
+          plan_type: userPlanType,
+          is_active: true,
         })
         .select()
         .single();

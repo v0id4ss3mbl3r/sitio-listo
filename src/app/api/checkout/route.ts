@@ -13,9 +13,15 @@ export async function POST(req: Request) {
     }
 
     const { planSlug } = await req.json();
+
+    const validPlans = ['basic', 'pro', 'extremo', 'test'];
+    if (!validPlans.includes(planSlug)) {
+      return NextResponse.json({ error: 'Plan inválido para checkout' }, { status: 400 });
+    }
+
     const plan = PLANS[planSlug as PlanType];
 
-    if (!plan) {
+    if (!plan || plan.price === null) {
       return NextResponse.json({ error: 'Plan inválido' }, { status: 400 });
     }
 

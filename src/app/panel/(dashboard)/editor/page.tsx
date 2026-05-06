@@ -20,6 +20,7 @@ export default function EditorPage() {
   const [saving, setSaving] = useState(false);
   const [subscription, setSubscription] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<TabType>('appearance');
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   
   // Editor State
   const [subdomain, setSubdomain] = useState('');
@@ -118,6 +119,12 @@ export default function EditorPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (userPlan === 'free') {
+      setNotification({ type: 'error', message: 'Necesitás un plan activo para publicar tu sitio.' });
+      return;
+    }
+
     setSaving(true);
     
     try {
@@ -151,38 +158,83 @@ export default function EditorPage() {
 
       const data = await res.json();
       if (data.error) {
-        alert(data.error);
+        setNotification({ type: 'error', message: data.error });
       } else {
-        alert('¡Sitio guardado y publicado correctamente!');
+        setNotification({ type: 'success', message: '¡Sitio guardado y publicado correctamente!' });
+        setTimeout(() => setNotification(null), 4000);
       }
     } catch (error) {
-      alert('Error al guardar el sitio');
+      setNotification({ type: 'error', message: 'Error al guardar el sitio' });
     } finally {
       setSaving(false);
     }
   };
-
-  const userPlan = subscription?.status === 'authorized' ? subscription.plan_type : 'free';
 
   if (loading) {
     return (
       <div style={{ maxWidth: '900px', margin: '2rem auto', padding: '0 1rem' }}>
         <div style={{ height: '48px', width: '250px', background: 'var(--bg-card)', borderRadius: '12px', marginBottom: '1rem', animation: 'pulse 2s infinite' }}></div>
         <div style={{ height: '24px', width: '350px', background: 'var(--bg-card)', borderRadius: '8px', marginBottom: '3rem', animation: 'pulse 2s infinite' }}></div>
-        
+
         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
           {[1, 2, 3].map(i => (
             <div key={i} style={{ height: '45px', width: '120px', background: 'var(--bg-card)', borderTopLeftRadius: '8px', borderTopRightRadius: '8px', animation: 'pulse 2s infinite', opacity: 1 - i * 0.2 }}></div>
           ))}
         </div>
-        
+
         <div style={{ height: '300px', width: '100%', background: 'var(--bg-card)', borderRadius: '16px', animation: 'pulse 2s infinite' }}></div>
+      </div>
+    );
+  }
+
+  const userPlan = subscription?.status === 'authorized' ? subscription.plan_type : 'free';
+
+  if (userPlan === 'free') {
+    return (
+      <div style={{ maxWidth: '600px', margin: '6rem auto', padding: '0 1rem' }}>
+        <div className="glass-card" style={{ padding: '3rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1.5rem' }}>🔒</div>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '1rem' }}>
+            Necesitás un plan activo
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '2rem' }}>
+            Para crear y editar tu sitio web necesitás suscribirte a uno de nuestros planes. El plan Básico incluye 14 días de prueba gratis.
+          </p>
+          <a
+            href="/cuenta"
+            className="btn-primary"
+            style={{ display: 'inline-block', padding: '0.875rem 2rem', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '700' }}
+          >
+            Ver planes →
+          </a>
+        </div>
       </div>
     );
   }
 
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto', paddingBottom: '100px' }}>
+      {/* Notificación */}
+      {notification && (
+        <div style={{
+          position: 'fixed', top: '2rem', right: '2rem', zIndex: 200,
+          padding: '1rem 1.5rem', borderRadius: '10px',
+          background: notification.type === 'success' ? 'rgba(16, 185, 129, 0.95)' : 'rgba(239, 68, 68, 0.95)',
+          color: 'white', fontSize: '0.9rem', fontWeight: 600,
+          boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+          animation: 'slideIn 0.3s ease-out',
+          backdropFilter: 'blur(10px)'
+        }}>
+          {notification.type === 'success' ? '✓ ' : '✕ '}{notification.message}
+        </div>
+      )}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateX(400px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+      `}} />
+
       <header style={{ marginBottom: '3rem' }}>
         <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
           Editor Visual
@@ -249,31 +301,36 @@ export default function EditorPage() {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Color Principal</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ position: 'relative', width: '60px', height: '60px', borderRadius: '12px', overflow: 'hidden', border: '2px solid var(--border-subtle)' }}>
-                      <input
-                        type="color"
-                        value={primaryColor}
-                        onChange={(e) => setPrimaryColor(e.target.value)}
-                        style={{ position: 'absolute', top: '-10px', left: '-10px', width: '80px', height: '80px', padding: 0, border: 'none', cursor: 'pointer', background: 'none' }}
-                      />
+                  <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-secondary)' }}>Colores de la Marca</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Principal</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '10px', overflow: 'hidden', border: '2px solid var(--border-subtle)' }}>
+                          <input
+                            type="color"
+                            value={primaryColor}
+                            onChange={(e) => setPrimaryColor(e.target.value)}
+                            style={{ position: 'absolute', top: '-10px', left: '-10px', width: '70px', height: '70px', padding: 0, border: 'none', cursor: 'pointer', background: 'none' }}
+                          />
+                        </div>
+                        <span style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-primary)', fontWeight: 600 }}>{primaryColor.slice(1).toUpperCase()}</span>
+                      </div>
                     </div>
-                    <span style={{ fontFamily: 'monospace', fontSize: '1rem', color: 'var(--text-primary)', fontWeight: 600 }}>{primaryColor.toUpperCase()}</span>
-                  </div>
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Color Secundario</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ position: 'relative', width: '60px', height: '60px', borderRadius: '12px', overflow: 'hidden', border: '2px solid var(--border-subtle)' }}>
-                      <input
-                        type="color"
-                        value={secondaryColor}
-                        onChange={(e) => setSecondaryColor(e.target.value)}
-                        style={{ position: 'absolute', top: '-10px', left: '-10px', width: '80px', height: '80px', padding: 0, border: 'none', cursor: 'pointer', background: 'none' }}
-                      />
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Secundario</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '10px', overflow: 'hidden', border: '2px solid var(--border-subtle)' }}>
+                          <input
+                            type="color"
+                            value={secondaryColor}
+                            onChange={(e) => setSecondaryColor(e.target.value)}
+                            style={{ position: 'absolute', top: '-10px', left: '-10px', width: '70px', height: '70px', padding: 0, border: 'none', cursor: 'pointer', background: 'none' }}
+                          />
+                        </div>
+                        <span style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-primary)', fontWeight: 600 }}>{secondaryColor.slice(1).toUpperCase()}</span>
+                      </div>
                     </div>
-                    <span style={{ fontFamily: 'monospace', fontSize: '1rem', color: 'var(--text-primary)', fontWeight: 600 }}>{secondaryColor.toUpperCase()}</span>
                   </div>
                 </div>
                 <div>
@@ -313,7 +370,9 @@ export default function EditorPage() {
               <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>Seleccionar Plantilla</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
                 {TEMPLATES.map(tpl => {
-                  const isLocked = tpl.id === 'ecommerce-01' && userPlan === 'free';
+                  const isLocked =
+                    userPlan === 'free' ||
+                    (tpl.plan === 'pro' && userPlan !== 'pro' && userPlan !== 'extremo');
                   const isSelected = templateId === tpl.id;
                   return (
                     <div 
@@ -541,13 +600,13 @@ export default function EditorPage() {
               <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>Dominio Personalizado (PRO)</h2>
               <div>
                 <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Usar un dominio propio (ej: www.miempresa.com):</label>
-                <input 
-                  type="text" 
-                  value={customDomain} 
-                  onChange={(e) => setCustomDomain(e.target.value)} 
-                  placeholder="www.mitienda.com.ar" 
-                  disabled={userPlan === 'free'}
-                  style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', opacity: userPlan === 'free' ? 0.6 : 1, fontSize: '1rem' }} 
+                <input
+                  type="text"
+                  value={customDomain}
+                  onChange={(e) => setCustomDomain(e.target.value)}
+                  placeholder="www.mitienda.com.ar"
+                  disabled={userPlan === 'free' || userPlan === 'basic'}
+                  style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', opacity: (userPlan === 'free' || userPlan === 'basic') ? 0.6 : 1, fontSize: '1rem' }}
                 />
                 <div style={{ marginTop: '1.5rem', padding: '1.25rem', borderRadius: '12px', background: 'var(--bg-dark)', border: '1px solid var(--border-subtle)' }}>
                   <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Configuración DNS</h4>
@@ -555,8 +614,8 @@ export default function EditorPage() {
                     Apuntá un Registro <strong>CNAME</strong> de tu dominio a: <code style={{ color: 'var(--color-primary-light)', background: 'rgba(99, 102, 241, 0.1)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>cname.vercel-dns.com</code>
                   </p>
                 </div>
-                {userPlan === 'free' && (
-                  <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#f59e0b', fontWeight: 500 }}>Esta función requiere un Plan PRO.</p>
+                {(userPlan === 'free' || userPlan === 'basic') && (
+                  <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#f59e0b', fontWeight: 500 }}>El dominio personalizado está disponible en el Plan Pro o Extremo.</p>
                 )}
               </div>
             </div>
@@ -576,27 +635,28 @@ export default function EditorPage() {
         zIndex: 100,
       }}>
         {subdomain && subdomainStatus === 'available' && (
-          <a 
-            href={process.env.NODE_ENV === 'production' ? `https://${subdomain}.sitiolisto.com.ar` : `http://${subdomain}.localhost:3000`} 
-            target="_blank" 
+          <a
+            href={process.env.NODE_ENV === 'production' ? `https://${subdomain}.sitiolisto.com.ar` : `http://${subdomain}.localhost:3000`}
+            target="_blank"
             rel="noreferrer"
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.6rem', 
-              padding: '0.75rem 1.25rem', 
-              borderRadius: '12px', 
-              border: '1px solid var(--border-subtle)', 
-              color: 'var(--text-primary)', 
-              textDecoration: 'none', 
-              fontSize: '0.85rem', 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.625rem 1rem',
+              borderRadius: '10px',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-primary)',
+              textDecoration: 'none',
+              fontSize: '0.8rem',
               fontWeight: 700,
               transition: 'all 0.2s',
               background: 'var(--bg-card)',
-              boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)'
+              boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)',
+              whiteSpace: 'nowrap'
             }}
           >
-            <ExternalLink size={16} />
+            <ExternalLink size={14} />
             Ver sitio
           </a>
         )}
