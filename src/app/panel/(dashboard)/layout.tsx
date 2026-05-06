@@ -1,7 +1,7 @@
 'use client';
 
 import { createClient } from '@/lib/supabase/browser';
-import { LogOut, Home, Palette, CreditCard, Menu, X, ChevronLeft } from 'lucide-react';
+import { LogOut, Home, Palette, CreditCard, Menu, X, ChevronLeft, Shield } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -17,6 +17,7 @@ export default function PanelLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,6 +43,20 @@ export default function PanelLayout({
   useEffect(() => {
     if (isMobile) setIsSidebarOpen(false);
   }, [pathname, isMobile]);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      setIsAdmin(profile?.role === 'admin');
+    };
+    checkAdminStatus();
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -142,6 +157,12 @@ export default function PanelLayout({
             <CreditCard size={18} />
             Suscripción
           </Link>
+          {isAdmin && (
+            <Link href="/admin" style={getLinkStyle('/admin')}>
+              <Shield size={18} />
+              Admin
+            </Link>
+          )}
         </nav>
       </aside>
 

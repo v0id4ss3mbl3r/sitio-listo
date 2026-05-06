@@ -26,7 +26,7 @@ export async function middleware(req: NextRequest) {
 
   // 1. Panel de administración/cliente (app.sitiolisto.com.ar)
   if (currentHost === 'app') {
-    const { user, response } = await createProxyClient(req);
+    const { user, response, supabase } = await createProxyClient(req);
     const isAuthPage = url.pathname === '/login' || url.pathname === '/registro';
 
     if (!user && !isAuthPage) {
@@ -41,6 +41,22 @@ export async function middleware(req: NextRequest) {
 
     if (url.pathname === '/dashboard') {
       return NextResponse.redirect(new URL('/', req.url));
+    }
+
+    // Protección de /admin/*
+    if (url.pathname.startsWith('/admin')) {
+      if (!user) {
+        return NextResponse.redirect(new URL('/login', req.url));
+      }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (profile?.role !== 'admin') {
+        return NextResponse.redirect(new URL('/', req.url));
+      }
     }
 
     // Reescribir internamente a la carpeta /panel manteniendo las cookies refrescadas

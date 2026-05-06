@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\v0ida\\\\dev\\\\sitiolisto\" -Recurse -Name)",
+      "Bash(Select-Object -First 50)",
+      "PowerShell(head -100)"
+    ]
+  }
+}
