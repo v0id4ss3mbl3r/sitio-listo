@@ -1,21 +1,37 @@
 "use client";
 import React, { useState } from 'react';
 
-interface TemplateProps {
-  siteName: string;
-  primaryColor: string;
-  heroTitle: string;
-  heroSubtitle: string;
-  aboutText: string;
+export type CategoryId = 'burgers' | 'sides' | 'drinks';
+
+export interface MenuItem {
+  id: string;
+  name: string;
+  desc: string;
+  price: string;
 }
 
-const MENU_CATEGORIES = [
+export interface MenuCategory {
+  id: CategoryId;
+  label: string;
+}
+
+interface TemplateProps {
+  siteName?: string;
+  primaryColor?: string;
+  heroTitle?: React.ReactNode;
+  heroSubtitle?: string;
+  aboutText?: string;
+  categories?: MenuCategory[];
+  menuItems?: Record<CategoryId, MenuItem[]>;
+}
+
+const DEFAULT_CATEGORIES: MenuCategory[] = [
   { id: 'burgers', label: 'Hamburguesas' },
   { id: 'sides', label: 'Acompañamientos' },
   { id: 'drinks', label: 'Bebidas' }
 ];
 
-const MENU_ITEMS = {
+const DEFAULT_MENU: Record<CategoryId, MenuItem[]> = {
   burgers: [
     { id: '01', name: 'Original Smash', desc: 'Doble carne, cheddar real, cebolla braseada.', price: '$8.200' },
     { id: '02', name: 'Blue Cheese', desc: 'Roquefort premium, nueces y miel de caña.', price: '$9.500' },
@@ -31,176 +47,82 @@ const MENU_ITEMS = {
   ]
 };
 
-export default function SaborUrbano({ 
-  siteName, 
-  primaryColor, 
-  heroTitle, 
-  heroSubtitle, 
-  aboutText 
+export default function SaborUrbano({
+  siteName = "Sabor Urbano",
+  primaryColor = "#ff4500",
+  heroTitle = <>Sabor que <br /> conecta</>,
+  heroSubtitle = "Artesanía en cada mordida. Usamos los mejores ingredientes para crear la hamburguesa definitiva.",
+  aboutText = "Nuestra mística nace de la paciencia. Seleccionamos cada corte, horneamos nuestro propio pan y creamos salsas que no existen en ningún otro lugar.",
+  categories = DEFAULT_CATEGORIES,
+  menuItems = DEFAULT_MENU
 }: TemplateProps) {
-  const [activeCategory, setActiveCategory] = useState('burgers');
+
+  const [activeCategory, setActiveCategory] = useState<CategoryId>(categories[0].id);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#f0f0f0] font-sans selection:bg-white selection:text-black scroll-smooth overflow-x-hidden">
-      <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@500;800&display=swap');
-        
-        :root {
-          --primary: ${primaryColor};
-        }
-
-        body {
-          font-family: 'Inter', sans-serif;
-        }
-
-        .font-mono {
-          font-family: 'JetBrains Mono', monospace;
-        }
-
-        @keyframes revealUp {
-          from { opacity: 0; transform: translateY(40px); filter: blur(10px); }
-          to { opacity: 1; transform: translateY(0); filter: blur(0); }
-        }
-
-        .reveal {
-          animation: revealUp 1.2s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-        }
-
-        .glass {
-          background: rgba(255, 255, 255, 0.03);
-          backdrop-filter: blur(24px);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .btn-primary {
-          background: var(--primary);
-          box-shadow: 0 10px 30px -10px ${primaryColor}80;
-          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .btn-primary:hover {
-          transform: translateY(-4px) scale(1.02);
-          box-shadow: 0 15px 40px -10px ${primaryColor};
-        }
-
-        .hero-title {
-          font-size: clamp(3.5rem, 11vw, 10rem);
-          line-height: 0.85;
-          letter-spacing: -0.05em;
-        }
-
-        .category-tab {
-          transition: all 0.3s ease;
-          position: relative;
-        }
-
-        .category-tab.active {
-          color: white;
-        }
-
-        .category-tab.active::after {
-          content: '';
-          position: absolute;
-          bottom: -8px;
-          left: 0;
-          width: 100%;
-          height: 2px;
-          background: var(--primary);
-          animation: slideIn 0.3s ease forwards;
-        }
-
-        @keyframes slideIn {
-          from { width: 0; left: 50%; }
-          to { width: 100%; left: 0; }
-        }
-
-        .menu-item-appear {
-          animation: revealUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-        }
-
-        .placeholder-pattern {
-          background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);
-          background-size: 20px 20px;
-        }
-      `}} />
-
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 px-6 h-20 md:h-24 md:px-12 flex justify-between items-center bg-[#050505]/60 backdrop-blur-2xl border-b border-white/5">
+    <div
+      className="min-h-screen bg-[#050505] text-[#f0f0f0] font-sans selection:bg-white selection:text-black scroll-smooth overflow-x-hidden"
+      style={{ '--primary': primaryColor } as React.CSSProperties}
+    >
+      <nav className="fixed top-0 w-full z-50 px-6 h-20 md:h-24 md:px-12 flex justify-between items-center bg-[#050505]/80 backdrop-blur-md border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center font-black text-black text-xl shadow-lg" style={{ backgroundColor: primaryColor }}>
+          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center font-black text-black text-xl shadow-lg bg-[var(--primary)]">
             {siteName.charAt(0).toUpperCase()}
           </div>
           <span className="text-lg md:text-xl font-black tracking-tighter uppercase italic text-white hidden sm:block">
             {siteName}
           </span>
         </div>
-        
+
         <div className="hidden lg:flex items-center gap-12 text-[11px] font-black uppercase tracking-[0.3em]">
           <a href="#menu" className="text-gray-400 hover:text-white transition-colors">La Carta</a>
           <a href="#about" className="text-gray-400 hover:text-white transition-colors">Historia</a>
           <a href="#location" className="text-gray-400 hover:text-white transition-colors">Visitanos</a>
         </div>
 
-        <button className="btn-primary px-6 md:px-10 py-3 md:py-4 rounded-xl md:rounded-2xl text-[10px] md:text-[11px] font-black uppercase tracking-widest text-white border-none cursor-pointer">
+        <button className="bg-[var(--primary)] hover:brightness-110 active:scale-95 transition-all px-6 md:px-8 py-3 rounded-xl text-[10px] md:text-[11px] font-black uppercase tracking-widest text-black border-none cursor-pointer">
           RESERVAR
         </button>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center text-center px-6 pt-24 overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-[20s] ease-linear hover:scale-110"
-          style={{ 
-            backgroundImage: "url('/templates/restaurant_hero.png')",
-            filter: 'brightness(0.3) contrast(1.1)'
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050505]" />
+      <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-24 overflow-hidden">
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at center, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/80 to-[#050505]" />
 
-        <div className="relative z-10 max-w-7xl reveal">
-          <div 
-            className="inline-flex items-center gap-3 px-5 py-2 rounded-full text-[9px] font-black tracking-[0.4em] mb-10 border uppercase backdrop-blur-md"
-            style={{ borderColor: `${primaryColor}40`, color: primaryColor, background: `${primaryColor}05` }}
-          >
+        <div className="relative z-10 max-w-5xl mx-auto flex flex-col items-center justify-center mt-10">
+          <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full text-[9px] font-black tracking-[0.4em] mb-8 border uppercase backdrop-blur-md text-[var(--primary)] border-[var(--primary)] bg-[var(--primary)]/10">
             Urban Excellence
           </div>
-          <h2 className="hero-title font-black mb-10 uppercase italic text-white">
-            {heroTitle || "Sabor que <br/> conecta"}
+          <h2 className="text-6xl md:text-8xl lg:text-[10rem] leading-[0.85] tracking-tighter font-black mb-8 uppercase italic text-white">
+            {heroTitle}
           </h2>
-          <p className="text-lg md:text-2xl text-gray-400 mb-14 font-medium leading-relaxed max-w-3xl mx-auto opacity-90">
-            {heroSubtitle || "Artesanía en cada mordida. Usamos los mejores ingredientes para crear la hamburguesa definitiva."}
+          <p className="text-base md:text-xl text-gray-400 mb-12 font-medium leading-relaxed max-w-2xl mx-auto">
+            {heroSubtitle}
           </p>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <a 
-              href="#menu"
-              className="btn-primary px-12 py-6 rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] text-black"
-            >
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center w-full sm:w-auto">
+            <a href="#menu" className="w-full sm:w-auto bg-[var(--primary)] hover:brightness-110 transition-all px-10 py-5 rounded-full font-black text-xs uppercase tracking-[0.2em] text-black text-center">
               Explorar Menú
             </a>
-            <a 
-              href="#about"
-              className="px-12 py-6 rounded-[2rem] font-black text-xs uppercase tracking-[0.2em] transition-all border border-white/10 hover:bg-white hover:text-black"
-            >
+            <a href="#about" className="w-full sm:w-auto px-10 py-5 rounded-full font-black text-xs uppercase tracking-[0.2em] transition-all border border-white/10 hover:bg-white hover:text-black text-center">
               Nuestra Mística
             </a>
           </div>
         </div>
       </section>
 
-      {/* Interactive Menu Section */}
-      <section id="menu" className="py-32 md:py-48 px-6 max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-24 gap-12">
-          <div className="max-w-2xl reveal">
-            <h3 className="text-6xl md:text-8xl font-black tracking-tighter uppercase italic leading-[0.8] mb-8">La Carta</h3>
-            <p className="text-xl text-gray-400 font-medium leading-relaxed">Seleccioná una categoría y descubrí nuestra propuesta.</p>
+      <section id="menu" className="py-24 md:py-40 px-6 max-w-7xl mx-auto">
+        <div className="flex flex-col items-center text-center mb-16 md:mb-24 gap-8">
+          <div className="max-w-2xl">
+            <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.8] mb-6">La Carta</h3>
+            <p className="text-lg md:text-xl text-gray-400 font-medium">Seleccioná una categoría y descubrí nuestra propuesta.</p>
           </div>
-          
-          <div className="flex gap-8 overflow-x-auto pb-4 scrollbar-hide">
-            {MENU_CATEGORIES.map(cat => (
+
+          <div className="flex gap-4 md:gap-8 overflow-x-auto w-full justify-start md:justify-center pb-4 scrollbar-hide">
+            {categories.map(cat => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`category-tab whitespace-nowrap text-[11px] font-black uppercase tracking-[0.3em] pb-2 ${activeCategory === cat.id ? 'active' : 'text-gray-600'}`}
+                className={`whitespace-nowrap px-4 py-2 text-[11px] font-black uppercase tracking-[0.3em] transition-all border-b-2 ${activeCategory === cat.id ? 'border-[var(--primary)] text-white' : 'border-transparent text-gray-600 hover:text-gray-400'}`}
               >
                 {cat.label}
               </button>
@@ -208,117 +130,101 @@ export default function SaborUrbano({
           </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-10">
-          {(MENU_ITEMS as any)[activeCategory].map((item: any, idx: number) => (
-            <div key={`${activeCategory}-${item.id}`} className="group glass p-8 rounded-[2.5rem] transition-all hover:bg-white/[0.05] menu-item-appear" style={{ animationDelay: `${idx * 0.1}s` }}>
-              <div className="aspect-[4/5] rounded-[2rem] bg-[#0c0c0c] mb-8 overflow-hidden relative placeholder-pattern flex items-center justify-center">
-                 <div className="text-gray-800 text-7xl font-black italic opacity-10 group-hover:opacity-20 transition-opacity">
-                   {item.id}
-                 </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
+          {menuItems[activeCategory]?.map((item) => (
+            <div key={`${activeCategory}-${item.id}`} className="flex flex-col p-8 rounded-[2rem] transition-all hover:bg-white/[0.05] border border-white/5 bg-white/[0.02]">
+              <div className="flex justify-between items-start mb-4">
+                <h4 className="text-xl md:text-2xl font-black uppercase italic leading-tight pr-4">{item.name}</h4>
+                <span className="text-sm md:text-base font-black text-[var(--primary)] whitespace-nowrap">{item.price}</span>
               </div>
-              <div className="flex flex-col gap-4">
-                <div className="flex justify-between items-start">
-                   <h4 className="text-2xl font-black uppercase italic leading-none">{item.name}</h4>
-                   <span className="font-mono text-sm font-black" style={{ color: primaryColor }}>{item.price}</span>
-                </div>
-                <p className="text-gray-500 text-xs font-medium leading-relaxed">{item.desc}</p>
-                <div className="w-full h-px bg-white/5 my-2" />
-                <button className="w-full py-4 rounded-xl bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:scale-[1.02] active:scale-95">
-                  PEDIR
-                </button>
-              </div>
+              <p className="text-gray-500 text-xs md:text-sm font-medium leading-relaxed mb-6 flex-grow">{item.desc}</p>
+              <div className="w-full h-px bg-white/5 mb-6" />
+              <button className="w-full py-4 rounded-xl bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:scale-[1.02] active:scale-95">
+                PEDIR
+              </button>
             </div>
           ))}
         </div>
       </section>
 
-      {/* About Section */}
-      <section id="about" className="py-32 md:py-48 px-6 bg-[#080808]">
-        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-24 items-center">
-          <div className="w-full lg:w-1/2 relative">
-            <div className="aspect-[4/5] rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl">
-               <img src="/templates/restaurant_hero.png" alt="Story" className="w-full h-full object-cover grayscale brightness-50 transition-all duration-1000 hover:grayscale-0 hover:brightness-100" />
+      <section id="about" className="py-24 md:py-40 px-6 bg-[#080808]">
+        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-16 md:gap-24 items-center">
+          <div className="w-full lg:w-1/2 relative flex justify-center">
+            <div className="aspect-[4/5] w-full max-w-md rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl bg-zinc-900 flex items-center justify-center">
+              <span className="text-zinc-800 text-6xl font-black italic opacity-20">IMAGEN</span>
             </div>
-            <div className="absolute -bottom-10 -right-10 w-44 h-44 glass rounded-full flex flex-col items-center justify-center text-center p-8 z-10">
-              <div className="text-4xl font-black italic mb-1" style={{ color: primaryColor }}>100</div>
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white">Quality</span>
+            <div className="absolute -bottom-6 -right-2 md:-right-6 w-32 h-32 md:w-40 md:h-40 bg-[#050505] border border-white/10 rounded-full flex flex-col items-center justify-center text-center p-4 z-10 shadow-xl">
+              <div className="text-3xl md:text-4xl font-black italic text-[var(--primary)] mb-1">100%</div>
+              <span className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.3em] text-white">Calidad</span>
             </div>
           </div>
-          <div className="w-full lg:w-1/2 flex flex-col gap-10">
-            <h3 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.9]">
-              Fuego <br/> & <span style={{ color: primaryColor }}>Espíritu</span>
+          <div className="w-full lg:w-1/2 flex flex-col gap-8 md:gap-10 text-center lg:text-left">
+            <h3 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic leading-[0.9]">
+              Fuego <br /> & <span className="text-[var(--primary)]">Espíritu</span>
             </h3>
-            <p className="text-xl text-gray-400 leading-relaxed font-medium">
-              {aboutText || "Nuestra mística nace de la paciencia. Seleccionamos cada corte, horneamos nuestro propio pan y creamos salsas que no existen en ningún otro lugar."}
+            <p className="text-lg md:text-xl text-gray-400 leading-relaxed font-medium">
+              {aboutText}
             </p>
-            <div className="flex gap-16 pt-12 border-t border-white/5">
+            <div className="flex justify-center lg:justify-start gap-12 md:gap-16 pt-8 border-t border-white/5">
               <div>
-                <span className="block text-5xl font-black mb-3 font-mono">12+</span>
-                <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-gray-600">Variedades</span>
+                <span className="block text-4xl md:text-5xl font-black mb-2">12+</span>
+                <span className="text-[9px] md:text-[10px] uppercase tracking-[0.4em] font-bold text-gray-600">Variedades</span>
               </div>
               <div>
-                <span className="block text-5xl font-black mb-3 font-mono">24/7</span>
-                <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-gray-600">Dedicación</span>
+                <span className="block text-4xl md:text-5xl font-black mb-2">24/7</span>
+                <span className="text-[9px] md:text-[10px] uppercase tracking-[0.4em] font-bold text-gray-600">Dedicación</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Info Section */}
-      <section id="location" className="py-32 md:py-48 px-6">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10">
-          <div className="p-12 md:p-16 rounded-[3rem] glass flex flex-col gap-12">
-            <h3 className="text-4xl font-black uppercase italic tracking-tighter">Horarios</h3>
-            <div className="flex flex-col gap-8">
+      <section id="location" className="py-24 md:py-40 px-6">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-8 md:gap-10">
+          <div className="p-8 md:p-16 rounded-[2rem] border border-white/5 bg-white/[0.02] flex flex-col gap-10">
+            <h3 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter text-center sm:text-left">Horarios</h3>
+            <div className="flex flex-col gap-6">
               {[
                 { d: 'Lun a Jue', h: '19:00 — 00:00' },
                 { d: 'Vie y Sáb', h: '19:00 — 02:00' },
                 { d: 'Domingos', h: '19:30 — 23:30' }
               ].map(item => (
-                <div key={item.d} className="flex justify-between items-center group">
-                  <span className="text-gray-400 font-bold uppercase text-[10px] tracking-[0.3em] group-hover:text-white transition-colors">{item.d}</span>
-                  <span className="font-mono text-lg font-black">{item.h}</span>
+                <div key={item.d} className="flex flex-col sm:flex-row justify-between items-center sm:items-baseline border-b border-white/5 pb-4">
+                  <span className="text-gray-400 font-bold uppercase text-[10px] tracking-[0.3em] mb-2 sm:mb-0">{item.d}</span>
+                  <span className="text-base md:text-lg font-black">{item.h}</span>
                 </div>
               ))}
             </div>
           </div>
-          
-          <div className="p-12 md:p-16 rounded-[3rem] glass flex flex-col justify-between gap-12">
+
+          <div className="p-8 md:p-16 rounded-[2rem] border border-white/5 bg-white/[0.02] flex flex-col justify-between gap-10 text-center sm:text-left">
             <div className="flex flex-col gap-8">
-              <h3 className="text-4xl font-black uppercase italic tracking-tighter">Visitanos</h3>
+              <h3 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter">Visitanos</h3>
               <div className="flex flex-col gap-2">
-                <p className="text-3xl font-black italic">Av. Siempreviva 742</p>
-                <p className="text-sm text-gray-500 font-bold tracking-[0.2em] uppercase">Buenos Aires, Argentina</p>
+                <p className="text-2xl md:text-3xl font-black italic">Av. Siempreviva 742</p>
+                <p className="text-xs md:text-sm text-gray-500 font-bold tracking-[0.2em] uppercase">Buenos Aires, Argentina</p>
               </div>
             </div>
-            <button className="btn-primary w-full py-6 rounded-2xl font-black text-xs uppercase tracking-[0.3em] text-black border-none">
+            <button className="bg-[var(--primary)] hover:brightness-110 w-full py-5 md:py-6 rounded-xl font-black text-xs uppercase tracking-[0.3em] text-black border-none transition-all">
               CÓMO LLEGAR
             </button>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-24 px-6 border-t border-white/5 text-center bg-[#050505]">
-        <div className="max-w-5xl mx-auto flex flex-col items-center gap-16">
+      <footer className="py-16 md:py-24 px-6 border-t border-white/5 text-center bg-[#050505]">
+        <div className="max-w-5xl mx-auto flex flex-col items-center gap-12 md:gap-16">
           <div className="flex flex-col items-center gap-6">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center font-black text-black text-2xl italic shadow-xl" style={{ backgroundColor: primaryColor }}>
+            <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center font-black text-black text-xl md:text-2xl italic shadow-xl bg-[var(--primary)]">
               {siteName.charAt(0).toUpperCase()}
             </div>
-            <h4 className="text-5xl md:text-6xl font-black tracking-tighter uppercase italic leading-none">{siteName}</h4>
+            <h4 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic leading-none">{siteName}</h4>
           </div>
-          
-          <div className="flex flex-wrap justify-center gap-12 text-[10px] font-black uppercase tracking-[0.4em] text-gray-600">
+
+          <div className="flex flex-wrap justify-center gap-8 md:gap-12 text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em] text-gray-600">
             <a href="#" className="hover:text-white transition-colors">Instagram</a>
             <a href="#" className="hover:text-white transition-colors">Facebook</a>
             <a href="#" className="hover:text-white transition-colors">WhatsApp</a>
-          </div>
-          
-          <div className="w-full pt-16 border-t border-white/5 flex flex-col items-center gap-6">
-            <p className="font-mono text-[9px] font-black text-gray-800 tracking-[0.5em] uppercase italic">
-              Powered by SitioListo
-            </p>
           </div>
         </div>
       </footer>
