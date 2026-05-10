@@ -14,9 +14,11 @@ export async function createClient() {
         },
         setAll(cookiesToSet) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
+            cookiesToSet.forEach(({ name, value, options }) => {
+              // Configurar dominio para compartir cookies entre subdominios
+              const cookieOptions = { ...options, domain: '.sitiolisto.com.ar' };
+              cookieStore.set(name, value, cookieOptions);
+            });
           } catch {
             // Se ignora si se llama desde un Server Component.
             // El proxy se encarga de refrescar la sesión.
