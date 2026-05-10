@@ -14,13 +14,17 @@ export async function createProxyClient(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
+          const isProduction = process.env.VERCEL === '1';
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
           response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
+          cookiesToSet.forEach(({ name, value, options }) => {
+            const cookieOptions = isProduction
+              ? { ...options, domain: '.sitiolisto.com.ar' }
+              : options;
+            response.cookies.set(name, value, cookieOptions);
+          });
         },
       },
     }
