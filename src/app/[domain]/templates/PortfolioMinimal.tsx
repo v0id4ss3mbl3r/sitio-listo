@@ -27,10 +27,8 @@ export default function PortfolioMinimal({
   aboutText
 }: TemplateProps) {
   return (
-    <div style={{ minHeight: '100vh', background: '#f8f8f6', color: '#111', fontFamily: "'Inter', system-ui, sans-serif", overflowX: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: '#f8f8f6', color: '#111', fontFamily: "var(--font-inter), system-ui, sans-serif", overflowX: 'hidden' }}>
       <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&display=swap');
-        
         .pm-nav-link {
           font-size: 10px; font-weight: 900; letter-spacing: 0.25em;
           text-transform: uppercase; color: #aaa; text-decoration: none;

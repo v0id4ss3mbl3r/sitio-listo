@@ -3,14 +3,16 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/browser';
 import { Save, ExternalLink, CheckCircle, AlertCircle } from 'lucide-react';
+import { TEMPLATES, TemplateId } from '@/lib/constants';
 
-const TEMPLATES = [
-  { id: 'restaurant-01', name: 'Restaurante Clásico', type: 'restaurant', plan: 'basic' },
-  { id: 'portfolio-01', name: 'Portfolio Minimalista', type: 'portfolio', plan: 'basic' },
-  { id: 'landing-pro', name: 'Landing Pro', type: 'landing', plan: 'basic' },
-  { id: 'servicios-pro', name: 'Servicios Pro', type: 'services', plan: 'basic' },
-  { id: 'tienda-express', name: 'Tienda Express', type: 'ecommerce', plan: 'pro' },
-];
+interface Subscription {
+  id: string;
+  user_id: string;
+  plan_type: string;
+  status: 'pending' | 'authorized' | 'paused' | 'cancelled';
+  amount: number;
+  created_at: string;
+}
 
 type TabType = 'appearance' | 'content' | 'domain';
 
@@ -18,14 +20,14 @@ export default function EditorPage() {
   const supabase = createClient();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [subscription, setSubscription] = useState<any>(null);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('appearance');
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   
   // Editor State
   const [subdomain, setSubdomain] = useState('');
   const [customDomain, setCustomDomain] = useState('');
-  const [templateId, setTemplateId] = useState('restaurant-01');
+  const [templateId, setTemplateId] = useState('sabor-urbano');
   const [siteName, setSiteName] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#6366f1');
   const [secondaryColor, setSecondaryColor] = useState('#f59e0b');
@@ -69,7 +71,7 @@ export default function EditorPage() {
       if (data.site) {
         setSubdomain(data.site.subdomain || '');
         setCustomDomain(data.site.custom_domain || '');
-        setTemplateId(data.site.template_id || 'restaurant-01');
+        setTemplateId(data.site.template_id || 'sabor-urbano');
         setSiteName(data.site.config?.name || '');
         setPrimaryColor(data.site.config?.primaryColor || '#6366f1');
         setSecondaryColor(data.site.config?.secondaryColor || '#f59e0b');

@@ -66,11 +66,9 @@ export default function SaborUrbano({
   return (
     <div
       className="min-h-screen bg-[#050505] text-[#f0f0f0] scroll-smooth overflow-x-hidden"
-      style={{ '--primary': primaryColor, fontFamily: "'Inter', system-ui, sans-serif" } as React.CSSProperties}
+      style={{ '--primary': primaryColor, fontFamily: "var(--font-inter), system-ui, sans-serif" } as React.CSSProperties}
     >
       <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,700;0,900;1,700;1,900&display=swap');
-
         .su-btn-primary {
           background: var(--primary);
           color: #000;
@@ -147,11 +145,11 @@ export default function SaborUrbano({
             background: 'var(--primary)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontWeight: 900, fontSize: 20, color: '#000', fontStyle: 'italic',
-            flexShrink: 0
+            flexShrink: 0, fontFamily: 'var(--font-jetbrains)'
           }}>
             {siteName.charAt(0).toUpperCase()}
           </div>
-          <span style={{ fontWeight: 900, fontSize: 18, letterSpacing: '-0.04em', textTransform: 'uppercase', fontStyle: 'italic' }}>
+          <span style={{ fontWeight: 900, fontSize: 18, letterSpacing: '-0.04em', textTransform: 'uppercase', fontStyle: 'italic', fontFamily: 'var(--font-jetbrains)' }}>
             {siteName}
           </span>
         </div>

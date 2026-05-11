@@ -81,3 +81,43 @@ export const TEMPLATE_CATEGORIES = [
   { slug: 'landing', name: 'Landing Pages', icon: '🚀' },
   { slug: 'services', name: 'Servicios', icon: '🔧' },
 ] as const;
+
+export const TEMPLATES = [
+  {
+    id: 'sabor-urbano',
+    name: 'Sabor Urbano',
+    type: 'restaurant',
+    plan: 'basic',
+    component: 'SaborUrbano',
+  },
+  {
+    id: 'portfolio-minimal',
+    name: 'Portfolio Minimal',
+    type: 'portfolio',
+    plan: 'basic',
+    component: 'PortfolioMinimal',
+  },
+  {
+    id: 'landing-pro',
+    name: 'Landing Pro',
+    type: 'landing',
+    plan: 'basic',
+    component: 'LandingPro',
+  },
+  {
+    id: 'servicios-pro',
+    name: 'Servicios Pro',
+    type: 'services',
+    plan: 'basic',
+    component: 'ServiciosPro',
+  },
+  {
+    id: 'tienda-express',
+    name: 'Tienda Express',
+    type: 'ecommerce',
+    plan: 'pro',
+    component: 'TiendaExpress',
+  },
+] as const;
+
+export type TemplateId = typeof TEMPLATES[number]['id'];

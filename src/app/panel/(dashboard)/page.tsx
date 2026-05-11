@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { PLANS, PlanType } from '@/lib/constants';
 
 export default async function PanelPage() {
   const supabase = await createClient();
@@ -16,10 +17,29 @@ export default async function PanelPage() {
     .eq('id', user.id)
     .single();
 
+  // Obtenemos el sitio del usuario
+  const { data: site } = await supabase
+    .from('sites')
+    .select('id, subdomain, is_active, template_id')
+    .eq('user_id', user.id)
+    .single();
+
+  // Obtenemos la suscripción activa
+  const { data: subscription } = await supabase
+    .from('subscriptions')
+    .select('plan_type, status')
+    .eq('user_id', user.id)
+    .eq('status', 'authorized')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
   const firstName = profile?.full_name?.split(' ')[0] 
     || user.user_metadata?.full_name?.split(' ')[0] 
     || user.user_metadata?.name?.split(' ')[0] 
     || 'Emprendedor';
+
+  const planName = subscription ? PLANS[subscription.plan_type as PlanType]?.name : 'Plan Gratuito';
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
@@ -42,12 +62,43 @@ export default async function PanelPage() {
             </div>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>Tu Sitio Web</h3>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-            Aún no has configurado tu sitio. Elegí una plantilla y un subdominio para empezar.
-          </p>
-          <a href="/editor" className="btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '0.9rem', textAlign: 'center', display: 'block', boxSizing: 'border-box' }}>
-            Configurar Sitio
-          </a>
+          
+          {!site ? (
+            <>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                Aún no has configurado tu sitio. Elegí una plantilla y un subdominio para empezar.
+              </p>
+              <a href="/editor" className="btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '0.9rem', textAlign: 'center', display: 'block', boxSizing: 'border-box' }}>
+                Configurar Sitio
+              </a>
+            </>
+          ) : site.is_active ? (
+            <>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '0.25rem' }}>URL pública:</p>
+                <a 
+                  href={`https://${site.subdomain}.sitiolisto.com.ar`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}
+                >
+                  {site.subdomain}.sitiolisto.com.ar ↗
+                </a>
+              </div>
+              <a href="/editor" className="btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '0.9rem', textAlign: 'center', display: 'block', boxSizing: 'border-box' }}>
+                Editar Sitio
+              </a>
+            </>
+          ) : (
+            <>
+              <p style={{ color: '#ef4444', fontSize: '0.9rem', marginBottom: '1.5rem', fontWeight: 500 }}>
+                Tu sitio está pausado debido a que no tienes una suscripción activa.
+              </p>
+              <a href="/cuenta" className="btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '0.9rem', textAlign: 'center', display: 'block', boxSizing: 'border-box' }}>
+                Reactivar Plan
+              </a>
+            </>
+          )}
         </div>
 
         {/* Tarjeta de Suscripción */}
@@ -58,11 +109,27 @@ export default async function PanelPage() {
             </div>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>Suscripción</h3>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-            Plan Gratuito (Demo). No tenés ninguna suscripción activa en MercadoPago.
-          </p>
+          
+          <div style={{ marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                {planName}
+              </span>
+              {subscription?.status === 'authorized' && (
+                <span style={{ padding: '0.2rem 0.6rem', borderRadius: '9999px', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
+                  Activo
+                </span>
+              )}
+            </div>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+              {subscription?.status === 'authorized' 
+                ? `Tu plan ${planName} está funcionando correctamente.`
+                : 'No tenés ninguna suscripción activa en MercadoPago.'}
+            </p>
+          </div>
+
           <a href="/cuenta" className="btn-outline" style={{ width: '100%', padding: '0.75rem', fontSize: '0.9rem', textAlign: 'center', display: 'block', boxSizing: 'border-box' }}>
-            Ver Planes
+            {subscription?.status === 'authorized' ? 'Gestionar Plan' : 'Ver Planes'}
           </a>
         </div>
 

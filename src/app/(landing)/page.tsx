@@ -1,7 +1,22 @@
+import type { Metadata } from 'next';
 import Hero from './components/Hero';
 import Features from './components/Features';
 import PricingTable from './components/PricingTable';
 import TemplateGallery from './components/TemplateGallery';
+
+export const metadata: Metadata = {
+  title: 'SitioListo — Creá tu sitio web profesional en minutos',
+  description: 'Elegí entre plantillas profesionales, personalizá los colores y contenido, y publicá con tu propio subdominio. Planes desde $29.999/mes.',
+  openGraph: {
+    title: 'SitioListo — Tu sitio web, listo hoy',
+    description: 'Plantillas para restaurantes, portfolios, tiendas y más. Publicá en minutos sin saber programar.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'SitioListo',
+    description: 'Creá tu sitio web profesional en minutos.',
+  },
+};
 
 export default function LandingPage() {
   return (

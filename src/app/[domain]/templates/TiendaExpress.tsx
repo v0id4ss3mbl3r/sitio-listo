@@ -33,10 +33,8 @@ export default function TiendaExpress({
   logoUrl = '',
 }: TemplateProps) {
   return (
-    <div style={{ minHeight: '100vh', background: '#ffffff', color: '#111827', fontFamily: "'Inter', system-ui, sans-serif", overflowX: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: '#ffffff', color: '#111827', fontFamily: "var(--font-inter), system-ui, sans-serif", overflowX: 'hidden' }}>
       <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,900;1,700&display=swap');
-
         .te-nav-link {
           font-size: 0.9rem; font-weight: 600; color: #6b7280; text-decoration: none;
           transition: color 0.2s;

@@ -7,6 +7,8 @@ import { createClient } from '@/lib/supabase/browser';
 export default function CuentaPage() {
   const [loading, setLoading] = useState<string | null>(null);
   const [currentSubscription, setCurrentSubscription] = useState<any>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -43,18 +45,16 @@ export default function CuentaPage() {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        alert(data.error || 'Ocurrió un error al generar el checkout');
+        setNotification({ type: 'error', message: data.error || 'Ocurrió un error al generar el checkout' });
       }
     } catch (error) {
-      alert('Error de conexión');
+      setNotification({ type: 'error', message: 'Error de conexión' });
     } finally {
       setLoading(null);
     }
   };
 
   const handleCancel = async () => {
-    if (!confirm('¿Estás seguro de que querés cancelar tu suscripción? Tu sitio web dejará de estar online inmediatamente.')) return;
-
     setLoading('cancel');
     try {
       const res = await fetch('/api/checkout/cancel', {
@@ -62,15 +62,16 @@ export default function CuentaPage() {
       });
       const data = await res.json();
       if (data.error) {
-        alert(data.error);
+        setNotification({ type: 'error', message: data.error });
       } else {
-        alert('Suscripción cancelada correctamente.');
-        window.location.reload();
+        setNotification({ type: 'success', message: 'Suscripción cancelada correctamente.' });
+        setTimeout(() => window.location.reload(), 2000);
       }
     } catch (err) {
-      alert('Error al cancelar');
+      setNotification({ type: 'error', message: 'Error al cancelar' });
     }
     setLoading(null);
+    setShowCancelModal(false);
   };
 
   const plans = Object.values(PLANS).filter(
@@ -131,7 +132,7 @@ export default function CuentaPage() {
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Al cancelar, tu sitio se desactivará inmediatamente.</p>
               </div>
               <button
-                onClick={handleCancel}
+                onClick={() => setShowCancelModal(true)}
                 disabled={loading !== null}
                 style={{
                   padding: '0.625rem 1.5rem',
@@ -303,6 +304,60 @@ export default function CuentaPage() {
           </a>
         </div>
       </div>
+
+      {/* Modal de Confirmación */}
+      {showCancelModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(4px)',
+          padding: '1rem'
+        }}>
+          <div className="glass-card" style={{ maxWidth: '450px', width: '100%', padding: '2rem', textAlign: 'center' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>⚠️</div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1rem' }}>
+              ¿Confirmás la cancelación?
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.5', marginBottom: '2rem' }}>
+              Tu sitio web dejará de estar online inmediatamente. Esta acción no se puede deshacer hasta que vuelvas a suscribirte.
+            </p>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button 
+                onClick={() => setShowCancelModal(false)}
+                className="btn-outline"
+                style={{ flex: 1, padding: '0.75rem' }}
+              >
+                Volver
+              </button>
+              <button 
+                onClick={handleCancel}
+                disabled={loading === 'cancel'}
+                style={{ 
+                  flex: 1, padding: '0.75rem', borderRadius: '8px', border: 'none',
+                  background: '#ef4444', color: 'white', fontWeight: 600, cursor: 'pointer'
+                }}
+              >
+                {loading === 'cancel' ? 'Cancelando...' : 'Sí, cancelar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notificación */}
+      {notification && (
+        <div style={{
+          position: 'fixed', top: '2rem', right: '2rem', zIndex: 200,
+          padding: '1rem 1.5rem', borderRadius: '10px',
+          background: notification.type === 'success' ? 'rgba(16, 185, 129, 0.95)' : 'rgba(239, 68, 68, 0.95)',
+          color: 'white', fontSize: '0.9rem', fontWeight: 600,
+          boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+          animation: 'slideIn 0.3s ease-out',
+          backdropFilter: 'blur(10px)'
+        }}>
+          {notification.type === 'success' ? '✓ ' : '✕ '}{notification.message}
+        </div>
+      )}
     </div>
   );
 }

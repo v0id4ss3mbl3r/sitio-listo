@@ -30,10 +30,8 @@ export default function LandingPro({
   features = DEFAULT_FEATURES,
 }: TemplateProps) {
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: '#f1f5f9', fontFamily: "'Inter', system-ui, sans-serif", overflowX: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: '#f1f5f9', fontFamily: "var(--font-inter), system-ui, sans-serif", overflowX: 'hidden' }}>
       <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,700;0,900;1,700;1,900&display=swap');
-
         .lp-nav-link {
           font-size: 0.875rem; font-weight: 600; color: #cbd5e1; text-decoration: none;
           transition: color 0.3s ease;

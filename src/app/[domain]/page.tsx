@@ -6,6 +6,9 @@ import LandingPro from './templates/LandingPro';
 import ServiciosPro from './templates/ServiciosPro';
 import TiendaExpress from './templates/TiendaExpress';
 
+// Forzar renderizado dinámico - evitar caché inconsistente entre subdominios
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({ params }: { params: Promise<{ domain: string }> }): Promise<Metadata> {
   const { domain } = await params;
   const supabase = await createClient();
@@ -83,11 +86,11 @@ export default async function TenantPage({
   // Renderizado dinámico según la plantilla elegida
   // Mapeamos los slugs de la base de datos a los componentes
   
-  if (template_id === 'sabor-urbano' || template_id === 'restaurant-01') {
+  if (template_id === 'sabor-urbano') {
     return <SaborUrbano {...content} />;
   }
 
-  if (template_id === 'portfolio-minimal' || template_id === 'portfolio-01') {
+  if (template_id === 'portfolio-minimal') {
     return <PortfolioMinimal {...content} />;
   }
 
