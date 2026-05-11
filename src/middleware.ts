@@ -20,9 +20,33 @@ export async function middleware(req: NextRequest) {
   const isProduction =
     process.env.NODE_ENV === 'production' && process.env.VERCEL === '1';
 
-  const currentHost = isProduction
-    ? hostname.replace('.sitiolisto.com.ar', '')
-    : hostname.replace('.localhost:3000', '');
+  // Debug logging para producción
+  if (isProduction) {
+    console.log('[Middleware] Hostname:', hostname);
+  }
+
+  // Detectar dominio base (sin subdominio)
+  const isRootDomain = hostname === 'sitiolisto.com.ar' || hostname === 'www.sitiolisto.com.ar';
+  
+  // Extraer subdominio
+  let currentHost: string;
+  if (isProduction) {
+    if (hostname.endsWith('.sitiolisto.com.ar')) {
+      currentHost = hostname.replace('.sitiolisto.com.ar', '');
+    } else {
+      currentHost = hostname; // Fallback
+    }
+  } else {
+    if (hostname.endsWith('.localhost:3000')) {
+      currentHost = hostname.replace('.localhost:3000', '');
+    } else {
+      currentHost = hostname.replace(':3000', ''); // Para localhost:3000 sin subdominio
+    }
+  }
+
+  if (isProduction) {
+    console.log('[Middleware] CurrentHost:', currentHost, 'isRootDomain:', isRootDomain);
+  }
 
   // 1. Panel de administración/cliente (app.sitiolisto.com.ar)
   if (currentHost === 'app') {
@@ -68,11 +92,14 @@ export async function middleware(req: NextRequest) {
 
   // 2. Dominio principal, localhost o www → Landing Page
   if (
-    currentHost === 'sitiolisto.com.ar' ||
+    isRootDomain ||
     currentHost === 'www' ||
-    currentHost === 'localhost:3000' ||
-    currentHost === 'localhost'
+    currentHost === 'localhost' ||
+    currentHost === 'localhost:3000'
   ) {
+    if (isProduction) {
+      console.log('[Middleware] Routing to landing page');
+    }
     return NextResponse.next();
   }
 
