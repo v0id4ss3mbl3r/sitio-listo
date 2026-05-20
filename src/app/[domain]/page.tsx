@@ -1,5 +1,9 @@
 import type { Metadata } from 'next';
+import type { SupabaseClient } from '@supabase/supabase-js';
+
 import { createClient } from '@/lib/supabase/server';
+import { CUSTOM_DOMAIN_REGEX, SUBDOMAIN_REGEX } from '@/lib/constants';
+import { sanitizeTenantParam } from '@/lib/validation';
 import SaborUrbano from './templates/SaborUrbano';
 import PortfolioMinimal from './templates/PortfolioMinimal';
 import LandingPro from './templates/LandingPro';
@@ -9,15 +13,38 @@ import TiendaExpress from './templates/TiendaExpress';
 // Forzar renderizado dinámico - evitar caché inconsistente entre subdominios
 export const dynamic = 'force-dynamic';
 
+// Busca el sitio por subdomain O por custom_domain. Usa .eq() (parametrizado)
+// en lugar de .or() con interpolación de string, que no escapa los valores.
+async function fetchSiteByDomain<T>(
+  supabase: SupabaseClient,
+  domain: string,
+  columns: string
+): Promise<T | null> {
+  const safe = sanitizeTenantParam(domain);
+  if (!safe) return null;
+
+  const column = SUBDOMAIN_REGEX.test(safe) && !CUSTOM_DOMAIN_REGEX.test(safe)
+    ? 'subdomain'
+    : 'custom_domain';
+
+  const { data } = await supabase
+    .from('sites')
+    .select(columns)
+    .eq(column, safe)
+    .maybeSingle();
+
+  return (data as T | null) ?? null;
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ domain: string }> }): Promise<Metadata> {
   const { domain } = await params;
   const supabase = await createClient();
 
-  const { data: site } = await supabase
-    .from('sites')
-    .select('config, is_active')
-    .or(`subdomain.eq.${domain},custom_domain.eq.${domain}`)
-    .single();
+  const site = await fetchSiteByDomain<{ config: { name?: string } | null; is_active: boolean }>(
+    supabase,
+    domain,
+    'config, is_active'
+  );
 
   if (!site || !site.is_active) {
     return { title: 'Sitio no encontrado | SitioListo' };
@@ -36,12 +63,15 @@ export default async function TenantPage({
   const { domain } = await params;
   const supabase = await createClient();
 
-  // Buscar configuración del sitio en Supabase
-  const { data: site } = await supabase
-    .from('sites')
-    .select('*')
-    .or(`subdomain.eq.${domain},custom_domain.eq.${domain}`)
-    .single();
+  // config es JSONB libre — lo tratamos como any para no obligar a refactorear
+  // los accesos anidados existentes (config?.content?.heroTitle, etc).
+  const site = await fetchSiteByDomain<{
+    template_id: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    config: Record<string, any> | null;
+    is_active: boolean;
+    plan_type?: string;
+  }>(supabase, domain, '*');
 
   // Si no existe o no está activo (suscripción vencida), mostrar página por defecto
   if (!site || !site.is_active) {

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { validateCustomDomain, validateSubdomain } from '@/lib/validation';
 
 export async function POST(req: Request) {
   try {
@@ -11,18 +12,30 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { subdomain, custom_domain, template_id, config } = body;
+    const { subdomain: rawSubdomain, custom_domain: rawCustomDomain, template_id, config } = body;
 
-    if (!subdomain || !template_id) {
+    if (!rawSubdomain || !template_id) {
       return NextResponse.json({ error: 'Faltan datos obligatorios' }, { status: 400 });
     }
+
+    const subdomainResult = validateSubdomain(rawSubdomain);
+    if (!subdomainResult.ok) {
+      return NextResponse.json({ error: subdomainResult.error }, { status: 400 });
+    }
+    const subdomain = subdomainResult.value;
+
+    const customDomainResult = validateCustomDomain(rawCustomDomain);
+    if (!customDomainResult.ok) {
+      return NextResponse.json({ error: customDomainResult.error }, { status: 400 });
+    }
+    const custom_domain = customDomainResult.value || null;
 
     // Verificar si el subdominio ya existe
     const { data: existingSite } = await supabase
       .from('sites')
       .select('id, user_id')
       .eq('subdomain', subdomain)
-      .single();
+      .maybeSingle();
 
     if (existingSite && existingSite.user_id !== user.id) {
       return NextResponse.json({ error: 'El subdominio ya está en uso' }, { status: 409 });
@@ -38,13 +51,14 @@ export async function POST(req: Request) {
 
     const userPlanType = subscription?.plan_type || 'basic';
 
-    // Upsert (crear o actualizar) el sitio del usuario
-    // Como la regla es 1 sitio por usuario en el plan básico, buscamos su sitio actual
+    // Upsert (crear o actualizar) el sitio del usuario.
+    // TODO Sprint 1.5: aceptar siteId explícito y aplicar PLAN_SITE_LIMITS para Extremo.
+    // Hoy seguimos forzando un único sitio por usuario.
     const { data: userSite } = await supabase
       .from('sites')
       .select('id')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     let result;
     if (userSite) {
@@ -82,13 +96,14 @@ export async function POST(req: Request) {
     if (result.error) throw result.error;
 
     return NextResponse.json({ success: true, site: result.data });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Sites API Error:', error);
-    return NextResponse.json({ error: error.message || 'Error al guardar el sitio' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Error al guardar el sitio';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();

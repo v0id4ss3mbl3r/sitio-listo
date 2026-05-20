@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+import { isProduction } from '@/lib/env';
 import { createProxyClient } from '@/lib/supabase/proxy';
 
 export const config = {
@@ -14,38 +15,36 @@ export const config = {
 
 export async function middleware(req: NextRequest) {
   const url = req.nextUrl;
-  const hostname = req.headers.get('host') || 'sitiolisto.com.ar';
+  const hostname = (req.headers.get('host') || 'sitiolisto.com.ar').toLowerCase();
 
-  // Extraer subdominio según entorno
-  const isProduction =
-    process.env.NODE_ENV === 'production' && process.env.VERCEL === '1';
+  const prod = isProduction();
 
-  // Debug logging para producción
-  if (isProduction) {
-    console.log('[Middleware] Hostname:', hostname);
-  }
+  // ── Paso 1: detectar dominio raíz de forma inequívoca ──────────────────────
+  // Incluimos variantes con puerto por si Vercel reenvía el header así
+  const ROOT_DOMAINS = [
+    'sitiolisto.com.ar',
+    'www.sitiolisto.com.ar',
+  ];
+  const isRootDomain = ROOT_DOMAINS.some(
+    (d) => hostname === d || hostname.startsWith(d + ':')
+  );
 
-  // Detectar dominio base (sin subdominio)
-  const isRootDomain = hostname === 'sitiolisto.com.ar' || hostname === 'www.sitiolisto.com.ar';
-  
-  // Extraer subdominio
+  // ── Paso 2: extraer currentHost (subdominio) ───────────────────────────────
   let currentHost: string;
-  if (isProduction) {
+  if (prod) {
     if (hostname.endsWith('.sitiolisto.com.ar')) {
-      currentHost = hostname.replace('.sitiolisto.com.ar', '');
+      currentHost = hostname.replace('.sitiolisto.com.ar', '').split(':')[0];
     } else {
-      currentHost = hostname; // Fallback
+      // Dominio raíz u otro (lo manejamos abajo con isRootDomain)
+      currentHost = hostname.split(':')[0];
     }
   } else {
-    if (hostname.endsWith('.localhost:3000')) {
-      currentHost = hostname.replace('.localhost:3000', '');
+    // Desarrollo local
+    if (hostname.endsWith('.localhost:3000') || hostname.endsWith('.localhost')) {
+      currentHost = hostname.replace(/\.localhost(:\d+)?$/, '');
     } else {
-      currentHost = hostname.replace(':3000', ''); // Para localhost:3000 sin subdominio
+      currentHost = hostname.replace(/:\d+$/, ''); // localhost:3000 → localhost
     }
-  }
-
-  if (isProduction) {
-    console.log('[Middleware] CurrentHost:', currentHost, 'isRootDomain:', isRootDomain);
   }
 
   // 1. Panel de administración/cliente (app.sitiolisto.com.ar)
@@ -94,12 +93,8 @@ export async function middleware(req: NextRequest) {
   if (
     isRootDomain ||
     currentHost === 'www' ||
-    currentHost === 'localhost' ||
-    currentHost === 'localhost:3000'
+    currentHost === 'localhost'
   ) {
-    if (isProduction) {
-      console.log('[Middleware] Routing to landing page');
-    }
     return NextResponse.next();
   }
 

@@ -15,6 +15,7 @@ CREATE TABLE public.profiles (
   full_name TEXT,
   email TEXT NOT NULL,
   avatar_url TEXT,
+  role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -31,7 +32,7 @@ CREATE TABLE public.templates (
   category TEXT NOT NULL CHECK (category IN ('restaurant', 'portfolio', 'ecommerce', 'landing', 'services')),
   thumbnail_url TEXT,
   preview_url TEXT,
-  plan_required TEXT NOT NULL DEFAULT 'basic' CHECK (plan_required IN ('basic', 'pro', 'agency')),
+  plan_required TEXT NOT NULL DEFAULT 'basic' CHECK (plan_required IN ('basic', 'pro', 'extremo')),
   is_active BOOLEAN DEFAULT true,
   sort_order INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -45,7 +46,7 @@ CREATE TABLE public.subscriptions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   mp_preapproval_id TEXT,
-  plan_type TEXT NOT NULL CHECK (plan_type IN ('basic', 'pro', 'agency')),
+  plan_type TEXT NOT NULL CHECK (plan_type IN ('basic', 'pro', 'extremo', 'test')),
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'authorized', 'paused', 'cancelled')),
   amount NUMERIC(10, 2) NOT NULL,
   current_period_start TIMESTAMPTZ,
@@ -79,6 +80,30 @@ CREATE INDEX idx_subscriptions_user_id ON public.subscriptions(user_id);
 CREATE INDEX idx_subscriptions_status ON public.subscriptions(status);
 CREATE INDEX idx_templates_category ON public.templates(category);
 CREATE INDEX idx_templates_is_active ON public.templates(is_active);
+CREATE INDEX idx_profiles_role ON public.profiles(role);
+
+-- ─────────────────────────────────────────────────────────────
+-- TABLA: processed_webhooks
+-- Idempotencia de webhooks de MercadoPago (evita reprocesar reintentos)
+-- ─────────────────────────────────────────────────────────────
+CREATE TABLE public.processed_webhooks (
+  request_id TEXT PRIMARY KEY,
+  source TEXT NOT NULL DEFAULT 'mercadopago',
+  preapproval_id TEXT,
+  status_applied TEXT,
+  processed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_processed_webhooks_preapproval ON public.processed_webhooks(preapproval_id);
+ALTER TABLE public.processed_webhooks ENABLE ROW LEVEL SECURITY;
+
+-- Helper para RLS: ¿el usuario actual es admin?
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  );
+$$ LANGUAGE sql STABLE SECURITY DEFINER;
 
 -- ─────────────────────────────────────────────────────────────
 -- ROW LEVEL SECURITY

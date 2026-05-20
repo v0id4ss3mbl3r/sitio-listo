@@ -15,7 +15,7 @@ export const PLANS = {
     priceDisplay: '$29.999',
     description: 'Todo lo que necesitás para estar online desde hoy',
     features: [
-      '1 sitio web',
+      '1 sitio con página principal',
       'Todas las plantillas',
       'Subdominio .sitiolisto.com.ar',
       'SSL incluido',
@@ -31,7 +31,7 @@ export const PLANS = {
     priceDisplay: '$39.999',
     description: 'Para negocios que quieren su dominio propio y más control',
     features: [
-      '1 sitio web',
+      '1 sitio con hasta 5 secciones',
       'Todas las plantillas',
       'Dominio personalizado incluido',
       'Sin marca "Creado con SitioListo"',
@@ -47,7 +47,8 @@ export const PLANS = {
     priceDisplay: '$79.999',
     description: 'Para franquicias y grandes negocios con múltiples presencias',
     features: [
-      'Hasta 10 sitios web',
+      'Hasta 4 sitios independientes',
+      'Hasta 15 secciones por sitio',
       'Todas las plantillas',
       'Dominios personalizados',
       'Sin marca "Creado con SitioListo"',
@@ -63,7 +64,7 @@ export const PLANS = {
     priceDisplay: 'A consultar',
     description: 'Solución a medida para tu negocio. Hablemos.',
     features: [
-      'Sitios ilimitados',
+      'Sitios y secciones ilimitados',
       'Integraciones a medida',
       'SLA garantizado',
       'Manager dedicado',
@@ -73,6 +74,87 @@ export const PLANS = {
 } as const;
 
 export type PlanType = keyof typeof PLANS;
+
+// Límite de secciones (páginas) dentro de un mismo sitio, por plan.
+// Aplicar en el endpoint de creación de páginas (Sprint 1.5).
+export const PLAN_PAGE_LIMITS: Record<PlanType, number> = {
+  test: 1,
+  basic: 1,
+  pro: 5,
+  extremo: 15,
+  personalizado: Infinity,
+};
+
+// Límite de sitios independientes (con dominio propio) por usuario, por plan.
+// Aplicar en el endpoint POST /api/sites (Sprint 1.5).
+export const PLAN_SITE_LIMITS: Record<PlanType, number> = {
+  test: 1,
+  basic: 1,
+  pro: 1,
+  extremo: 4,
+  personalizado: Infinity,
+};
+
+// Subdominios que NO pueden ser reclamados por usuarios — chocan con el routing
+// del producto, con servicios estándar o son confusos para la marca.
+export const RESERVED_SUBDOMAINS: ReadonlySet<string> = new Set([
+  'app',
+  'www',
+  'api',
+  'admin',
+  'mail',
+  'email',
+  'smtp',
+  'imap',
+  'pop',
+  'ftp',
+  'blog',
+  'docs',
+  'help',
+  'support',
+  'status',
+  'cdn',
+  'static',
+  'assets',
+  'media',
+  'auth',
+  'login',
+  'signup',
+  'register',
+  'account',
+  'cuenta',
+  'panel',
+  'dashboard',
+  'shop',
+  'store',
+  'tienda',
+  'pay',
+  'pagos',
+  'checkout',
+  'webhook',
+  'webhooks',
+  'sitiolisto',
+  'site',
+  'sitio',
+  'staging',
+  'test',
+  'dev',
+  'preview',
+]);
+
+// Subdominio válido: lowercase, alfanumérico con guiones internos, 3-63 chars.
+export const SUBDOMAIN_REGEX = /^[a-z0-9](?:[a-z0-9-]{1,61}[a-z0-9])?$/;
+
+// FQDN: etiquetas alfanuméricas (3+) separadas por puntos, sin protocolo ni path.
+// Permitimos hasta 253 caracteres y al menos un punto (descarta valores como
+// "localhost" o un solo label).
+export const CUSTOM_DOMAIN_REGEX =
+  /^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/;
+
+// Dominios propios de la marca: no se pueden reclamar como custom_domain.
+export const RESERVED_DOMAIN_SUFFIXES: readonly string[] = [
+  'sitiolisto.com.ar',
+];
 
 export const TEMPLATE_CATEGORIES = [
   { slug: 'restaurant', name: 'Restaurantes', icon: '🍽️' },

@@ -2,6 +2,8 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+import { COOKIE_DOMAIN, isProduction } from '@/lib/env';
+
 export async function createProxyClient(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -14,14 +16,14 @@ export async function createProxyClient(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          const isProduction = process.env.VERCEL === '1';
+          const prod = isProduction();
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
           response = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) => {
-            const cookieOptions = isProduction
-              ? { ...options, domain: '.sitiolisto.com.ar' }
+            const cookieOptions = prod
+              ? { ...options, domain: COOKIE_DOMAIN }
               : options;
             response.cookies.set(name, value, cookieOptions);
           });

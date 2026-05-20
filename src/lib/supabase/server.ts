@@ -1,6 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
+import { COOKIE_DOMAIN, isProduction } from '@/lib/env';
+
 export async function createClient() {
   const cookieStore = await cookies();
 
@@ -14,9 +16,13 @@ export async function createClient() {
         },
         setAll(cookiesToSet) {
           try {
+            const prod = isProduction();
             cookiesToSet.forEach(({ name, value, options }) => {
-              // Configurar dominio para compartir cookies entre subdominios
-              const cookieOptions = { ...options, domain: '.sitiolisto.com.ar' };
+              // En local, el dominio .sitiolisto.com.ar hace que el navegador
+              // ignore las cookies → sesión perdida → 403 esporádico.
+              const cookieOptions = prod
+                ? { ...options, domain: COOKIE_DOMAIN }
+                : options;
               cookieStore.set(name, value, cookieOptions);
             });
           } catch {
