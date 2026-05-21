@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/browser';
 import { Save, ExternalLink, CheckCircle, AlertCircle } from 'lucide-react';
-import { TEMPLATES, TemplateId } from '@/lib/constants';
+import { PLAN_PAGE_LIMITS, PlanType, TEMPLATES, TemplateId } from '@/lib/constants';
+import { PagesManager } from './_components/PagesManager';
 
 interface Subscription {
   id: string;
@@ -16,7 +17,7 @@ interface Subscription {
   created_at: string;
 }
 
-type TabType = 'appearance' | 'content' | 'domain';
+type TabType = 'appearance' | 'content' | 'pages' | 'domain';
 
 export default function EditorPage() {
   const supabase = createClient();
@@ -316,7 +317,7 @@ export default function EditorPage() {
         overflowX: 'auto',
         scrollbarWidth: 'none'
       }}>
-        {(['appearance', 'content', 'domain'] as TabType[]).map(tab => (
+        {(['appearance', 'content', 'pages', 'domain'] as TabType[]).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -337,6 +338,7 @@ export default function EditorPage() {
           >
             {tab === 'appearance' && 'Apariencia'}
             {tab === 'content' && 'Contenido'}
+            {tab === 'pages' && 'Páginas'}
             {tab === 'domain' && 'Dominio'}
           </button>
         ))}
@@ -571,6 +573,14 @@ export default function EditorPage() {
               )}
             </div>
           </div>
+        )}
+
+        {/* TAB: PÁGINAS */}
+        {activeTab === 'pages' && (
+          <PagesManager
+            userPlan={userPlan}
+            limit={PLAN_PAGE_LIMITS[userPlan as PlanType] ?? 1}
+          />
         )}
 
         {/* TAB: DOMINIO */}

@@ -147,6 +147,39 @@ export async function POST(req: Request) {
 
     if (result.error) throw result.error;
 
+    // Sync del home page en `pages`: la home siempre refleja el config
+    // actual del sitio. Si existe, update; si no, insert.
+    const siteId = result.data!.id;
+    const homeTitle = (config as Record<string, unknown> | null)?.name as string | undefined;
+    const { data: existingHome } = await supabase
+      .from('pages')
+      .select('id')
+      .eq('site_id', siteId)
+      .eq('is_home', true)
+      .maybeSingle();
+
+    if (existingHome) {
+      await supabase
+        .from('pages')
+        .update({
+          title: homeTitle ?? 'Inicio',
+          content: config ?? {},
+          is_published: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingHome.id);
+    } else {
+      await supabase.from('pages').insert({
+        site_id: siteId,
+        slug: '',
+        title: homeTitle ?? 'Inicio',
+        content: config ?? {},
+        is_home: true,
+        sort_order: 0,
+        is_published: true,
+      });
+    }
+
     // Invalidar el cache del render del sitio. Si el subdominio o el
     // custom_domain cambiaron respecto del valor anterior, invalidamos
     // ambos tags para que el dominio viejo deje de servir contenido fresco.

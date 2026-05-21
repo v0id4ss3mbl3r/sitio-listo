@@ -28,6 +28,36 @@ export const checkoutSchema = z.object({
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 
+// ─── pages ────────────────────────────────────────────────────
+// Slug de página: vacío para home, o lowercase alfanumérico con guiones.
+const pageSlugSchema = z
+  .string()
+  .max(63)
+  .refine(
+    (v) => v === '' || /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(v),
+    'Slug inválido (usá letras, números y guiones)'
+  );
+
+export const createPageSchema = z.object({
+  slug: pageSlugSchema,
+  title: z.string().min(1).max(120),
+  content: z.record(z.string(), z.unknown()).optional().default({}),
+  is_home: z.boolean().optional().default(false),
+  sort_order: z.number().int().min(0).max(9999).optional().default(0),
+  is_published: z.boolean().optional().default(true),
+});
+
+export const updatePageSchema = z.object({
+  slug: pageSlugSchema.optional(),
+  title: z.string().min(1).max(120).optional(),
+  content: z.record(z.string(), z.unknown()).optional(),
+  sort_order: z.number().int().min(0).max(9999).optional(),
+  is_published: z.boolean().optional(),
+});
+
+export type CreatePageInput = z.infer<typeof createPageSchema>;
+export type UpdatePageInput = z.infer<typeof updatePageSchema>;
+
 // Helper para parsear un body de Request y devolver un error 400 estructurado
 // si el shape no matchea. Se usa así:
 //   const parsed = await parseJson(req, createSiteSchema);

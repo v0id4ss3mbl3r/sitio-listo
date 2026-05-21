@@ -74,6 +74,30 @@ CREATE TABLE public.sites (
 );
 
 -- ─────────────────────────────────────────────────────────────
+-- TABLA: pages
+-- Secciones/páginas dentro de un sitio. Una por sitio es is_home=true.
+-- ─────────────────────────────────────────────────────────────
+CREATE TABLE public.pages (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  site_id UUID NOT NULL REFERENCES public.sites(id) ON DELETE CASCADE,
+  slug TEXT NOT NULL,
+  title TEXT,
+  content JSONB NOT NULL DEFAULT '{}',
+  is_home BOOLEAN NOT NULL DEFAULT false,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  is_published BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT pages_site_slug_unique UNIQUE (site_id, slug),
+  CONSTRAINT pages_slug_format CHECK (
+    slug = '' OR slug ~ '^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$'
+  )
+);
+CREATE UNIQUE INDEX pages_one_home_per_site ON public.pages(site_id) WHERE is_home = true;
+CREATE INDEX idx_pages_site_id ON public.pages(site_id);
+CREATE INDEX idx_pages_site_slug ON public.pages(site_id, slug);
+
+-- ─────────────────────────────────────────────────────────────
 -- ÍNDICES
 -- ─────────────────────────────────────────────────────────────
 CREATE INDEX idx_sites_subdomain ON public.sites(subdomain);
@@ -130,6 +154,7 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.templates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sites ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.pages ENABLE ROW LEVEL SECURITY;
 
 -- Profiles: cada usuario ve/edita solo su perfil
 CREATE POLICY "Users can view own profile" ON public.profiles
@@ -152,6 +177,29 @@ CREATE POLICY "Users can update own sites" ON public.sites
   FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Anyone can view active sites by subdomain" ON public.sites
   FOR SELECT USING (is_active = true);
+
+-- Pages: dueño del sitio ve/edita/borra; público ve las publicadas de sitios activos
+CREATE POLICY "Users can view own site pages" ON public.pages
+  FOR SELECT USING (
+    EXISTS (SELECT 1 FROM public.sites WHERE sites.id = pages.site_id AND sites.user_id = auth.uid())
+  );
+CREATE POLICY "Users can insert own site pages" ON public.pages
+  FOR INSERT WITH CHECK (
+    EXISTS (SELECT 1 FROM public.sites WHERE sites.id = pages.site_id AND sites.user_id = auth.uid())
+  );
+CREATE POLICY "Users can update own site pages" ON public.pages
+  FOR UPDATE USING (
+    EXISTS (SELECT 1 FROM public.sites WHERE sites.id = pages.site_id AND sites.user_id = auth.uid())
+  );
+CREATE POLICY "Users can delete own site pages" ON public.pages
+  FOR DELETE USING (
+    EXISTS (SELECT 1 FROM public.sites WHERE sites.id = pages.site_id AND sites.user_id = auth.uid())
+  );
+CREATE POLICY "Anyone can view published pages of active sites" ON public.pages
+  FOR SELECT USING (
+    is_published = true
+    AND EXISTS (SELECT 1 FROM public.sites WHERE sites.id = pages.site_id AND sites.is_active = true)
+  );
 
 -- ─────────────────────────────────────────────────────────────
 -- TRIGGER: crear perfil automáticamente al registrarse
