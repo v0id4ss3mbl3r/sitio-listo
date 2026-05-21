@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
+
 import { createClient } from '@/lib/supabase/server';
 import { canUseTemplate } from '@/lib/constants';
+import { captureError } from '@/lib/logger';
+import { createSiteSchema, parseJson } from '@/lib/schemas';
+import { siteCacheTag } from '@/lib/supabase/public';
 import { validateCustomDomain, validateSubdomain } from '@/lib/validation';
 
 export async function POST(req: Request) {
@@ -12,12 +17,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { subdomain: rawSubdomain, custom_domain: rawCustomDomain, template_id, config } = body;
-
-    if (!rawSubdomain || !template_id) {
-      return NextResponse.json({ error: 'Faltan datos obligatorios' }, { status: 400 });
-    }
+    const parsed = await parseJson(req, createSiteSchema);
+    if (!parsed.ok) return parsed.response;
+    const {
+      subdomain: rawSubdomain,
+      custom_domain: rawCustomDomain,
+      template_id,
+      config,
+    } = parsed.data;
 
     const subdomainResult = validateSubdomain(rawSubdomain);
     if (!subdomainResult.ok) {
@@ -140,9 +147,28 @@ export async function POST(req: Request) {
 
     if (result.error) throw result.error;
 
+    // Invalidar el cache del render del sitio. Si el subdominio o el
+    // custom_domain cambiaron respecto del valor anterior, invalidamos
+    // ambos tags para que el dominio viejo deje de servir contenido fresco.
+    revalidateTag(siteCacheTag(subdomain), 'max');
+    if (custom_domain) revalidateTag(siteCacheTag(custom_domain), 'max');
+    if (userSite) {
+      const { data: previous } = await supabase
+        .from('sites')
+        .select('subdomain, custom_domain')
+        .eq('id', userSite.id)
+        .maybeSingle();
+      if (previous?.subdomain && previous.subdomain !== subdomain) {
+        revalidateTag(siteCacheTag(previous.subdomain), 'max');
+      }
+      if (previous?.custom_domain && previous.custom_domain !== custom_domain) {
+        revalidateTag(siteCacheTag(previous.custom_domain), 'max');
+      }
+    }
+
     return NextResponse.json({ success: true, site: result.data });
   } catch (error) {
-    console.error('Sites API Error:', error);
+    captureError(error, { source: 'sites-post' });
     const message = error instanceof Error ? error.message : 'Error al guardar el sitio';
     return NextResponse.json({ error: message }, { status: 500 });
   }
@@ -167,7 +193,7 @@ export async function GET() {
 
     return NextResponse.json({ site: data || null });
   } catch (error) {
-    console.error('Sites API Error:', error);
+    captureError(error, { source: 'sites-get' });
     return NextResponse.json({ error: 'Error al obtener el sitio' }, { status: 500 });
   }
 }

@@ -1,0 +1,15 @@
+.next/
+node_modules/
+build/
+out/
+coverage/
+public/
+*.lock
+*.log
+.env*
+
+# Plantillas con CSS-in-JS muy largas — no reformatear automáticamente.
+src/app/[domain]/templates/
+
+# Editor con styles inline pesados — reformateo separado.
+src/app/panel/(dashboard)/editor/page.tsx

@@ -3,6 +3,8 @@ import { MercadoPagoConfig, PreApproval } from 'mercadopago';
 
 import { createClient } from '@/lib/supabase/server';
 import { PLANS, PlanType } from '@/lib/constants';
+import { captureError } from '@/lib/logger';
+import { checkoutSchema, parseJson } from '@/lib/schemas';
 
 const TRIAL_DAYS = 14;
 const TRIAL_ELIGIBLE_PLANS: PlanType[] = ['basic'];
@@ -16,12 +18,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const { planSlug } = await req.json();
-
-    const validPlans = ['basic', 'pro', 'extremo', 'test'];
-    if (!validPlans.includes(planSlug)) {
-      return NextResponse.json({ error: 'Plan inválido para checkout' }, { status: 400 });
-    }
+    const parsed = await parseJson(req, checkoutSchema);
+    if (!parsed.ok) return parsed.response;
+    const { planSlug } = parsed.data;
 
     const plan = PLANS[planSlug as PlanType];
 
@@ -87,7 +86,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ url: result.init_point });
   } catch (error) {
-    console.error('Checkout Error:', error);
+    captureError(error, { source: 'checkout' });
     return NextResponse.json({ error: 'Error al generar checkout' }, { status: 500 });
   }
 }

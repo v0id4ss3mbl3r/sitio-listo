@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 import { createHmac, timingSafeEqual } from 'crypto';
 
 import { isProduction } from '@/lib/env';
+import { captureError } from '@/lib/logger';
+import { siteCacheTag } from '@/lib/supabase/public';
 
 type SubStatus = 'pending' | 'authorized' | 'paused' | 'cancelled';
 
@@ -141,10 +144,21 @@ export async function POST(req: Request) {
           return false;
         });
 
-        await supabaseAdmin
+        const { data: affectedSites } = await supabaseAdmin
           .from('sites')
           .update({ is_active: userHasActiveSub })
-          .eq('user_id', userId);
+          .eq('user_id', userId)
+          .select('subdomain, custom_domain');
+
+        // Invalidar tags de cache con expire inmediato — el webhook viene
+        // de un servicio externo (MP) y queremos que el sitio refleje el
+        // nuevo estado en la próxima visita, no en background.
+        const expireNow = { expire: 0 } as const;
+        revalidateTag(`user-sub:${userId}`, expireNow);
+        for (const s of affectedSites ?? []) {
+          if (s.subdomain) revalidateTag(siteCacheTag(s.subdomain), expireNow);
+          if (s.custom_domain) revalidateTag(siteCacheTag(s.custom_domain), expireNow);
+        }
       }
 
       if (requestId) {
@@ -159,7 +173,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Webhook error:', error);
+    captureError(error, { source: 'mp-webhook' });
     return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
   }
 }

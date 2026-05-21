@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { unstable_cache } from 'next/cache';
 
-import { createClient } from '@/lib/supabase/server';
 import { CUSTOM_DOMAIN_REGEX, SUBDOMAIN_REGEX } from '@/lib/constants';
+import { createPublicClient, siteCacheTag } from '@/lib/supabase/public';
 import { sanitizeTenantParam } from '@/lib/validation';
 import SaborUrbano from './templates/SaborUrbano';
 import PortfolioMinimal from './templates/PortfolioMinimal';
@@ -10,41 +10,94 @@ import LandingPro from './templates/LandingPro';
 import ServiciosPro from './templates/ServiciosPro';
 import TiendaExpress from './templates/TiendaExpress';
 
-// Forzar renderizado dinámico - evitar caché inconsistente entre subdominios
-export const dynamic = 'force-dynamic';
+const CACHE_REVALIDATE_SECONDS = 60 * 60; // 1h fallback (los writes invalidan vía tag)
 
-// Busca el sitio por subdomain O por custom_domain. Usa .eq() (parametrizado)
-// en lugar de .or() con interpolación de string, que no escapa los valores.
-async function fetchSiteByDomain<T>(
-  supabase: SupabaseClient,
-  domain: string,
-  columns: string
-): Promise<T | null> {
-  const safe = sanitizeTenantParam(domain);
-  if (!safe) return null;
+type SiteRow = {
+  user_id: string;
+  template_id: string;
+  // config es JSONB libre — accesos anidados existentes (config?.content?.heroTitle, etc).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  config: Record<string, any> | null;
+  is_active: boolean;
+};
 
-  const column = SUBDOMAIN_REGEX.test(safe) && !CUSTOM_DOMAIN_REGEX.test(safe)
-    ? 'subdomain'
-    : 'custom_domain';
+type ActiveSubRow = {
+  plan_type: string;
+  status: string;
+  current_period_end: string | null;
+  trial_end_date: string | null;
+  created_at: string;
+};
 
-  const { data } = await supabase
-    .from('sites')
-    .select(columns)
-    .eq(column, safe)
-    .maybeSingle();
+// Lookup cacheado: subdominio o custom_domain → fila completa de sites.
+// Tag = site:<dominio> para invalidar puntualmente al guardar el sitio.
+function fetchSiteCached(domain: string) {
+  return unstable_cache(
+    async (): Promise<SiteRow | null> => {
+      const safe = sanitizeTenantParam(domain);
+      if (!safe) return null;
 
-  return (data as T | null) ?? null;
+      const column =
+        SUBDOMAIN_REGEX.test(safe) && !CUSTOM_DOMAIN_REGEX.test(safe)
+          ? 'subdomain'
+          : 'custom_domain';
+
+      const supabase = createPublicClient();
+      const { data } = await supabase
+        .from('sites')
+        .select('user_id, template_id, config, is_active')
+        .eq(column, safe)
+        .maybeSingle();
+
+      return (data as SiteRow | null) ?? null;
+    },
+    ['site-by-domain', domain.toLowerCase()],
+    { tags: [siteCacheTag(domain)], revalidate: CACHE_REVALIDATE_SECONDS }
+  )();
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ domain: string }> }): Promise<Metadata> {
-  const { domain } = await params;
-  const supabase = await createClient();
+// Lookup cacheado de la suscripción vigente del owner. Tag separado porque
+// se invalida desde el webhook de MP, no desde el guardado del sitio.
+function fetchActiveSubCached(userId: string) {
+  return unstable_cache(
+    async (): Promise<ActiveSubRow | null> => {
+      const supabase = createPublicClient();
+      const { data } = await supabase
+        .from('subscriptions')
+        .select('plan_type, status, current_period_end, trial_end_date, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
 
-  const site = await fetchSiteByDomain<{ config: { name?: string } | null; is_active: boolean }>(
-    supabase,
-    domain,
-    'config, is_active'
-  );
+      const now = Date.now();
+      const subs = (data ?? []) as ActiveSubRow[];
+      const current = subs.find((s) => {
+        if (s.status === 'authorized') return true;
+        if (
+          s.status === 'cancelled' &&
+          s.current_period_end &&
+          new Date(s.current_period_end).getTime() > now
+        ) {
+          return true;
+        }
+        if (s.trial_end_date && new Date(s.trial_end_date).getTime() > now) {
+          return true;
+        }
+        return false;
+      });
+      return current ?? null;
+    },
+    ['active-sub-by-user', userId],
+    { tags: [`user-sub:${userId}`], revalidate: CACHE_REVALIDATE_SECONDS }
+  )();
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ domain: string }>;
+}): Promise<Metadata> {
+  const { domain } = await params;
+  const site = await fetchSiteCached(domain);
 
   if (!site || !site.is_active) {
     return { title: 'Sitio no encontrado | SitioListo' };
@@ -61,19 +114,8 @@ export default async function TenantPage({
   params: Promise<{ domain: string }>;
 }) {
   const { domain } = await params;
-  const supabase = await createClient();
+  const site = await fetchSiteCached(domain);
 
-  // config es JSONB libre — lo tratamos como any para no obligar a refactorear
-  // los accesos anidados existentes (config?.content?.heroTitle, etc).
-  const site = await fetchSiteByDomain<{
-    user_id: string;
-    template_id: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    config: Record<string, any> | null;
-    is_active: boolean;
-  }>(supabase, domain, '*');
-
-  // Si no existe o no está activo (suscripción vencida), mostrar página por defecto
   if (!site || !site.is_active) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0a', padding: '2rem', color: 'white' }}>
@@ -95,39 +137,14 @@ export default async function TenantPage({
     );
   }
 
-  // Branding: leer el plan VIGENTE del dueño (no el cacheado en sites.plan_type).
-  // Considera authorized, cancelled-con-gracia y trial. Así un downgrade
-  // Pro→Básico repone el branding "Creado con SitioListo" sin necesidad de
-  // que el usuario re-guarde el sitio.
-  const { data: allSubs } = await supabase
-    .from('subscriptions')
-    .select('plan_type, status, current_period_end, trial_end_date, created_at')
-    .eq('user_id', site.user_id)
-    .order('created_at', { ascending: false });
-
-  const nowMs = Date.now();
-  const currentSub = (allSubs ?? []).find((s) => {
-    if (s.status === 'authorized') return true;
-    if (
-      s.status === 'cancelled' &&
-      s.current_period_end &&
-      new Date(s.current_period_end).getTime() > nowMs
-    ) {
-      return true;
-    }
-    if (s.trial_end_date && new Date(s.trial_end_date).getTime() > nowMs) {
-      return true;
-    }
-    return false;
-  });
-
+  // Branding desde plan vigente del owner, leído fresh (cache distinto).
+  const currentSub = await fetchActiveSubCached(site.user_id);
   const planType = currentSub?.plan_type || 'basic';
 
   const { template_id, config } = site;
   const siteName = config?.name || 'Mi Nuevo Sitio';
   const primaryColor = config?.primaryColor || '#6366f1';
 
-  // Extraer contenido dinámico
   const content = {
     siteName,
     primaryColor,
@@ -138,12 +155,9 @@ export default async function TenantPage({
     planType,
     heroTitle: config?.content?.heroTitle || 'Una experiencia inolvidable',
     heroSubtitle: config?.content?.heroSubtitle || 'Descubrí lo mejor de nuestros servicios.',
-    aboutText: config?.content?.aboutText || 'Somos una empresa dedicada a brindar el mejor servicio a nuestros clientes.'
+    aboutText: config?.content?.aboutText || 'Somos una empresa dedicada a brindar el mejor servicio a nuestros clientes.',
   };
 
-  // Renderizado dinámico según la plantilla elegida
-  // Mapeamos los slugs de la base de datos a los componentes
-  
   if (template_id === 'sabor-urbano') {
     return <SaborUrbano {...content} />;
   }
@@ -164,7 +178,6 @@ export default async function TenantPage({
     return <TiendaExpress {...content} />;
   }
 
-  // Plantilla por defecto si el ID no matchea
   return (
     <div style={{ padding: '4rem', textAlign: 'center', fontFamily: 'system-ui', minHeight: '100vh', background: '#f9fafb' }}>
       <h1 style={{ color: primaryColor, fontSize: '3rem', fontWeight: 800 }}>{siteName}</h1>
