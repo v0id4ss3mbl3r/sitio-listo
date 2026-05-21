@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/browser';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -78,6 +79,12 @@ export default function LoginPage() {
           <button type="submit" disabled={loading} className="btn-primary" style={{ width: '100%', marginTop: '0.5rem' }}>
             {loading ? 'Ingresando...' : 'Ingresar'}
           </button>
+          <Link
+            href="/recuperar-clave"
+            style={{ textAlign: 'center', fontSize: '0.85rem', color: 'var(--color-primary-light)', textDecoration: 'none', fontWeight: 500, marginTop: '-0.25rem' }}
+          >
+            ¿Olvidaste tu contraseña?
+          </Link>
         </form>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', margin: '2rem 0' }}>
@@ -98,7 +105,7 @@ export default function LoginPage() {
 
         <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
           ¿No tenés cuenta?{' '}
-          <a href="/registro" style={{ color: 'var(--color-primary-light)', textDecoration: 'none', fontWeight: 600 }}>Registrate</a>
+          <Link href="/registro" style={{ color: 'var(--color-primary-light)', textDecoration: 'none', fontWeight: 600 }}>Registrate</Link>
         </p>
       </div>
     </div>

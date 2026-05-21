@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { canUseTemplate } from '@/lib/constants';
 import { validateCustomDomain, validateSubdomain } from '@/lib/validation';
 
 export async function POST(req: Request) {
@@ -41,15 +42,44 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'El subdominio ya está en uso' }, { status: 409 });
     }
 
-    // Obtener el plan actual del usuario
-    const { data: subscription } = await supabase
+    // Determinar plan vigente — acepta authorized, cancelled-con-gracia y trial.
+    const { data: allSubs } = await supabase
       .from('subscriptions')
-      .select('plan_type')
+      .select('plan_type, status, current_period_end, trial_end_date, created_at')
       .eq('user_id', user.id)
-      .eq('status', 'authorized')
-      .single();
+      .order('created_at', { ascending: false });
 
-    const userPlanType = subscription?.plan_type || 'basic';
+    const now = Date.now();
+    const activeSub = (allSubs ?? []).find((s) => {
+      if (s.status === 'authorized') return true;
+      if (
+        s.status === 'cancelled' &&
+        s.current_period_end &&
+        new Date(s.current_period_end).getTime() > now
+      ) {
+        return true;
+      }
+      if (s.trial_end_date && new Date(s.trial_end_date).getTime() > now) {
+        return true;
+      }
+      return false;
+    });
+
+    const userPlanType = activeSub?.plan_type ?? 'free';
+
+    if (userPlanType === 'free') {
+      return NextResponse.json(
+        { error: 'Necesitás un plan activo para publicar un sitio' },
+        { status: 403 }
+      );
+    }
+
+    if (!canUseTemplate(userPlanType, template_id)) {
+      return NextResponse.json(
+        { error: 'Tu plan no incluye acceso a esta plantilla' },
+        { status: 403 }
+      );
+    }
 
     // Upsert (crear o actualizar) el sitio del usuario.
     // TODO Sprint 1.5: aceptar siteId explícito y aplicar PLAN_SITE_LIMITS para Extremo.
@@ -62,12 +92,27 @@ export async function POST(req: Request) {
 
     let result;
     if (userSite) {
-      // Actualizar
+      // Custom domain status: si cambió el dominio, vuelve a 'pending'.
+      // Si lo quitaron, status pasa a null.
+      const { data: existingDomain } = await supabase
+        .from('sites')
+        .select('custom_domain, custom_domain_status')
+        .eq('id', userSite.id)
+        .maybeSingle();
+
+      let customDomainStatus: string | null = existingDomain?.custom_domain_status ?? null;
+      if (!custom_domain) {
+        customDomainStatus = null;
+      } else if (existingDomain?.custom_domain !== custom_domain) {
+        customDomainStatus = 'pending';
+      }
+
       result = await supabase
         .from('sites')
         .update({
           subdomain,
           custom_domain,
+          custom_domain_status: customDomainStatus,
           template_id,
           config,
           plan_type: userPlanType,
@@ -77,13 +122,13 @@ export async function POST(req: Request) {
         .select()
         .single();
     } else {
-      // Crear
       result = await supabase
         .from('sites')
         .insert({
           user_id: user.id,
           subdomain,
           custom_domain,
+          custom_domain_status: custom_domain ? 'pending' : null,
           template_id,
           config,
           plan_type: userPlanType,

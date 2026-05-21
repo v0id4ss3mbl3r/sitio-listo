@@ -203,3 +203,24 @@ export const TEMPLATES = [
 ] as const;
 
 export type TemplateId = typeof TEMPLATES[number]['id'];
+
+// Devuelve true si un plan puede usar una plantilla dada. Reglas:
+// - 'free' (sin suscripción authorized) → ninguna.
+// - 'basic'/'test' → solo plantillas con plan: 'basic'.
+// - 'pro'/'extremo'/'personalizado' → todas.
+export function canUseTemplate(planSlug: string, templateId: string): boolean {
+  const template = TEMPLATES.find(t => t.id === templateId);
+  if (!template) return false;
+
+  if (planSlug === 'free' || !planSlug) return false;
+
+  if (template.plan === 'basic') {
+    return ['basic', 'test', 'pro', 'extremo', 'personalizado'].includes(planSlug);
+  }
+
+  if (template.plan === 'pro') {
+    return ['pro', 'extremo', 'personalizado'].includes(planSlug);
+  }
+
+  return false;
+}

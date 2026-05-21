@@ -50,7 +50,10 @@ export async function middleware(req: NextRequest) {
   // 1. Panel de administración/cliente (app.sitiolisto.com.ar)
   if (currentHost === 'app') {
     const { user, response, supabase } = await createProxyClient(req);
-    const isAuthPage = url.pathname === '/login' || url.pathname === '/registro';
+    const isAuthPage =
+      url.pathname === '/login' ||
+      url.pathname === '/registro' ||
+      url.pathname === '/recuperar-clave';
 
     if (!user && !isAuthPage) {
       // No está logueado y quiere acceder al panel -> login

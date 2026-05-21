@@ -51,6 +51,7 @@ CREATE TABLE public.subscriptions (
   amount NUMERIC(10, 2) NOT NULL,
   current_period_start TIMESTAMPTZ,
   current_period_end TIMESTAMPTZ,
+  trial_end_date TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -64,6 +65,7 @@ CREATE TABLE public.sites (
   user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   subdomain TEXT UNIQUE NOT NULL,
   custom_domain TEXT UNIQUE,
+  custom_domain_status TEXT CHECK (custom_domain_status IS NULL OR custom_domain_status IN ('pending', 'verified', 'failed')),
   template_id TEXT NOT NULL,
   config JSONB DEFAULT '{}',
   is_active BOOLEAN DEFAULT false,
@@ -104,6 +106,22 @@ RETURNS BOOLEAN AS $$
     WHERE id = auth.uid() AND role = 'admin'
   );
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
+
+-- ¿Esta fila de subscription debería considerarse "activa"?
+--   authorized → sí (caso normal)
+--   cancelled con period_end futuro → sí (período de gracia post-cancelación)
+--   trial con trial_end_date futuro → sí (período de prueba)
+CREATE OR REPLACE FUNCTION public.subscription_is_active(
+  status TEXT,
+  current_period_end TIMESTAMPTZ,
+  trial_end_date TIMESTAMPTZ
+)
+RETURNS BOOLEAN AS $$
+  SELECT
+    status = 'authorized'
+    OR (status = 'cancelled' AND current_period_end IS NOT NULL AND current_period_end > NOW())
+    OR (trial_end_date IS NOT NULL AND trial_end_date > NOW());
+$$ LANGUAGE sql STABLE;
 
 -- ─────────────────────────────────────────────────────────────
 -- ROW LEVEL SECURITY

@@ -95,24 +95,51 @@ export async function POST(req: Request) {
       const userId: string | undefined = subscriptionData.external_reference;
       const status = mapMpStatus(subscriptionData.status);
 
+      // MP devuelve next_payment_date (fin del período actual). Lo usamos
+      // como current_period_end para implementar cancelación suave:
+      // el sitio sigue activo hasta esa fecha aunque status sea 'cancelled'.
+      const currentPeriodEnd: string | null =
+        subscriptionData.next_payment_date ?? null;
+
+      const updatePayload: Record<string, unknown> = {
+        status,
+        updated_at: new Date().toISOString(),
+      };
+      if (currentPeriodEnd) {
+        updatePayload.current_period_end = currentPeriodEnd;
+      }
+
       const { error: subError } = await supabaseAdmin
         .from('subscriptions')
-        .update({ status, updated_at: new Date().toISOString() })
+        .update(updatePayload)
         .eq('mp_preapproval_id', preapprovalId);
 
       if (subError) throw subError;
 
-      // ── Scope agregado: solo apagar/encender sitios según TODAS las
-      //    suscripciones del usuario, no solo la que vino en este evento.
-      //    Así una cancelación vieja no apaga sitios del plan vigente.
+      // ── Scope agregado: ¿el usuario tiene ALGUNA suscripción activa?
+      //    "Activa" incluye: status='authorized', status='cancelled' con
+      //    period_end futuro (gracia), o trial vigente.
       if (userId) {
-        const { count } = await supabaseAdmin
+        const { data: allSubs } = await supabaseAdmin
           .from('subscriptions')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', userId)
-          .eq('status', 'authorized');
+          .select('status, current_period_end, trial_end_date')
+          .eq('user_id', userId);
 
-        const userHasActiveSub = (count ?? 0) > 0;
+        const now = Date.now();
+        const userHasActiveSub = (allSubs ?? []).some((s) => {
+          if (s.status === 'authorized') return true;
+          if (
+            s.status === 'cancelled' &&
+            s.current_period_end &&
+            new Date(s.current_period_end).getTime() > now
+          ) {
+            return true;
+          }
+          if (s.trial_end_date && new Date(s.trial_end_date).getTime() > now) {
+            return true;
+          }
+          return false;
+        });
 
         await supabaseAdmin
           .from('sites')

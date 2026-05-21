@@ -66,11 +66,11 @@ export default async function TenantPage({
   // config es JSONB libre — lo tratamos como any para no obligar a refactorear
   // los accesos anidados existentes (config?.content?.heroTitle, etc).
   const site = await fetchSiteByDomain<{
+    user_id: string;
     template_id: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     config: Record<string, any> | null;
     is_active: boolean;
-    plan_type?: string;
   }>(supabase, domain, '*');
 
   // Si no existe o no está activo (suscripción vencida), mostrar página por defecto
@@ -95,6 +95,34 @@ export default async function TenantPage({
     );
   }
 
+  // Branding: leer el plan VIGENTE del dueño (no el cacheado en sites.plan_type).
+  // Considera authorized, cancelled-con-gracia y trial. Así un downgrade
+  // Pro→Básico repone el branding "Creado con SitioListo" sin necesidad de
+  // que el usuario re-guarde el sitio.
+  const { data: allSubs } = await supabase
+    .from('subscriptions')
+    .select('plan_type, status, current_period_end, trial_end_date, created_at')
+    .eq('user_id', site.user_id)
+    .order('created_at', { ascending: false });
+
+  const nowMs = Date.now();
+  const currentSub = (allSubs ?? []).find((s) => {
+    if (s.status === 'authorized') return true;
+    if (
+      s.status === 'cancelled' &&
+      s.current_period_end &&
+      new Date(s.current_period_end).getTime() > nowMs
+    ) {
+      return true;
+    }
+    if (s.trial_end_date && new Date(s.trial_end_date).getTime() > nowMs) {
+      return true;
+    }
+    return false;
+  });
+
+  const planType = currentSub?.plan_type || 'basic';
+
   const { template_id, config } = site;
   const siteName = config?.name || 'Mi Nuevo Sitio';
   const primaryColor = config?.primaryColor || '#6366f1';
@@ -107,7 +135,7 @@ export default async function TenantPage({
     logoUrl: config?.logoUrl || '',
     phone: config?.phone || '',
     address: config?.address || '',
-    planType: site.plan_type || 'basic',
+    planType,
     heroTitle: config?.content?.heroTitle || 'Una experiencia inolvidable',
     heroSubtitle: config?.content?.heroSubtitle || 'Descubrí lo mejor de nuestros servicios.',
     aboutText: config?.content?.aboutText || 'Somos una empresa dedicada a brindar el mejor servicio a nuestros clientes.'

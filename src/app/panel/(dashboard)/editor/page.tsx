@@ -11,6 +11,8 @@ interface Subscription {
   plan_type: string;
   status: 'pending' | 'authorized' | 'paused' | 'cancelled';
   amount: number;
+  trial_end_date: string | null;
+  current_period_end: string | null;
   created_at: string;
 }
 
@@ -27,6 +29,7 @@ export default function EditorPage() {
   // Editor State
   const [subdomain, setSubdomain] = useState('');
   const [customDomain, setCustomDomain] = useState('');
+  const [customDomainStatus, setCustomDomainStatus] = useState<'pending' | 'verified' | 'failed' | null>(null);
   const [templateId, setTemplateId] = useState('sabor-urbano');
   const [siteName, setSiteName] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#6366f1');
@@ -50,6 +53,10 @@ export default function EditorPage() {
   // Validation State
   const [subdomainStatus, setSubdomainStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
 
+  // Timestamp del mount — usado para evaluar trial/gracia sin llamar
+  // Date.now() durante el render (regla react-hooks/purity).
+  const [mountedAt] = useState<number>(() => Date.now());
+
   useEffect(() => {
     async function loadData() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -71,6 +78,7 @@ export default function EditorPage() {
       if (data.site) {
         setSubdomain(data.site.subdomain || '');
         setCustomDomain(data.site.custom_domain || '');
+        setCustomDomainStatus(data.site.custom_domain_status ?? null);
         setTemplateId(data.site.template_id || 'sabor-urbano');
         setSiteName(data.site.config?.name || '');
         setPrimaryColor(data.site.config?.primaryColor || '#6366f1');
@@ -189,7 +197,30 @@ export default function EditorPage() {
     );
   }
 
-  const userPlan = subscription?.status === 'authorized' ? subscription.plan_type : 'free';
+  // Now: capturado una sola vez al mount para que el render sea puro
+  // respecto del input (subscription). Se recalcula si el usuario recarga.
+  const isInTrial = !!(
+    subscription?.trial_end_date &&
+    new Date(subscription.trial_end_date).getTime() > mountedAt
+  );
+  const isInGracePeriod = !!(
+    subscription?.status === 'cancelled' &&
+    subscription.current_period_end &&
+    new Date(subscription.current_period_end).getTime() > mountedAt
+  );
+  const hasActivePlan =
+    subscription?.status === 'authorized' || isInTrial || isInGracePeriod;
+  const userPlan = hasActivePlan && subscription ? subscription.plan_type : 'free';
+
+  const trialDaysLeft = subscription?.trial_end_date
+    ? Math.max(
+        0,
+        Math.ceil(
+          (new Date(subscription.trial_end_date).getTime() - mountedAt) /
+            (1000 * 60 * 60 * 24)
+        )
+      )
+    : 0;
 
   if (userPlan === 'free') {
     return (
@@ -236,6 +267,36 @@ export default function EditorPage() {
           to { opacity: 1; transform: translateX(0); }
         }
       `}} />
+
+      {isInTrial && (
+        <div style={{
+          padding: '0.85rem 1.25rem',
+          marginBottom: '1.5rem',
+          borderRadius: '10px',
+          background: 'rgba(245, 158, 11, 0.1)',
+          border: '1px solid rgba(245, 158, 11, 0.3)',
+          color: '#f59e0b',
+          fontSize: '0.9rem',
+          fontWeight: 600,
+        }}>
+          Estás en período de prueba. Te {trialDaysLeft === 1 ? 'queda 1 día' : `quedan ${trialDaysLeft} días`} antes del primer cobro.
+        </div>
+      )}
+
+      {isInGracePeriod && subscription?.current_period_end && (
+        <div style={{
+          padding: '0.85rem 1.25rem',
+          marginBottom: '1.5rem',
+          borderRadius: '10px',
+          background: 'rgba(239, 68, 68, 0.08)',
+          border: '1px solid rgba(239, 68, 68, 0.25)',
+          color: '#ef4444',
+          fontSize: '0.9rem',
+          fontWeight: 600,
+        }}>
+          Tu plan está cancelado. El sitio seguirá activo hasta el {new Date(subscription.current_period_end).toLocaleDateString('es-AR')}.
+        </div>
+      )}
 
       <header style={{ marginBottom: '3rem' }}>
         <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
@@ -610,10 +671,32 @@ export default function EditorPage() {
                   disabled={userPlan === 'free' || userPlan === 'basic'}
                   style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '10px', background: 'var(--bg-dark-secondary)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', outline: 'none', opacity: (userPlan === 'free' || userPlan === 'basic') ? 0.6 : 1, fontSize: '1rem' }}
                 />
+                {customDomain && customDomainStatus && (
+                  <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {customDomainStatus === 'pending' && (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.7rem', borderRadius: '999px', background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', fontSize: '0.75rem', fontWeight: 700 }}>
+                        <AlertCircle size={12} /> ESPERANDO DNS
+                      </span>
+                    )}
+                    {customDomainStatus === 'verified' && (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.7rem', borderRadius: '999px', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', fontSize: '0.75rem', fontWeight: 700 }}>
+                        <CheckCircle size={12} /> VERIFICADO
+                      </span>
+                    )}
+                    {customDomainStatus === 'failed' && (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.35rem 0.7rem', borderRadius: '999px', background: 'rgba(239, 68, 68, 0.12)', color: '#ef4444', fontSize: '0.75rem', fontWeight: 700 }}>
+                        <AlertCircle size={12} /> NO RESUELVE
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div style={{ marginTop: '1.5rem', padding: '1.25rem', borderRadius: '12px', background: 'var(--bg-dark)', border: '1px solid var(--border-subtle)' }}>
                   <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Configuración DNS</h4>
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
                     Apuntá un Registro <strong>CNAME</strong> de tu dominio a: <code style={{ color: 'var(--color-primary-light)', background: 'rgba(99, 102, 241, 0.1)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>cname.vercel-dns.com</code>
+                  </p>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.6, marginTop: '0.75rem' }}>
+                    Una vez configurado el DNS, contactanos para verificar el dominio. La propagación puede demorar hasta 48 horas.
                   </p>
                 </div>
                 {(userPlan === 'free' || userPlan === 'basic') && (
