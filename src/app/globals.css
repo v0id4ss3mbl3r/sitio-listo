@@ -5,38 +5,43 @@
 /* ─────────────────────────────────────────────────────────── */
 
 :root {
-  /* Brand Colors (same for both) */
-  --color-primary: #6366f1;
-  --color-primary-light: #818cf8;
-  --color-primary-dark: #4f46e5;
-  --color-secondary: #06b6d4;
-  --color-accent: #f59e0b;
+  /* Brand Colors — tan/cuero apagado, no azul brillante.
+     Si quieren cambiar el acento a otro tono warm, son solo estas 3 vars:
+       oliva:    #6B7C4F / #8B9D6E / #4F5C3A
+       terracota:#A6604D / #BC7C68 / #844838
+       burgundy: #8B3F4F / #A55C6B / #6B2F3D
+  */
+  --color-primary: #8B6F3F;
+  --color-primary-light: #A88656;
+  --color-primary-dark: #6B5530;
+  --color-secondary: #5C7060;
+  --color-accent: #B8956A;
 
-  /* Light Theme (Default) */
-  --bg-dark: #ffffff;
-  --bg-dark-secondary: #f8fafc;
-  --bg-card: rgba(255, 255, 255, 0.8);
-  --bg-card-hover: rgba(248, 250, 252, 0.9);
+  /* Light Theme (Default) — cream paper */
+  --bg-dark: #FAF8F2;
+  --bg-dark-secondary: #F4F1E8;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #FAF8F2;
 
-  /* Text Light */
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  /* Text Light — carbón cálido en vez de azul-frío */
+  --text-primary: #2A2A24;
+  --text-secondary: #5C5C52;
+  --text-muted: #8B8B7E;
 
   /* Borders Light */
-  --border-subtle: rgba(15, 23, 42, 0.1);
-  --border-hover: rgba(99, 102, 241, 0.3);
+  --border-subtle: rgba(42, 42, 36, 0.10);
+  --border-hover: rgba(139, 111, 63, 0.30);
 
-  /* Gradients — el primary deja de ser gradient (se vuelve solid), pero
-     mantenemos --gradient-hero para text-gradient en titulares clave. */
+  /* Gradients — gradient-primary es solid; gradient-hero usado solo en
+     el text-gradient del headline principal, con la nueva paleta warm. */
   --gradient-primary: var(--color-primary);
-  --gradient-hero: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #0284c7 100%);
-  --gradient-glow: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.06) 0%, transparent 70%);
+  --gradient-hero: linear-gradient(135deg, #8B6F3F 0%, #A6604D 50%, #6B5530 100%);
+  --gradient-glow: radial-gradient(ellipse at center, rgba(139, 111, 63, 0.06) 0%, transparent 70%);
 
-  /* Sombras planas/sutiles */
+  /* Sombras planas/sutiles, tonalidad cálida */
   --shadow-glow: 0 0 0 0 transparent;
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04);
-  --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 1px 3px rgba(42, 42, 36, 0.04);
+  --shadow-elevated: 0 4px 16px rgba(42, 42, 36, 0.06);
 
   /* Common Misc */
   --radius-sm: 0.5rem;
@@ -50,37 +55,43 @@
   --transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Focus ring */
-  --ring-primary: 0 0 0 3px rgba(99, 102, 241, 0.25);
-  --ring-danger: 0 0 0 3px rgba(239, 68, 68, 0.25);
+  /* Focus ring — tan apagado */
+  --ring-primary: 0 0 0 3px rgba(139, 111, 63, 0.25);
+  --ring-danger: 0 0 0 3px rgba(168, 80, 80, 0.25);
 
   --background: var(--bg-dark);
   --foreground: var(--text-primary);
 }
 
 .dark {
-  /* Dark Theme */
-  --bg-dark: #050816;
-  --bg-dark-secondary: #0c1225;
-  --bg-card: rgba(15, 23, 42, 0.6);
-  --bg-card-hover: rgba(30, 41, 59, 0.7);
+  /* Dark Theme — charcoal cálido (no azul) */
+  --color-primary: #C29A6F;       /* tan más claro para fondo oscuro */
+  --color-primary-light: #D4B388;
+  --color-primary-dark: #A88656;
 
-  /* Text Dark */
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --bg-dark: #1A1814;             /* charcoal cálido, casi café muy oscuro */
+  --bg-dark-secondary: #211E18;
+  --bg-card: #211E18;
+  --bg-card-hover: #2A2620;
+
+  /* Text Dark — cream */
+  --text-primary: #ECE6D8;
+  --text-secondary: #B8B0A0;
+  --text-muted: #7A7368;
 
   /* Borders Dark */
-  --border-subtle: rgba(148, 163, 184, 0.1);
-  --border-hover: rgba(99, 102, 241, 0.3);
+  --border-subtle: rgba(236, 230, 216, 0.10);
+  --border-hover: rgba(194, 154, 111, 0.40);
 
-  /* Gradients Dark */
-  --gradient-hero: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
-  --gradient-glow: radial-gradient(ellipse at center, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+  /* Gradients Dark — warm */
+  --gradient-hero: linear-gradient(135deg, #C29A6F 0%, #BC7C68 50%, #A88656 100%);
+  --gradient-glow: radial-gradient(ellipse at center, rgba(194, 154, 111, 0.08) 0%, transparent 70%);
 
   --shadow-glow: 0 0 0 0 transparent;
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.25);
-  --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.30);
+  --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.40);
+
+  --ring-primary: 0 0 0 3px rgba(194, 154, 111, 0.30);
 }
 
 @theme inline {
@@ -107,9 +118,35 @@ html {
 body {
   background: var(--bg-dark);
   color: var(--text-primary);
-  font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+  font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Titulos: serif "de imprenta". Aplicar via etiqueta para que todo lo
+   que no tenga clase específica herede el estilo de lectura. */
+h1, h2, h3, h4 {
+  font-family: var(--font-serif), Georgia, 'Times New Roman', serif;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+h1 { font-weight: 700; }
+
+p {
+  line-height: 1.7;
+}
+
+/* Para texto largo (artículos, descripciones), un poco más de aire. */
+.prose {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--text-secondary);
 }
 
 /* ─────────────────────────────────────────────────────────── */
@@ -117,10 +154,12 @@ body {
 /* ─────────────────────────────────────────────────────────── */
 
 .gradient-text {
-  background: var(--gradient-hero);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  /* En la nueva paleta warm, el "destacado" del headline es italic
+     serif en color de marca, mucho más sobrio que un degradé. */
+  font-style: italic;
+  color: var(--color-primary);
+  background: none;
+  -webkit-text-fill-color: currentColor;
 }
 
 .glass-card {
