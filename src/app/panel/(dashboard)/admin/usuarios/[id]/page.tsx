@@ -193,7 +193,7 @@ export default async function AdminUsuarioDetallePage({
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="glass-card" style={{ padding: '1rem' }}>
-      <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>
+      <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
         {label}
       </p>
       <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>{value}</p>

@@ -514,7 +514,7 @@ export function CatalogManager({
           </Field>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.6rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-muted)' }}>
               Números de WhatsApp para recibir pedidos
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -630,7 +630,7 @@ const inputStyle: React.CSSProperties = {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.4rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.4rem', color: 'var(--text-muted)' }}>
         {label}
       </label>
       {children}

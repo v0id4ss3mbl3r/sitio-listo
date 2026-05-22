@@ -324,10 +324,8 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 
 const labelStyle: React.CSSProperties = {
   display: 'block',
-  fontSize: '0.7rem',
-  fontWeight: 700,
+  fontSize: '0.78rem',
+  fontWeight: 600,
   color: 'var(--text-muted)',
-  textTransform: 'uppercase',
-  letterSpacing: '0.05em',
   marginBottom: '0.35rem',
 };

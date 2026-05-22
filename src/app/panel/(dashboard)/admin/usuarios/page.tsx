@@ -105,8 +105,6 @@ export default async function AdminUsuariosPage({
                     fontSize: '0.8rem',
                     fontWeight: 600,
                     color: 'var(--text-secondary)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
                   }}
                 >
                   {col}

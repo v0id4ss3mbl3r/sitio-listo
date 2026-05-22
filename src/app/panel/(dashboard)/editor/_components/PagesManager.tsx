@@ -263,7 +263,7 @@ export function PagesManager({ userPlan, limit }: Props) {
             ) : (
               <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
                 <div style={{ flex: '1 1 160px' }}>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.4rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Slug</label>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.4rem', color: 'var(--text-muted)' }}>Slug</label>
                   <input
                     type="text"
                     value={newSlug}
@@ -273,7 +273,7 @@ export function PagesManager({ userPlan, limit }: Props) {
                   />
                 </div>
                 <div style={{ flex: '2 1 220px' }}>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.4rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Título</label>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.4rem', color: 'var(--text-muted)' }}>Título</label>
                   <input
                     type="text"
                     value={newTitle}

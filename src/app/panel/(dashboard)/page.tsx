@@ -116,7 +116,7 @@ export default async function PanelPage() {
                 {planName}
               </span>
               {subscription?.status === 'authorized' && (
-                <span style={{ padding: '0.2rem 0.6rem', borderRadius: '9999px', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
+                <span style={{ padding: '0.2rem 0.6rem', borderRadius: '9999px', fontSize: '0.72rem', fontWeight: 600, background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
                   Activo
                 </span>
               )}

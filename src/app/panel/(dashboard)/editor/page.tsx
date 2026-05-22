@@ -398,10 +398,8 @@ export default function EditorPage() {
             onClick={() => setActiveTab(tab)}
             style={{
               padding: '1rem 1.5rem',
-              fontSize: '0.85rem',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
+              fontSize: '0.95rem',
+              fontWeight: 600,
               background: 'transparent',
               border: 'none',
               borderBottom: `3px solid ${activeTab === tab ? 'var(--color-primary)' : 'transparent'}`,
@@ -445,7 +443,7 @@ export default function EditorPage() {
                   <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--text-secondary)' }}>Colores de la Marca</label>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Principal</label>
+                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Principal</label>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '10px', overflow: 'hidden', border: '2px solid var(--border-subtle)' }}>
                           <input
@@ -459,7 +457,7 @@ export default function EditorPage() {
                       </div>
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Secundario</label>
+                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Secundario</label>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '10px', overflow: 'hidden', border: '2px solid var(--border-subtle)' }}>
                           <input
@@ -534,7 +532,7 @@ export default function EditorPage() {
                     >
                       {isLocked && <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: 'white', fontSize: '0.65rem', fontWeight: 800, padding: '0.25rem 0.6rem', borderRadius: '20px', letterSpacing: '0.05em' }}>PRO</div>}
                       <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.4rem' }}>{tpl.name}</h3>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{tpl.type}</span>
+                      <span style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--text-muted)' }}>{tpl.type}</span>
                     </div>
                   );
                 })}
@@ -678,7 +676,7 @@ export default function EditorPage() {
               <h2 style={{ fontSize: '1.5rem', marginBottom: '2rem', fontWeight: 800, color: 'var(--text-primary)' }}>Subdominio Gratuito</h2>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <label style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)' }}>
                   Tu dirección en SitioListo
                 </label>
                 

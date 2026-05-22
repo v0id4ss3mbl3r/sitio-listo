@@ -91,7 +91,7 @@ export default function CuentaPage() {
       <div className="glass-card" style={{ padding: '2.5rem', marginBottom: '3rem' }}>
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '2rem', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <h3 style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            <h3 style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)' }}>
               Plan Actual
             </h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -101,10 +101,8 @@ export default function CuentaPage() {
               <span style={{
                 padding: '0.25rem 0.75rem',
                 borderRadius: '9999px',
-                fontSize: '0.625rem',
+                fontSize: '0.72rem',
                 fontWeight: '600',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
                 background: currentSubscription?.status === 'authorized' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
                 color: currentSubscription?.status === 'authorized' ? '#10b981' : '#f59e0b',
               }}>
@@ -139,10 +137,8 @@ export default function CuentaPage() {
                   borderRadius: '8px',
                   border: '1px solid rgba(239, 68, 68, 0.3)',
                   color: '#ef4444',
-                  fontSize: '0.75rem',
+                  fontSize: '0.85rem',
                   fontWeight: '600',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
                   background: 'transparent',
                   cursor: loading !== null ? 'not-allowed' : 'pointer',
                   opacity: loading !== null ? 0.5 : 1,
@@ -191,24 +187,22 @@ export default function CuentaPage() {
                   right: '-30px',
                   background: 'var(--color-primary)',
                   color: 'white',
-                  fontSize: '0.625rem',
-                  fontWeight: '700',
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
                   padding: '0.35rem 1.5rem',
-                  letterSpacing: '0.1em',
                   transform: 'rotate(45deg)',
-                  textTransform: 'uppercase',
                 }}>
-                  PRO
+                  Pro
                 </div>
               )}
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <span style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-primary)' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--color-primary)' }}>
                   {plan.name}
                 </span>
                 <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
                   <span style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--text-primary)' }}>{plan.priceDisplay}</span>
-                  <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>/mes</span>
+                  <span style={{ fontSize: '0.85rem', fontWeight: '500', color: 'var(--text-secondary)' }}>/mes</span>
                 </div>
               </div>
 
@@ -234,10 +228,8 @@ export default function CuentaPage() {
                 style={{
                   width: '100%',
                   padding: '1rem',
-                  fontSize: '0.8rem',
+                  fontSize: '0.95rem',
                   fontWeight: '600',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
                   opacity: (isCurrentPlan || loading !== null) ? 0.5 : 1,
                   cursor: (isCurrentPlan || loading !== null) ? 'not-allowed' : 'pointer',
                 }}
@@ -262,7 +254,7 @@ export default function CuentaPage() {
           }}
         >
           <div style={{ marginBottom: '1.5rem' }}>
-            <span style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-primary)' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--color-primary)' }}>
               Personalizado
             </span>
             <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
@@ -291,10 +283,8 @@ export default function CuentaPage() {
             style={{
               width: '100%',
               padding: '1rem',
-              fontSize: '0.8rem',
+              fontSize: '0.95rem',
               fontWeight: '600',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
               textAlign: 'center',
               textDecoration: 'none',
               display: 'block',

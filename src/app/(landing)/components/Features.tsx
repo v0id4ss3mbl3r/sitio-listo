@@ -41,7 +41,7 @@ export default function Features() {
   return (
     <section id="features" style={{ padding: '6rem 1.5rem', maxWidth: '1200px', margin: '0 auto' }}>
       <div style={{ textAlign: 'center', marginBottom: '4rem', maxWidth: '600px', margin: '0 auto 4rem' }}>
-        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-primary-light)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-primary-light)' }}>
           Características
         </span>
         <h2 style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 700, color: 'var(--text-primary)', marginTop: '0.75rem', lineHeight: 1.2, letterSpacing: '-0.02em' }}>

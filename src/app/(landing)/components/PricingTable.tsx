@@ -1,12 +1,16 @@
 import { PLANS } from '@/lib/constants';
 
+// Planes ocultos de la landing pública. El plan 'test' existe para QA
+// interno (smoke test de MercadoPago) pero no se ofrece a usuarios.
+const HIDDEN_FROM_LANDING = new Set(['test']);
+
 export default function PricingTable() {
-  const plans = Object.values(PLANS);
+  const plans = Object.values(PLANS).filter((p) => !HIDDEN_FROM_LANDING.has(p.slug));
 
   return (
     <section id="precios" style={{ padding: '6rem 1.5rem', maxWidth: '1200px', margin: '0 auto' }}>
       <div style={{ textAlign: 'center', marginBottom: '4rem', maxWidth: '600px', margin: '0 auto 4rem' }}>
-        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-primary-light)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-primary-light)' }}>
           Precios
         </span>
         <h2 style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 700, color: 'var(--text-primary)', marginTop: '0.75rem', lineHeight: 1.2 }}>
@@ -48,7 +52,7 @@ export default function PricingTable() {
               </div>
             )}
 
-            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-primary-light)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-primary-light)' }}>
               {plan.name}
             </span>
 
