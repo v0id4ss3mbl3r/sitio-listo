@@ -30,8 +30,8 @@ export default function PricingTable() {
               overflow: 'hidden',
               ...(plan.highlighted
                 ? {
-                    border: '1px solid rgba(99, 102, 241, 0.4)',
-                    boxShadow: '0 0 40px rgba(99, 102, 241, 0.1)',
+                    border: '1px solid rgba(99, 102, 241, 0.35)',
+                    boxShadow: 'var(--shadow-elevated)',
                   }
                 : {}),
             }}
