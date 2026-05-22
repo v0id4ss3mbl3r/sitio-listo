@@ -69,18 +69,41 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/', req.url));
     }
 
+    // Una sola query a profiles trae role + blocked_until para no duplicar
+    // requests por request (admin check y block check los necesitan).
+    let profileRole: string | null = null;
+    let blockedUntil: string | null = null;
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, blocked_until')
+        .eq('id', user.id)
+        .maybeSingle();
+      profileRole = profile?.role ?? null;
+      blockedUntil = profile?.blocked_until ?? null;
+    }
+
+    // Bloqueo: si profile.blocked_until > NOW() y NO es admin, cerramos sesión
+    // y mandamos a login con el motivo. Admins no se pueden bloquear a sí mismos
+    // (lo prevenimos en el endpoint) pero por las dudas, no aplicamos esto a admins.
+    if (
+      user &&
+      blockedUntil &&
+      new Date(blockedUntil).getTime() > Date.now() &&
+      profileRole !== 'admin'
+    ) {
+      await supabase.auth.signOut();
+      const loginUrl = new URL('/login', req.url);
+      loginUrl.searchParams.set('blocked_until', blockedUntil);
+      return NextResponse.redirect(loginUrl, { headers: response.headers });
+    }
+
     // Protección de /admin/*
     if (url.pathname.startsWith('/admin')) {
       if (!user) {
         return NextResponse.redirect(new URL('/login', req.url));
       }
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (profile?.role !== 'admin') {
+      if (profileRole !== 'admin') {
         return NextResponse.redirect(new URL('/', req.url));
       }
     }

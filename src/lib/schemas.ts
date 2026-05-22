@@ -150,6 +150,51 @@ export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;
 export type UpdateStoreSettingsInput = z.infer<typeof updateStoreSettingsSchema>;
 
+// ─── admin: usuarios ──────────────────────────────────────────
+export const blockUserSchema = z.object({
+  // ISO timestamp futuro. Para "permanente" usar una fecha lejana (ej. 9999-01-01).
+  until: z.string().datetime(),
+  reason: z.string().max(500).optional(),
+});
+
+export const notifyUserSchema = z.object({
+  title: z.string().min(1).max(120),
+  body: z.string().min(1).max(2000),
+});
+
+export const setPasswordSchema = z.object({
+  password: z.string().min(8).max(72),
+});
+
+// ─── admin: sitios ────────────────────────────────────────────
+export const adminUpdateSiteSchema = z.object({
+  subdomain: z.string().min(3).max(63).optional(),
+  custom_domain: z.string().max(253).nullable().optional(),
+  is_active: z.boolean().optional(),
+  is_banned: z.boolean().optional(),
+  template_id: z.string().min(1).max(64).optional(),
+});
+
+// ─── admin: suscripciones ─────────────────────────────────────
+export const adminUpdateSubscriptionSchema = z.object({
+  status: z.enum(['authorized', 'paused', 'cancelled', 'pending']).optional(),
+  current_period_end: z.string().datetime().nullable().optional(),
+});
+
+// ─── admin: plantillas ────────────────────────────────────────
+export const adminUpdateTemplateSchema = z.object({
+  name: z.string().min(1).max(120).optional(),
+  description: z.string().max(1000).nullable().optional(),
+  category: z.enum(['restaurant', 'portfolio', 'ecommerce', 'landing', 'services']).optional(),
+  plan_required: z.enum(['basic', 'pro', 'extremo']).optional(),
+  min_plan: z.enum(['basic', 'pro', 'extremo']).nullable().optional(),
+  thumbnail_url: z.string().url().nullable().optional(),
+  preview_url: z.string().url().nullable().optional(),
+  sort_order: z.number().int().min(0).max(9999).optional(),
+  is_active: z.boolean().optional(),
+  tags: z.array(z.string().min(1).max(40)).max(20).optional(),
+});
+
 // Helper para parsear un body de Request y devolver un error 400 estructurado
 // si el shape no matchea. Se usa así:
 //   const parsed = await parseJson(req, createSiteSchema);

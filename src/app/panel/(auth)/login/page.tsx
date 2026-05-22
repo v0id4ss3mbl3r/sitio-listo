@@ -1,15 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/browser';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [blockedUntil, setBlockedUntil] = useState<string | null>(null);
+
+  useEffect(() => {
+    const until = searchParams.get('blocked_until');
+    if (until) {
+      try {
+        setBlockedUntil(new Date(until).toLocaleString('es-AR'));
+      } catch {
+        setBlockedUntil(null);
+      }
+    }
+  }, [searchParams]);
 
   const supabase = createClient();
 
@@ -61,6 +75,13 @@ export default function LoginPage() {
           <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem', fontSize: '0.9rem' }}>Ingresá a tu panel de control</p>
         </div>
 
+        {blockedUntil && (
+          <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)', color: '#ef4444', padding: '0.85rem 1rem', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+            <strong>Tu cuenta está suspendida.</strong>
+            <br />
+            Podrás volver a ingresar el {blockedUntil}.
+          </div>
+        )}
         {error && (
           <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '0.75rem', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '1.5rem', textAlign: 'center' }}>
             {error}

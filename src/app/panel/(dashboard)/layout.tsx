@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
+import { NotificationsBell } from '../_components/NotificationsBell';
+
 export default function PanelLayout({
   children,
 }: {
@@ -206,10 +208,11 @@ export default function PanelLayout({
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            <NotificationsBell />
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <ThemeToggle />
             </div>
-            
+
             <div style={{ width: '1px', height: '24px', background: 'var(--border-subtle)' }} className="hidden sm:block" />
 
             <button
