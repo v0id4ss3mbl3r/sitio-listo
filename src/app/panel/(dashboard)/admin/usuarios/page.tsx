@@ -37,12 +37,15 @@ export default async function AdminUsuariosPage({
   const offset = (page - 1) * PAGE_SIZE;
 
   const supabase = await createClient();
+  // Sintaxis PostgREST: `tabla!fk_name(cols)` referencia la FK exacta para
+  // evitar ambigüedad ("Could not find a relationship in the schema cache").
+  // LEFT JOIN es el comportamiento por default cuando no se usa !inner.
   let query = supabase
     .from('profiles')
     .select(
       `id, email, full_name, created_at, role, blocked_until,
-       subscriptions!left(status, plan_type),
-       sites!left(id)`,
+       subscriptions!subscriptions_user_id_fkey(status, plan_type),
+       sites!sites_user_id_fkey(id)`,
       { count: 'exact' }
     )
     .order('created_at', { ascending: false })

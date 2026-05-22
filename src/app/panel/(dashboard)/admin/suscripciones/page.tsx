@@ -47,7 +47,7 @@ export default async function AdminSuscripcionesPage({
       `id, plan_type, status, amount, mp_preapproval_id,
        current_period_end, trial_end_date,
        created_at, updated_at,
-       profiles!inner(email, full_name)`,
+       profiles!subscriptions_user_id_fkey(email, full_name)`,
       { count: 'exact' }
     )
     .order('updated_at', { ascending: false })

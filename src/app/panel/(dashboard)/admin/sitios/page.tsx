@@ -38,7 +38,7 @@ export default async function AdminSitiosPage({
     .select(
       `id, subdomain, custom_domain, template_id, is_active, is_banned,
        created_at, updated_at,
-       profiles!inner(email, full_name)`,
+       profiles!sites_user_id_fkey(email, full_name)`,
       { count: 'exact' }
     )
     .order('updated_at', { ascending: false })
