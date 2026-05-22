@@ -3,7 +3,16 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/browser';
 import { Save, ExternalLink, CheckCircle, AlertCircle } from 'lucide-react';
-import { PLAN_PAGE_LIMITS, PlanType, TEMPLATES, TemplateId } from '@/lib/constants';
+import {
+  PLAN_CATEGORY_LIMITS,
+  PLAN_PAGE_LIMITS,
+  PLAN_PRODUCT_LIMITS,
+  PlanType,
+  TEMPLATES,
+  TemplateId,
+  hasCatalogFeature,
+} from '@/lib/constants';
+import { CatalogManager } from './_components/CatalogManager';
 import { PagesManager } from './_components/PagesManager';
 
 interface Subscription {
@@ -17,7 +26,7 @@ interface Subscription {
   created_at: string;
 }
 
-type TabType = 'appearance' | 'content' | 'pages' | 'domain';
+type TabType = 'appearance' | 'content' | 'pages' | 'catalog' | 'domain';
 
 export default function EditorPage() {
   const supabase = createClient();
@@ -383,7 +392,7 @@ export default function EditorPage() {
         overflowX: 'auto',
         scrollbarWidth: 'none'
       }}>
-        {(['appearance', 'content', 'pages', 'domain'] as TabType[]).map(tab => (
+        {((['appearance', 'content', 'pages', templateId === 'tienda-catalogo' ? 'catalog' : null, 'domain'].filter(Boolean)) as TabType[]).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -405,6 +414,7 @@ export default function EditorPage() {
             {tab === 'appearance' && 'Apariencia'}
             {tab === 'content' && 'Contenido'}
             {tab === 'pages' && 'Páginas'}
+            {tab === 'catalog' && 'Catálogo'}
             {tab === 'domain' && 'Dominio'}
           </button>
         ))}
@@ -646,6 +656,18 @@ export default function EditorPage() {
           <PagesManager
             userPlan={userPlan}
             limit={PLAN_PAGE_LIMITS[userPlan as PlanType] ?? 1}
+          />
+        )}
+
+        {/* TAB: CATÁLOGO (solo si template = tienda-catalogo) */}
+        {activeTab === 'catalog' && templateId === 'tienda-catalogo' && (
+          <CatalogManager
+            userPlan={userPlan}
+            productLimit={PLAN_PRODUCT_LIMITS[userPlan as PlanType] ?? 0}
+            categoryLimit={PLAN_CATEGORY_LIMITS[userPlan as PlanType] ?? 0}
+            bannerCustomEnabled={hasCatalogFeature(userPlan, 'banner_custom')}
+            featuredEnabled={hasCatalogFeature(userPlan, 'featured_products')}
+            multipleImagesEnabled={hasCatalogFeature(userPlan, 'multiple_images')}
           />
         )}
 

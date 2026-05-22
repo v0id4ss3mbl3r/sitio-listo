@@ -60,6 +60,96 @@ export const updatePageSchema = z.object({
 export type CreatePageInput = z.infer<typeof createPageSchema>;
 export type UpdatePageInput = z.infer<typeof updatePageSchema>;
 
+// ─── catálogo: categories ─────────────────────────────────────
+const categorySlugSchema = z
+  .string()
+  .min(1)
+  .max(63)
+  .regex(
+    /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/,
+    'Slug inválido (letras minúsculas, números y guiones)'
+  );
+
+export const createCategorySchema = z.object({
+  name: z.string().min(1).max(60),
+  slug: categorySlugSchema,
+  sort_order: z.number().int().min(0).max(9999).optional().default(0),
+});
+
+export const updateCategorySchema = z.object({
+  name: z.string().min(1).max(60).optional(),
+  slug: categorySlugSchema.optional(),
+  sort_order: z.number().int().min(0).max(9999).optional(),
+});
+
+// ─── catálogo: products ───────────────────────────────────────
+const productSlugSchema = z
+  .string()
+  .min(1)
+  .max(63)
+  .regex(
+    /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/,
+    'Slug inválido (letras minúsculas, números y guiones)'
+  );
+
+const httpsUrlSchema = z
+  .string()
+  .url()
+  .refine((v) => v.startsWith('http://') || v.startsWith('https://'), 'URL inválida');
+
+export const createProductSchema = z.object({
+  name: z.string().min(1).max(120),
+  slug: productSlugSchema,
+  description: z.string().max(5000).nullable().optional(),
+  price: z.number().nonnegative().max(1_000_000_000),
+  compare_at_price: z.number().nonnegative().max(1_000_000_000).nullable().optional(),
+  image_url: httpsUrlSchema.nullable().optional(),
+  image_urls: z.array(httpsUrlSchema).max(8).optional().default([]),
+  category_id: z.string().uuid().nullable().optional(),
+  in_stock: z.boolean().optional().default(true),
+  is_featured: z.boolean().optional().default(false),
+  sort_order: z.number().int().min(0).max(9999).optional().default(0),
+  is_active: z.boolean().optional().default(true),
+});
+
+export const updateProductSchema = z.object({
+  name: z.string().min(1).max(120).optional(),
+  slug: productSlugSchema.optional(),
+  description: z.string().max(5000).nullable().optional(),
+  price: z.number().nonnegative().max(1_000_000_000).optional(),
+  compare_at_price: z.number().nonnegative().max(1_000_000_000).nullable().optional(),
+  image_url: httpsUrlSchema.nullable().optional(),
+  image_urls: z.array(httpsUrlSchema).max(8).optional(),
+  category_id: z.string().uuid().nullable().optional(),
+  in_stock: z.boolean().optional(),
+  is_featured: z.boolean().optional(),
+  sort_order: z.number().int().min(0).max(9999).optional(),
+  is_active: z.boolean().optional(),
+});
+
+// ─── catálogo: store_settings ─────────────────────────────────
+const whatsappNumberSchema = z.object({
+  id: z.string().min(1).max(20),
+  label: z.string().min(1).max(40),
+  // Solo dígitos, con código de país. Ej: 5492235922077
+  phone: z.string().regex(/^[0-9]{8,15}$/, 'Teléfono inválido (solo dígitos, con código de país)'),
+});
+
+export const updateStoreSettingsSchema = z.object({
+  theme_color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Color hex inválido').optional(),
+  whatsapp_numbers: z.array(whatsappNumberSchema).max(3).optional(),
+  banner_title: z.string().max(120).nullable().optional(),
+  banner_subtitle: z.string().max(200).nullable().optional(),
+  banner_image_url: httpsUrlSchema.nullable().optional(),
+  store_description: z.string().max(500).nullable().optional(),
+});
+
+export type CreateProductInput = z.infer<typeof createProductSchema>;
+export type UpdateProductInput = z.infer<typeof updateProductSchema>;
+export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
+export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;
+export type UpdateStoreSettingsInput = z.infer<typeof updateStoreSettingsSchema>;
+
 // Helper para parsear un body de Request y devolver un error 400 estructurado
 // si el shape no matchea. Se usa así:
 //   const parsed = await parseJson(req, createSiteSchema);

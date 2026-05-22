@@ -123,3 +123,77 @@ export function getHomeContent(_site: SiteRow, pages: PageRow[]) {
   }
   return { content: {}, title: 'Inicio' };
 }
+
+// ── Catálogo (template tienda-catalogo) ──────────────────────
+export type CatalogCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  sort_order: number;
+};
+
+export type CatalogProduct = {
+  id: string;
+  category_id: string | null;
+  name: string;
+  slug: string;
+  description: string | null;
+  price: number;
+  compare_at_price: number | null;
+  image_url: string | null;
+  image_urls: string[];
+  in_stock: boolean;
+  is_featured: boolean;
+  sort_order: number;
+};
+
+export type CatalogSettings = {
+  theme_color: string;
+  whatsapp_numbers: Array<{ id: string; label: string; phone: string }>;
+  banner_title: string | null;
+  banner_subtitle: string | null;
+  banner_image_url: string | null;
+  store_description: string | null;
+};
+
+export function fetchCatalogCached(siteId: string, domain: string) {
+  return unstable_cache(
+    async (): Promise<{
+      products: CatalogProduct[];
+      categories: CatalogCategory[];
+      settings: CatalogSettings | null;
+    }> => {
+      const supabase = createPublicClient();
+      const [productsRes, categoriesRes, settingsRes] = await Promise.all([
+        supabase
+          .from('products')
+          .select(
+            'id, category_id, name, slug, description, price, compare_at_price, image_url, image_urls, in_stock, is_featured, sort_order'
+          )
+          .eq('site_id', siteId)
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true }),
+        supabase
+          .from('product_categories')
+          .select('id, name, slug, sort_order')
+          .eq('site_id', siteId)
+          .order('sort_order', { ascending: true }),
+        supabase
+          .from('store_settings')
+          .select(
+            'theme_color, whatsapp_numbers, banner_title, banner_subtitle, banner_image_url, store_description'
+          )
+          .eq('site_id', siteId)
+          .maybeSingle(),
+      ]);
+
+      return {
+        products: (productsRes.data as CatalogProduct[]) ?? [],
+        categories: (categoriesRes.data as CatalogCategory[]) ?? [],
+        settings: (settingsRes.data as CatalogSettings | null) ?? null,
+      };
+    },
+    ['catalog-by-site', siteId],
+    { tags: [siteCacheTag(domain)], revalidate: CACHE_REVALIDATE_SECONDS }
+  )();
+}

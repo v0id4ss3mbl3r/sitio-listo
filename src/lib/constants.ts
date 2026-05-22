@@ -95,6 +95,46 @@ export const PLAN_SITE_LIMITS: Record<PlanType, number> = {
   personalizado: Infinity,
 };
 
+// ── Catálogo (template tienda-catalogo) ──────────────────────
+// Límite de productos por sitio. Aplicar en POST /api/catalog/products.
+export const PLAN_PRODUCT_LIMITS: Record<PlanType, number> = {
+  test: 50,
+  basic: 0, // basic no tiene acceso al template
+  pro: 50,
+  extremo: Infinity,
+  personalizado: Infinity,
+};
+
+// Límite de categorías de productos por sitio.
+export const PLAN_CATEGORY_LIMITS: Record<PlanType, number> = {
+  test: 10,
+  basic: 0,
+  pro: 10,
+  extremo: Infinity,
+  personalizado: Infinity,
+};
+
+// Features del catálogo gateadas por plan. true = el plan tiene acceso.
+// Usar en UI y endpoints para mostrar/permitir.
+export type CatalogFeature =
+  | 'banner_custom'        // editar banner_title / subtitle / image
+  | 'featured_products'    // marcar productos como is_featured (badge "Oferta")
+  | 'multiple_images'      // image_urls (gallery)
+  | 'csv_import';          // importar productos desde CSV/Excel
+
+export const PLAN_CATALOG_FEATURES: Record<PlanType, ReadonlySet<CatalogFeature>> = {
+  test: new Set<CatalogFeature>(['banner_custom', 'featured_products', 'multiple_images', 'csv_import']),
+  basic: new Set<CatalogFeature>(),
+  pro: new Set<CatalogFeature>(),
+  extremo: new Set<CatalogFeature>(['banner_custom', 'featured_products', 'multiple_images', 'csv_import']),
+  personalizado: new Set<CatalogFeature>(['banner_custom', 'featured_products', 'multiple_images', 'csv_import']),
+};
+
+export function hasCatalogFeature(plan: string, feature: CatalogFeature): boolean {
+  const features = PLAN_CATALOG_FEATURES[plan as PlanType];
+  return features?.has(feature) ?? false;
+}
+
 // Subdominios que NO pueden ser reclamados por usuarios — chocan con el routing
 // del producto, con servicios estándar o son confusos para la marca.
 export const RESERVED_SUBDOMAINS: ReadonlySet<string> = new Set([
@@ -199,6 +239,13 @@ export const TEMPLATES = [
     type: 'ecommerce',
     plan: 'pro',
     component: 'TiendaExpress',
+  },
+  {
+    id: 'tienda-catalogo',
+    name: 'Tienda Catálogo',
+    type: 'ecommerce',
+    plan: 'pro',
+    component: 'TiendaCatalogo',
   },
 ] as const;
 

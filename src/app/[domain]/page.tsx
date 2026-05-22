@@ -5,8 +5,10 @@ import PortfolioMinimal from './templates/PortfolioMinimal';
 import LandingPro from './templates/LandingPro';
 import ServiciosPro from './templates/ServiciosPro';
 import TiendaExpress from './templates/TiendaExpress';
+import TiendaCatalogo from './templates/TiendaCatalogo';
 import {
   fetchActiveSubCached,
+  fetchCatalogCached,
   fetchSiteCached,
   fetchSitePagesCached,
   getHomeContent,
@@ -109,6 +111,21 @@ export default async function TenantHome({
   }
   if (template_id === 'tienda-express') {
     return <TiendaExpress {...props} />;
+  }
+
+  if (template_id === 'tienda-catalogo') {
+    const catalog = await fetchCatalogCached(site.id, domain);
+    return (
+      <TiendaCatalogo
+        siteName={props.siteName}
+        logoUrl={props.logoUrl}
+        primaryColor={props.primaryColor}
+        planType={props.planType}
+        products={catalog.products}
+        categories={catalog.categories}
+        settings={catalog.settings}
+      />
+    );
   }
 
   return (
