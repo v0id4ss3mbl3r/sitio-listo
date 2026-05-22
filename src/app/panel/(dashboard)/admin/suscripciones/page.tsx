@@ -120,7 +120,7 @@ export default async function AdminSuscripcionesPage({
             {(subs as Row[] | null)?.map((s) => {
               const statusStyle = STATUS_COLORS[s.status] ?? STATUS_COLORS.pending;
               return (
-                <tr key={s.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                <tr key={s.id} className="row-hover" style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem' }}>
                     <div style={{ color: 'var(--text-primary)' }}>{s.profiles?.full_name || '—'}</div>
                     <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{s.profiles?.email}</div>

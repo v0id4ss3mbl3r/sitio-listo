@@ -182,14 +182,7 @@ export function PagesManager({ userPlan, limit }: Props) {
                         </button>
                         <button
                           onClick={() => handleDelete(p.id)}
-                          style={{
-                            padding: '0.4rem 0.6rem',
-                            background: 'transparent',
-                            border: '1px solid rgba(239, 68, 68, 0.3)',
-                            color: '#ef4444',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                          }}
+                          className="btn-icon danger"
                           aria-label="Borrar página"
                         >
                           <Trash2 size={14} />

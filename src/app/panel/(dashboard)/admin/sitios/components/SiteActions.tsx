@@ -83,20 +83,20 @@ export default function SiteActions({
           value={draftSubdomain}
           onChange={(e) => setDraftSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
           placeholder="subdominio"
-          style={inputStyle}
+          className="input-base"
         />
         <input
           type="text"
           value={draftCustom}
           onChange={(e) => setDraftCustom(e.target.value)}
           placeholder="dominio.com (opcional)"
-          style={inputStyle}
+          className="input-base"
         />
         <div style={{ display: 'flex', gap: '0.35rem' }}>
-          <button disabled={busy} onClick={saveDomains} style={btnPrimary}>
+          <button disabled={busy} onClick={saveDomains} className="btn-action-primary">
             Guardar
           </button>
-          <button onClick={() => setEditing(false)} style={btnGhost}>
+          <button onClick={() => setEditing(false)} className="btn-ghost">
             Cancelar
           </button>
         </div>
@@ -106,42 +106,18 @@ export default function SiteActions({
 
   return (
     <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-      <button disabled={busy} onClick={toggleActive} style={btnGhost}>
+      <button disabled={busy} onClick={toggleActive} className="btn-ghost">
         {isActive ? 'Desactivar' : 'Activar'}
       </button>
-      <button onClick={() => setEditing(true)} style={btnGhost}>
+      <button onClick={() => setEditing(true)} className="btn-ghost">
         Dominio
       </button>
-      <button disabled={busy} onClick={toggleBan} style={isBanned ? btnGhost : btnWarning}>
+      <button disabled={busy} onClick={toggleBan} className={isBanned ? 'btn-ghost' : 'btn-warning'}>
         {isBanned ? 'Desbanear' : 'Banear'}
       </button>
-      <button disabled={busy} onClick={deleteSite} style={btnDanger}>
+      <button disabled={busy} onClick={deleteSite} className="btn-danger">
         Eliminar
       </button>
     </div>
   );
 }
-
-const inputStyle: React.CSSProperties = {
-  padding: '0.4rem 0.6rem',
-  borderRadius: '6px',
-  background: 'var(--bg-card)',
-  border: '1px solid var(--border)',
-  color: 'var(--text-primary)',
-  fontSize: '0.8rem',
-  outline: 'none',
-};
-const btnBase: React.CSSProperties = {
-  padding: '0.35rem 0.7rem',
-  borderRadius: '6px',
-  fontSize: '0.75rem',
-  fontWeight: 600,
-  cursor: 'pointer',
-  border: '1px solid var(--border)',
-  background: 'var(--bg-card)',
-  color: 'var(--text-primary)',
-};
-const btnGhost: React.CSSProperties = { ...btnBase };
-const btnPrimary: React.CSSProperties = { ...btnBase, background: 'var(--color-primary)', color: '#fff', borderColor: 'transparent' };
-const btnWarning: React.CSSProperties = { ...btnBase, color: '#f59e0b', borderColor: 'rgba(245,158,11,0.3)' };
-const btnDanger: React.CSSProperties = { ...btnBase, color: '#ef4444', borderColor: 'rgba(239,68,68,0.3)' };

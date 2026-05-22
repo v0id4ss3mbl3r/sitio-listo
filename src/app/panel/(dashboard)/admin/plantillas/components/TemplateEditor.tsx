@@ -118,13 +118,13 @@ export default function TemplateEditor({
           </span>
         </div>
         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-          <button disabled={busy} onClick={toggleActive} style={btnGhost}>
+          <button disabled={busy} onClick={toggleActive} className="btn-ghost">
             {template.is_active ? 'Desactivar' : 'Activar'}
           </button>
-          <button onClick={() => setExpanded(!expanded)} style={btnGhost}>
+          <button onClick={() => setExpanded(!expanded)} className="btn-ghost">
             {expanded ? 'Cerrar' : 'Editar'}
           </button>
-          <button disabled={busy} onClick={deleteTemplate} style={btnDanger}>
+          <button disabled={busy} onClick={deleteTemplate} className="btn-danger">
             Eliminar
           </button>
         </div>
@@ -133,10 +133,10 @@ export default function TemplateEditor({
       {expanded && (
         <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border)', display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
           <Field label="Nombre">
-            <input type="text" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} style={inputStyle} maxLength={120} />
+            <input type="text" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="input-base" maxLength={120} />
           </Field>
           <Field label="Categoría">
-            <select value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} style={inputStyle}>
+            <select value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} className="input-base">
               {CATEGORIES.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -145,7 +145,7 @@ export default function TemplateEditor({
             </select>
           </Field>
           <Field label="Plan requerido (gallery)">
-            <select value={draft.plan_required} onChange={(e) => setDraft({ ...draft, plan_required: e.target.value })} style={inputStyle}>
+            <select value={draft.plan_required} onChange={(e) => setDraft({ ...draft, plan_required: e.target.value })} className="input-base">
               {PLANS.map((p) => (
                 <option key={p} value={p}>
                   {p}
@@ -154,7 +154,7 @@ export default function TemplateEditor({
             </select>
           </Field>
           <Field label="Plan mínimo extra (opcional)">
-            <select value={draft.min_plan ?? ''} onChange={(e) => setDraft({ ...draft, min_plan: e.target.value || null })} style={inputStyle}>
+            <select value={draft.min_plan ?? ''} onChange={(e) => setDraft({ ...draft, min_plan: e.target.value || null })} className="input-base">
               <option value="">— ninguno —</option>
               {PLANS.map((p) => (
                 <option key={p} value={p}>
@@ -164,24 +164,24 @@ export default function TemplateEditor({
             </select>
           </Field>
           <Field label="Orden">
-            <input type="number" value={draft.sort_order} onChange={(e) => setDraft({ ...draft, sort_order: parseInt(e.target.value) || 0 })} style={inputStyle} min={0} max={9999} />
+            <input type="number" value={draft.sort_order} onChange={(e) => setDraft({ ...draft, sort_order: parseInt(e.target.value) || 0 })} className="input-base" min={0} max={9999} />
           </Field>
           <Field label="Thumbnail URL">
-            <input type="url" value={draft.thumbnail_url ?? ''} onChange={(e) => setDraft({ ...draft, thumbnail_url: e.target.value })} style={inputStyle} placeholder="https://..." />
+            <input type="url" value={draft.thumbnail_url ?? ''} onChange={(e) => setDraft({ ...draft, thumbnail_url: e.target.value })} className="input-base" placeholder="https://..." />
           </Field>
           <Field label="Preview URL">
-            <input type="url" value={draft.preview_url ?? ''} onChange={(e) => setDraft({ ...draft, preview_url: e.target.value })} style={inputStyle} placeholder="https://..." />
+            <input type="url" value={draft.preview_url ?? ''} onChange={(e) => setDraft({ ...draft, preview_url: e.target.value })} className="input-base" placeholder="https://..." />
           </Field>
           <Field label="Tags (separadas por coma)">
-            <input type="text" value={tagsText} onChange={(e) => setTagsText(e.target.value)} style={inputStyle} placeholder="gastronomia, premium, dark" />
+            <input type="text" value={tagsText} onChange={(e) => setTagsText(e.target.value)} className="input-base" placeholder="gastronomia, premium, dark" />
           </Field>
           <div style={{ gridColumn: '1 / -1' }}>
             <Field label="Descripción">
-              <textarea value={draft.description ?? ''} onChange={(e) => setDraft({ ...draft, description: e.target.value })} style={{ ...inputStyle, resize: 'vertical', minHeight: '70px' }} maxLength={1000} />
+              <textarea value={draft.description ?? ''} onChange={(e) => setDraft({ ...draft, description: e.target.value })} className="input-base" style={{ resize: 'vertical', minHeight: '70px' }} maxLength={1000} />
             </Field>
           </div>
           <div style={{ gridColumn: '1 / -1' }}>
-            <button disabled={busy} onClick={save} style={btnPrimary}>
+            <button disabled={busy} onClick={save} className="btn-action-primary">
               {busy ? 'Guardando…' : 'Guardar cambios'}
             </button>
           </div>
@@ -201,27 +201,3 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </div>
   );
 }
-
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '0.55rem 0.75rem',
-  borderRadius: '8px',
-  background: 'var(--bg-card)',
-  border: '1px solid var(--border)',
-  color: 'var(--text-primary)',
-  fontSize: '0.85rem',
-  outline: 'none',
-};
-const btnBase: React.CSSProperties = {
-  padding: '0.45rem 0.85rem',
-  borderRadius: '6px',
-  fontSize: '0.8rem',
-  fontWeight: 600,
-  cursor: 'pointer',
-  border: '1px solid var(--border)',
-  background: 'var(--bg-card)',
-  color: 'var(--text-primary)',
-};
-const btnGhost: React.CSSProperties = { ...btnBase };
-const btnPrimary: React.CSSProperties = { ...btnBase, background: 'var(--color-primary)', color: '#fff', borderColor: 'transparent' };
-const btnDanger: React.CSSProperties = { ...btnBase, color: '#ef4444', borderColor: 'rgba(239,68,68,0.3)' };

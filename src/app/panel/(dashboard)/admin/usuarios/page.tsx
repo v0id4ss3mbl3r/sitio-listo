@@ -120,7 +120,7 @@ export default async function AdminUsuariosPage({
               const siteCount = u.sites?.length ?? 0;
               const isBlocked = u.blocked_until && new Date(u.blocked_until).getTime() > now;
               return (
-                <tr key={u.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                <tr key={u.id} className="row-hover" style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: '0.75rem 1rem', color: 'var(--text-primary)', fontSize: '0.875rem' }}>
                     {u.full_name || '—'}
                   </td>
@@ -161,18 +161,7 @@ export default async function AdminUsuariosPage({
                     {new Date(u.created_at).toLocaleDateString('es-AR')}
                   </td>
                   <td style={{ padding: '0.75rem 1rem' }}>
-                    <Link
-                      href={`/admin/usuarios/${u.id}`}
-                      style={{
-                        padding: '0.35rem 0.75rem',
-                        borderRadius: '6px',
-                        fontSize: '0.8rem',
-                        background: 'var(--bg-card)',
-                        color: 'var(--text-primary)',
-                        textDecoration: 'none',
-                        border: '1px solid var(--border)',
-                      }}
-                    >
+                    <Link href={`/admin/usuarios/${u.id}`} className="btn-ghost">
                       Ver
                     </Link>
                   </td>

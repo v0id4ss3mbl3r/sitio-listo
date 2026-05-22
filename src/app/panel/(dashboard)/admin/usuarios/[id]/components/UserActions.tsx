@@ -49,25 +49,25 @@ export default function UserActions({ userId, email, isBlocked, isAdmin }: Props
 
   return (
     <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-      <button disabled={busy} onClick={() => setModal('notify')} style={btn('primary')}>
+      <button disabled={busy} onClick={() => setModal('notify')} className="btn-action-primary">
         Notificar
       </button>
       {isBlocked ? (
-        <button disabled={busy} onClick={unblock} style={btn('ghost')}>
+        <button disabled={busy} onClick={unblock} className="btn-ghost">
           Desbloquear
         </button>
       ) : (
-        <button disabled={busy || isAdmin} onClick={() => setModal('block')} style={btn('warning')} title={isAdmin ? 'No podés bloquear a un admin' : ''}>
+        <button disabled={busy || isAdmin} onClick={() => setModal('block')} className="btn-warning" title={isAdmin ? 'No podés bloquear a un admin' : ''}>
           Bloquear
         </button>
       )}
-      <button disabled={busy} onClick={resetPassword} style={btn('ghost')}>
+      <button disabled={busy} onClick={resetPassword} className="btn-ghost">
         Reset pass (email)
       </button>
-      <button disabled={busy || isAdmin} onClick={() => setModal('setPassword')} style={btn('warning')} title={isAdmin ? 'No podés setear pass de un admin' : ''}>
+      <button disabled={busy || isAdmin} onClick={() => setModal('setPassword')} className="btn-warning" title={isAdmin ? 'No podés setear pass de un admin' : ''}>
         Setear pass
       </button>
-      <button disabled={busy || isAdmin} onClick={deleteUser} style={btn('danger')} title={isAdmin ? 'No podés eliminar un admin' : ''}>
+      <button disabled={busy || isAdmin} onClick={deleteUser} className="btn-danger" title={isAdmin ? 'No podés eliminar un admin' : ''}>
         Eliminar
       </button>
 
@@ -151,20 +151,32 @@ function BlockModal({
       </p>
       <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
         {presets.map((p) => (
-          <button key={p.value} onClick={() => setDays(p.value)} style={{ ...btn('ghost'), background: days === p.value ? 'var(--color-primary)' : 'var(--bg-card)', color: days === p.value ? '#fff' : 'var(--text-primary)' }}>
+          <button
+            key={p.value}
+            onClick={() => setDays(p.value)}
+            className={days === p.value ? 'btn-action-primary' : 'btn-ghost'}
+          >
             {p.label}
           </button>
         ))}
       </div>
       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '1.25rem' }}>
         <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Días personalizados:</label>
-        <input type="number" value={days} onChange={(e) => setDays(parseInt(e.target.value) || 1)} min={1} max={36500} style={{ ...inputStyle, width: '100px' }} />
+        <input
+          type="number"
+          value={days}
+          onChange={(e) => setDays(parseInt(e.target.value) || 1)}
+          min={1}
+          max={36500}
+          className="input-base"
+          style={{ width: '100px' }}
+        />
       </div>
       <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-        <button onClick={onClose} style={btn('ghost')}>
+        <button onClick={onClose} className="btn-ghost">
           Cancelar
         </button>
-        <button disabled={busy} onClick={submit} style={btn('warning')}>
+        <button disabled={busy} onClick={submit} className="btn-warning">
           Bloquear {days} día{days === 1 ? '' : 's'}
         </button>
       </div>
@@ -212,18 +224,18 @@ function NotifyModal({
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '1.25rem' }}>
         <div>
           <label style={labelStyle}>Título</label>
-          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} style={inputStyle} maxLength={120} />
+          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="input-base" maxLength={120} />
         </div>
         <div>
           <label style={labelStyle}>Mensaje</label>
-          <textarea value={body} onChange={(e) => setBody(e.target.value)} style={{ ...inputStyle, minHeight: '120px', resize: 'vertical' }} maxLength={2000} />
+          <textarea value={body} onChange={(e) => setBody(e.target.value)} className="input-base" style={{ minHeight: '120px', resize: 'vertical' }} maxLength={2000} />
         </div>
       </div>
       <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-        <button onClick={onClose} style={btn('ghost')}>
+        <button onClick={onClose} className="btn-ghost">
           Cancelar
         </button>
-        <button disabled={busy} onClick={submit} style={btn('primary')}>
+        <button disabled={busy} onClick={submit} className="btn-action-primary">
           Enviar notificación
         </button>
       </div>
@@ -280,18 +292,18 @@ function SetPasswordModal({
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', marginBottom: '1.25rem' }}>
         <div>
           <label style={labelStyle}>Nueva contraseña</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} minLength={8} maxLength={72} />
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="input-base" minLength={8} maxLength={72} />
         </div>
         <div>
           <label style={labelStyle}>Repetir contraseña</label>
-          <input type="password" value={confirm2} onChange={(e) => setConfirm2(e.target.value)} style={inputStyle} minLength={8} maxLength={72} />
+          <input type="password" value={confirm2} onChange={(e) => setConfirm2(e.target.value)} className="input-base" minLength={8} maxLength={72} />
         </div>
       </div>
       <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-        <button onClick={onClose} style={btn('ghost')}>
+        <button onClick={onClose} className="btn-ghost">
           Cancelar
         </button>
-        <button disabled={busy} onClick={submit} style={btn('warning')}>
+        <button disabled={busy} onClick={submit} className="btn-warning">
           Setear contraseña
         </button>
       </div>
@@ -319,30 +331,3 @@ const labelStyle: React.CSSProperties = {
   letterSpacing: '0.05em',
   marginBottom: '0.35rem',
 };
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '0.55rem 0.75rem',
-  borderRadius: '8px',
-  background: 'var(--bg-card)',
-  border: '1px solid var(--border)',
-  color: 'var(--text-primary)',
-  fontSize: '0.85rem',
-  outline: 'none',
-};
-
-function btn(variant: 'primary' | 'ghost' | 'warning' | 'danger'): React.CSSProperties {
-  const base: React.CSSProperties = {
-    padding: '0.45rem 0.85rem',
-    borderRadius: '6px',
-    fontSize: '0.8rem',
-    fontWeight: 600,
-    cursor: 'pointer',
-    border: '1px solid var(--border)',
-    background: 'var(--bg-card)',
-    color: 'var(--text-primary)',
-  };
-  if (variant === 'primary') return { ...base, background: 'var(--color-primary)', color: '#fff', borderColor: 'transparent' };
-  if (variant === 'warning') return { ...base, color: '#f59e0b', borderColor: 'rgba(245,158,11,0.3)' };
-  if (variant === 'danger') return { ...base, color: '#ef4444', borderColor: 'rgba(239,68,68,0.3)' };
-  return base;
-}

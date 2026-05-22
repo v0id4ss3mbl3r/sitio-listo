@@ -35,35 +35,20 @@ export default function SubscriptionActions({
   return (
     <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
       {status !== 'paused' && status !== 'cancelled' && (
-        <button disabled={busy} onClick={() => setStatus('paused')} style={btn('warning')}>
+        <button disabled={busy} onClick={() => setStatus('paused')} className="btn-warning">
           Pausar
         </button>
       )}
       {status === 'paused' && (
-        <button disabled={busy} onClick={() => setStatus('authorized')} style={btn('primary')}>
+        <button disabled={busy} onClick={() => setStatus('authorized')} className="btn-action-primary">
           Reanudar
         </button>
       )}
       {status !== 'cancelled' && (
-        <button disabled={busy} onClick={() => setStatus('cancelled')} style={btn('danger')}>
+        <button disabled={busy} onClick={() => setStatus('cancelled')} className="btn-danger">
           Cancelar
         </button>
       )}
     </div>
   );
-}
-
-function btn(variant: 'primary' | 'warning' | 'danger'): React.CSSProperties {
-  const base: React.CSSProperties = {
-    padding: '0.35rem 0.7rem',
-    borderRadius: '6px',
-    fontSize: '0.75rem',
-    fontWeight: 600,
-    cursor: 'pointer',
-    border: '1px solid var(--border)',
-    background: 'var(--bg-card)',
-  };
-  if (variant === 'primary') return { ...base, background: 'var(--color-primary)', color: '#fff', borderColor: 'transparent' };
-  if (variant === 'warning') return { ...base, color: '#f59e0b', borderColor: 'rgba(245,158,11,0.3)' };
-  return { ...base, color: '#ef4444', borderColor: 'rgba(239,68,68,0.3)' };
 }

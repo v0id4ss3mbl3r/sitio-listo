@@ -408,7 +408,7 @@ export function CatalogManager({
                     <button onClick={() => startEditProduct(p)} className="btn-outline" style={{ padding: '0.35rem 0.8rem', fontSize: '0.75rem' }}>
                       Editar
                     </button>
-                    <button onClick={() => deleteProduct(p.id)} style={{ padding: '0.35rem 0.55rem', background: 'transparent', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', borderRadius: '8px', cursor: 'pointer' }} aria-label="Borrar">
+                    <button onClick={() => deleteProduct(p.id)} className="btn-icon danger" aria-label="Borrar">
                       <Trash2 size={13} />
                     </button>
                   </div>
@@ -489,7 +489,7 @@ export function CatalogManager({
                     <button onClick={() => { setEditingCategoryId(c.id); setCategoryDraft({ name: c.name, slug: c.slug, sort_order: c.sort_order }); }} className="btn-outline" style={{ padding: '0.3rem 0.7rem', fontSize: '0.75rem' }}>
                       Editar
                     </button>
-                    <button onClick={() => deleteCategory(c.id)} style={{ padding: '0.3rem 0.55rem', background: 'transparent', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', borderRadius: '8px', cursor: 'pointer' }}>
+                    <button onClick={() => deleteCategory(c.id)} className="btn-icon danger">
                       <Trash2 size={13} />
                     </button>
                   </div>
@@ -535,7 +535,7 @@ export function CatalogManager({
                     placeholder="5492235922077"
                     style={{ ...inputStyle, flex: '2 1 200px' }}
                   />
-                  <button onClick={() => removeWhatsapp(i)} style={{ padding: '0.5rem 0.6rem', background: 'transparent', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', borderRadius: '8px', cursor: 'pointer' }}>
+                  <button onClick={() => removeWhatsapp(i)} className="btn-icon danger">
                     <Trash2 size={13} />
                   </button>
                 </div>

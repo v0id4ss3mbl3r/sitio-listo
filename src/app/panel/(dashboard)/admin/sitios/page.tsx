@@ -124,7 +124,7 @@ export default async function AdminSitiosPage({
           </thead>
           <tbody>
             {(sites as Row[] | null)?.map((site) => (
-              <tr key={site.id} style={{ borderBottom: '1px solid var(--border)' }}>
+              <tr key={site.id} className="row-hover" style={{ borderBottom: '1px solid var(--border)' }}>
                 <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem' }}>
                   <div style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
                     {site.subdomain}.sitiolisto.com.ar
