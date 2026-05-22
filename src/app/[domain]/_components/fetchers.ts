@@ -10,8 +10,6 @@ export type SiteRow = {
   id: string;
   user_id: string;
   template_id: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  config: Record<string, any> | null;
   is_active: boolean;
 };
 
@@ -49,7 +47,7 @@ export function fetchSiteCached(domain: string) {
       const supabase = createPublicClient();
       const { data } = await supabase
         .from('sites')
-        .select('id, user_id, template_id, config, is_active')
+        .select('id, user_id, template_id, is_active')
         .eq(column, safe)
         .maybeSingle();
 
@@ -112,18 +110,16 @@ export function fetchActiveSubCached(userId: string) {
   )();
 }
 
-// Devuelve la página "home" según `pages`. Fallback a sites.config para
-// sitios que todavía no fueron backfilleados o que perdieron su home.
-export function getHomeContent(site: SiteRow, pages: PageRow[]) {
+// Devuelve la página "home" según `pages`. Devuelve content vacío y title
+// neutro si por algún motivo no hay home (no debería pasar — migration 0004
+// + endpoint /api/sites garantizan que siempre exista la home page).
+export function getHomeContent(_site: SiteRow, pages: PageRow[]) {
   const home = pages.find((p) => p.is_home);
-  if (home && home.content) {
+  if (home) {
     return {
-      content: home.content,
-      title: home.title ?? site.config?.name ?? 'Inicio',
+      content: home.content ?? {},
+      title: home.title ?? 'Inicio',
     };
   }
-  return {
-    content: site.config ?? {},
-    title: site.config?.name ?? 'Inicio',
-  };
+  return { content: {}, title: 'Inicio' };
 }

@@ -13,13 +13,22 @@ describe('createSiteSchema', () => {
     expect(r.success).toBe(true);
   });
 
-  it('aplica default {} a config si está ausente', () => {
+  it('acepta name opcional', () => {
+    const r = createSiteSchema.safeParse({
+      subdomain: 'mi-tienda',
+      template_id: 'sabor-urbano',
+      name: 'Mi Tienda',
+    });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.name).toBe('Mi Tienda');
+  });
+
+  it('name puede estar ausente', () => {
     const r = createSiteSchema.safeParse({
       subdomain: 'mi-tienda',
       template_id: 'sabor-urbano',
     });
     expect(r.success).toBe(true);
-    if (r.success) expect(r.data.config).toEqual({});
   });
 
   it('rechaza subdomain vacío', () => {

@@ -67,7 +67,6 @@ CREATE TABLE public.sites (
   custom_domain TEXT UNIQUE,
   custom_domain_status TEXT CHECK (custom_domain_status IS NULL OR custom_domain_status IN ('pending', 'verified', 'failed')),
   template_id TEXT NOT NULL,
-  config JSONB DEFAULT '{}',
   is_active BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()

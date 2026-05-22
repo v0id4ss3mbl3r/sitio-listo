@@ -11,7 +11,9 @@ export const createSiteSchema = z.object({
   subdomain: z.string().min(1).max(63),
   custom_domain: z.string().max(253).nullable().optional(),
   template_id: z.string().min(1).max(64),
-  config: z.record(z.string(), z.unknown()).optional().default({}),
+  // El contenido del sitio (nombre, colores, hero, etc) vive en pages.
+  // Solo recibimos el name para inicializar la home en la primera creación.
+  name: z.string().min(1).max(120).optional(),
 });
 
 export type CreateSiteInput = z.infer<typeof createSiteSchema>;

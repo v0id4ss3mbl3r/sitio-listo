@@ -24,6 +24,7 @@ export default function EditorPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('appearance');
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   
@@ -54,6 +55,9 @@ export default function EditorPage() {
   // Validation State
   const [subdomainStatus, setSubdomainStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
 
+  // ID de la fila pages.is_home — necesario para hacer PUT al guardar el contenido.
+  const [homePageId, setHomePageId] = useState<string | null>(null);
+
   // Timestamp del mount — usado para evaluar trial/gracia sin llamar
   // Date.now() durante el render (regla react-hooks/purity).
   const [mountedAt] = useState<number>(() => Date.now());
@@ -63,44 +67,60 @@ export default function EditorPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: subData } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-      
+      const [{ data: subData }, { data: profileData }] = await Promise.all([
+        supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle(),
+      ]);
+
       setSubscription(subData);
+      setIsAdmin(profileData?.role === 'admin');
 
-      const res = await fetch('/api/sites');
-      const data = await res.json();
-      
-      if (data.site) {
-        setSubdomain(data.site.subdomain || '');
-        setCustomDomain(data.site.custom_domain || '');
-        setCustomDomainStatus(data.site.custom_domain_status ?? null);
-        setTemplateId(data.site.template_id || 'sabor-urbano');
-        setSiteName(data.site.config?.name || '');
-        setPrimaryColor(data.site.config?.primaryColor || '#6366f1');
-        setSecondaryColor(data.site.config?.secondaryColor || '#f59e0b');
-        setLogoUrl(data.site.config?.logoUrl || '');
-        setPhone(data.site.config?.phone || '');
-        setAddress(data.site.config?.address || '');
+      const [siteRes, pagesRes] = await Promise.all([
+        fetch('/api/sites'),
+        fetch('/api/pages'),
+      ]);
+      const siteData = await siteRes.json();
+      const pagesData = await pagesRes.json();
 
-        // Content
-        setHeroTitle(data.site.config?.content?.heroTitle || '');
-        setHeroSubtitle(data.site.config?.content?.heroSubtitle || '');
-        setAboutText(data.site.config?.content?.aboutText || '');
-
-        // Template-specific fields
-        setCtaText(data.site.config?.content?.ctaText || 'Comenzar Ahora');
-        setTagline(data.site.config?.content?.tagline || '');
-        setSkills(data.site.config?.content?.skills || '');
-        setOpeningHours(data.site.config?.content?.openingHours || '');
-        setWhatsapp(data.site.config?.content?.whatsapp || '');
-
+      if (siteData.site) {
+        setSubdomain(siteData.site.subdomain || '');
+        setCustomDomain(siteData.site.custom_domain || '');
+        setCustomDomainStatus(siteData.site.custom_domain_status ?? null);
+        setTemplateId(siteData.site.template_id || 'sabor-urbano');
         setSubdomainStatus('available');
+      }
+
+      // Contenido del sitio vive en pages.is_home.content (fuente única).
+      const home = (pagesData.pages ?? []).find(
+        (p: { is_home: boolean }) => p.is_home
+      );
+      if (home) {
+        setHomePageId(home.id);
+        const c = home.content ?? {};
+        setSiteName(home.title || c.name || '');
+        setPrimaryColor(c.primaryColor || '#6366f1');
+        setSecondaryColor(c.secondaryColor || '#f59e0b');
+        setLogoUrl(c.logoUrl || '');
+        setPhone(c.phone || '');
+        setAddress(c.address || '');
+        setHeroTitle(c.content?.heroTitle || c.heroTitle || '');
+        setHeroSubtitle(c.content?.heroSubtitle || c.heroSubtitle || '');
+        setAboutText(c.content?.aboutText || c.aboutText || '');
+        setCtaText(c.content?.ctaText || c.ctaText || 'Comenzar Ahora');
+        setTagline(c.content?.tagline || c.tagline || '');
+        setSkills(c.content?.skills || c.skills || '');
+        setOpeningHours(c.content?.openingHours || c.openingHours || '');
+        setWhatsapp(c.content?.whatsapp || c.whatsapp || '');
       }
       setLoading(false);
     }
@@ -137,44 +157,69 @@ export default function EditorPage() {
     }
 
     setSaving(true);
-    
+
+    const homeContent = {
+      name: siteName,
+      primaryColor,
+      secondaryColor,
+      logoUrl,
+      phone,
+      address,
+      content: {
+        heroTitle,
+        heroSubtitle,
+        aboutText,
+        ctaText,
+        tagline,
+        skills,
+        openingHours,
+        whatsapp,
+      },
+    };
+
     try {
-      const res = await fetch('/api/sites', {
+      // 1. Guardar metadata del sitio (sin contenido).
+      const siteRes = await fetch('/api/sites', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           subdomain: subdomain.toLowerCase().replace(/[^a-z0-9-]/g, ''),
           custom_domain: customDomain.toLowerCase().trim() || null,
           template_id: templateId,
-          config: {
-            name: siteName,
-            primaryColor,
-            secondaryColor,
-            logoUrl,
-            phone,
-            address,
-            content: {
-              heroTitle,
-              heroSubtitle,
-              aboutText,
-              ctaText,
-              tagline,
-              skills,
-              openingHours,
-              whatsapp
-            }
-          }
+          name: siteName,
         }),
       });
-
-      const data = await res.json();
-      if (data.error) {
-        setNotification({ type: 'error', message: data.error });
-      } else {
-        setNotification({ type: 'success', message: '¡Sitio guardado y publicado correctamente!' });
-        setTimeout(() => setNotification(null), 4000);
+      const siteData = await siteRes.json();
+      if (siteData.error) {
+        setNotification({ type: 'error', message: siteData.error });
+        setSaving(false);
+        return;
       }
-    } catch (error) {
+
+      // 2. Guardar contenido del home en pages (siempre, incluso si recién se creó).
+      const pageId = homePageId ?? siteData.home_page_id;
+      if (pageId) {
+        const pageRes = await fetch(`/api/pages/${pageId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: siteName,
+            content: homeContent,
+            is_published: true,
+          }),
+        });
+        const pageData = await pageRes.json();
+        if (pageData.error) {
+          setNotification({ type: 'error', message: pageData.error });
+          setSaving(false);
+          return;
+        }
+        if (!homePageId && siteData.home_page_id) setHomePageId(siteData.home_page_id);
+      }
+
+      setNotification({ type: 'success', message: '¡Sitio guardado y publicado correctamente!' });
+      setTimeout(() => setNotification(null), 4000);
+    } catch {
       setNotification({ type: 'error', message: 'Error al guardar el sitio' });
     } finally {
       setSaving(false);
@@ -211,7 +256,13 @@ export default function EditorPage() {
   );
   const hasActivePlan =
     subscription?.status === 'authorized' || isInTrial || isInGracePeriod;
-  const userPlan = hasActivePlan && subscription ? subscription.plan_type : 'free';
+  // Admin bypass: usuario admin se trata como Extremo sin importar la suscripción.
+  // Pensado para que el dueño pueda probar todas las plantillas sin pagar.
+  const userPlan = isAdmin
+    ? 'extremo'
+    : hasActivePlan && subscription
+      ? subscription.plan_type
+      : 'free';
 
   const trialDaysLeft = subscription?.trial_end_date
     ? Math.max(
@@ -268,6 +319,21 @@ export default function EditorPage() {
           to { opacity: 1; transform: translateX(0); }
         }
       `}} />
+
+      {isAdmin && (
+        <div style={{
+          padding: '0.85rem 1.25rem',
+          marginBottom: '1.5rem',
+          borderRadius: '10px',
+          background: 'rgba(16, 185, 129, 0.1)',
+          border: '1px solid rgba(16, 185, 129, 0.3)',
+          color: '#10b981',
+          fontSize: '0.9rem',
+          fontWeight: 600,
+        }}>
+          Sos administrador — acceso completo a todas las plantillas sin suscripción.
+        </div>
+      )}
 
       {isInTrial && (
         <div style={{

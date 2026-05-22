@@ -1,3 +1,5 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
+
 import { createClient } from '@/lib/supabase/server';
 
 export async function getAdminUser() {
@@ -9,8 +11,22 @@ export async function getAdminUser() {
     .from('profiles')
     .select('role, full_name, email')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   if (profile?.role !== 'admin') return null;
   return { user, profile };
+}
+
+// Helper liviano: solo chequea el rol. Para usar dentro de handlers que
+// ya tienen un cliente Supabase y un userId.
+export async function isAdmin(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<boolean> {
+  const { data } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .maybeSingle();
+  return data?.role === 'admin';
 }

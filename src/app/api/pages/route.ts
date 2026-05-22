@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 
 import { PLAN_PAGE_LIMITS, PlanType } from '@/lib/constants';
+import { isAdmin } from '@/lib/auth/getAdminUser';
 import { captureError } from '@/lib/logger';
 import { createPageSchema, parseJson } from '@/lib/schemas';
 import { createClient } from '@/lib/supabase/server';
@@ -100,28 +101,31 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No tenés un sitio creado' }, { status: 400 });
     }
 
-    const planType = await getActivePlanType(supabase, user.id);
-    if (!planType) {
-      return NextResponse.json(
-        { error: 'Necesitás un plan activo para gestionar páginas' },
-        { status: 403 }
-      );
-    }
+    const admin = await isAdmin(supabase, user.id);
 
-    // Validar límite de páginas del plan (cuenta todas, home incluido).
-    const { count } = await supabase
-      .from('pages')
-      .select('id', { count: 'exact', head: true })
-      .eq('site_id', site.id);
+    if (!admin) {
+      const planType = await getActivePlanType(supabase, user.id);
+      if (!planType) {
+        return NextResponse.json(
+          { error: 'Necesitás un plan activo para gestionar páginas' },
+          { status: 403 }
+        );
+      }
 
-    const limit = PLAN_PAGE_LIMITS[planType] ?? 1;
-    if ((count ?? 0) >= limit) {
-      return NextResponse.json(
-        {
-          error: `Tu plan permite hasta ${limit === Infinity ? '∞' : limit} páginas. Borrá o despublicá alguna para crear otra.`,
-        },
-        { status: 403 }
-      );
+      const { count } = await supabase
+        .from('pages')
+        .select('id', { count: 'exact', head: true })
+        .eq('site_id', site.id);
+
+      const limit = PLAN_PAGE_LIMITS[planType] ?? 1;
+      if ((count ?? 0) >= limit) {
+        return NextResponse.json(
+          {
+            error: `Tu plan permite hasta ${limit === Infinity ? '∞' : limit} páginas. Borrá o despublicá alguna para crear otra.`,
+          },
+          { status: 403 }
+        );
+      }
     }
 
     // is_home solo se permite si el sitio aún no tiene home. Y si se pide

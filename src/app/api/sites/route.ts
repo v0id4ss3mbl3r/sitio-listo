@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache';
 
 import { createClient } from '@/lib/supabase/server';
 import { canUseTemplate } from '@/lib/constants';
+import { isAdmin } from '@/lib/auth/getAdminUser';
 import { captureError } from '@/lib/logger';
 import { createSiteSchema, parseJson } from '@/lib/schemas';
 import { siteCacheTag } from '@/lib/supabase/public';
@@ -23,7 +24,7 @@ export async function POST(req: Request) {
       subdomain: rawSubdomain,
       custom_domain: rawCustomDomain,
       template_id,
-      config,
+      name,
     } = parsed.data;
 
     const subdomainResult = validateSubdomain(rawSubdomain);
@@ -49,36 +50,44 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'El subdominio ya está en uso' }, { status: 409 });
     }
 
-    // Determinar plan vigente — acepta authorized, cancelled-con-gracia y trial.
-    const { data: allSubs } = await supabase
-      .from('subscriptions')
-      .select('plan_type, status, current_period_end, trial_end_date, created_at')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+    // Admin bypass: si el usuario es admin lo tratamos como Extremo.
+    const admin = await isAdmin(supabase, user.id);
 
-    const now = Date.now();
-    const activeSub = (allSubs ?? []).find((s) => {
-      if (s.status === 'authorized') return true;
-      if (
-        s.status === 'cancelled' &&
-        s.current_period_end &&
-        new Date(s.current_period_end).getTime() > now
-      ) {
-        return true;
+    let userPlanType: string;
+    if (admin) {
+      userPlanType = 'extremo';
+    } else {
+      // Determinar plan vigente — acepta authorized, cancelled-con-gracia y trial.
+      const { data: allSubs } = await supabase
+        .from('subscriptions')
+        .select('plan_type, status, current_period_end, trial_end_date, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      const now = Date.now();
+      const activeSub = (allSubs ?? []).find((s) => {
+        if (s.status === 'authorized') return true;
+        if (
+          s.status === 'cancelled' &&
+          s.current_period_end &&
+          new Date(s.current_period_end).getTime() > now
+        ) {
+          return true;
+        }
+        if (s.trial_end_date && new Date(s.trial_end_date).getTime() > now) {
+          return true;
+        }
+        return false;
+      });
+
+      userPlanType = activeSub?.plan_type ?? 'free';
+
+      if (userPlanType === 'free') {
+        return NextResponse.json(
+          { error: 'Necesitás un plan activo para publicar un sitio' },
+          { status: 403 }
+        );
       }
-      if (s.trial_end_date && new Date(s.trial_end_date).getTime() > now) {
-        return true;
-      }
-      return false;
-    });
-
-    const userPlanType = activeSub?.plan_type ?? 'free';
-
-    if (userPlanType === 'free') {
-      return NextResponse.json(
-        { error: 'Necesitás un plan activo para publicar un sitio' },
-        { status: 403 }
-      );
     }
 
     if (!canUseTemplate(userPlanType, template_id)) {
@@ -121,7 +130,6 @@ export async function POST(req: Request) {
           custom_domain,
           custom_domain_status: customDomainStatus,
           template_id,
-          config,
           plan_type: userPlanType,
           updated_at: new Date().toISOString(),
         })
@@ -137,7 +145,6 @@ export async function POST(req: Request) {
           custom_domain,
           custom_domain_status: custom_domain ? 'pending' : null,
           template_id,
-          config,
           plan_type: userPlanType,
           is_active: true,
         })
@@ -147,10 +154,10 @@ export async function POST(req: Request) {
 
     if (result.error) throw result.error;
 
-    // Sync del home page en `pages`: la home siempre refleja el config
-    // actual del sitio. Si existe, update; si no, insert.
+    // Asegurar que existe la fila home en `pages`. Si no existe, la
+    // creamos vacía (el editor llenará el contenido vía PUT /api/pages/{id}).
+    // Si existe, no la tocamos — el contenido es responsabilidad de /api/pages.
     const siteId = result.data!.id;
-    const homeTitle = (config as Record<string, unknown> | null)?.name as string | undefined;
     const { data: existingHome } = await supabase
       .from('pages')
       .select('id')
@@ -158,26 +165,25 @@ export async function POST(req: Request) {
       .eq('is_home', true)
       .maybeSingle();
 
+    let homePageId: string;
     if (existingHome) {
-      await supabase
-        .from('pages')
-        .update({
-          title: homeTitle ?? 'Inicio',
-          content: config ?? {},
-          is_published: true,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', existingHome.id);
+      homePageId = existingHome.id;
     } else {
-      await supabase.from('pages').insert({
-        site_id: siteId,
-        slug: '',
-        title: homeTitle ?? 'Inicio',
-        content: config ?? {},
-        is_home: true,
-        sort_order: 0,
-        is_published: true,
-      });
+      const { data: newHome, error: homeErr } = await supabase
+        .from('pages')
+        .insert({
+          site_id: siteId,
+          slug: '',
+          title: name ?? 'Inicio',
+          content: {},
+          is_home: true,
+          sort_order: 0,
+          is_published: true,
+        })
+        .select('id')
+        .single();
+      if (homeErr) throw homeErr;
+      homePageId = newHome.id;
     }
 
     // Invalidar el cache del render del sitio. Si el subdominio o el
@@ -199,7 +205,7 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({ success: true, site: result.data });
+    return NextResponse.json({ success: true, site: result.data, home_page_id: homePageId });
   } catch (error) {
     captureError(error, { source: 'sites-post' });
     const message = error instanceof Error ? error.message : 'Error al guardar el sitio';
