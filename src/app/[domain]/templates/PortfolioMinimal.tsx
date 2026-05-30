@@ -196,7 +196,7 @@ export default function PortfolioMinimal({
             gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
             gap: 'clamp(2rem, 4vw, 3rem)'
           }}>
-            {PROJECTS.map((item, i) => (
+            {PROJECTS.map((item) => (
               <div key={item.id} className="pm-project-card">
                 {/* Image area */}
                 <div style={{
