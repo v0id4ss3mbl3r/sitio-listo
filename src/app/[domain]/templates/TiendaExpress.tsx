@@ -14,12 +14,19 @@ interface TemplateProps {
 }
 
 const DEFAULT_PRODUCTS = [
-  { id: '01', name: 'Producto Premium', price: '$99.99', category: 'Destacado' },
-  { id: '02', name: 'Producto Estándar', price: '$49.99', category: 'Popular' },
-  { id: '03', name: 'Producto Básico', price: '$29.99', category: 'Económico' },
-  { id: '04', name: 'Combo Ofertas', price: '$79.99', category: 'Especial' },
-  { id: '05', name: 'Edición Limitada', price: '$139.99', category: 'Exclusivo' },
-  { id: '06', name: 'Kit Completo', price: '$199.99', category: 'Bundle' },
+  { id: '01', name: 'Producto Premium', price: '$99.99', category: 'Destacado', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+  { id: '02', name: 'Producto Estándar', price: '$49.99', category: 'Popular', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
+  { id: '03', name: 'Producto Básico', price: '$29.99', category: 'Económico', gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
+  { id: '04', name: 'Combo Ofertas', price: '$79.99', category: 'Especial', gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' },
+  { id: '05', name: 'Edición Limitada', price: '$139.99', category: 'Exclusivo', gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
+  { id: '06', name: 'Kit Completo', price: '$199.99', category: 'Bundle', gradient: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)' },
+];
+
+const BENEFITS = [
+  { icon: '🚚', title: 'Envío Gratis', desc: 'En compras mayores a $50' },
+  { icon: '🔄', title: 'Cambios sin cargo', desc: 'Hasta 30 días post compra' },
+  { icon: '🔒', title: 'Pago 100% Seguro', desc: 'Datos encriptados SSL' },
+  { icon: '🎁', title: 'Packaging Premium', desc: 'Cada pedido con cuidado' },
 ];
 
 export default function TiendaExpress({
@@ -36,58 +43,86 @@ export default function TiendaExpress({
     <div style={{ minHeight: '100vh', background: '#ffffff', color: '#111827', fontFamily: "var(--font-inter), system-ui, sans-serif", overflowX: 'hidden' }}>
       <style dangerouslySetInnerHTML={{ __html: `
         .te-nav-link {
-          font-size: 0.9rem; font-weight: 600; color: #6b7280; text-decoration: none;
+          font-size: 0.875rem; font-weight: 600; color: #6b7280; text-decoration: none;
           transition: color 0.2s;
         }
         .te-nav-link:hover { color: ${primaryColor}; }
 
         @keyframes te-fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        .te-fade { animation: te-fade-in 0.6s ease-out; }
+        .te-fade { animation: te-fade-in 0.6s ease-out both; }
+        .te-fade-d1 { animation-delay: 0.1s; }
+        .te-fade-d2 { animation-delay: 0.2s; }
 
         .te-product-card {
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          border-radius: 12px;
+          transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+          border-radius: 16px;
           position: relative;
           overflow: hidden;
+          background: #f9fafb;
+          border: 1px solid #e5e7eb;
         }
         .te-product-card:hover {
           transform: translateY(-8px);
-          box-shadow: 0 20px 40px -10px rgba(99, 102, 241, 0.2);
+          box-shadow: 0 24px 48px -10px rgba(99, 102, 241, 0.2);
+          border-color: ${primaryColor}30;
+        }
+        .te-product-card:hover .te-product-img-overlay {
+          opacity: 1;
+        }
+
+        .te-product-img-overlay {
+          position: absolute;
+          inset: 0;
+          background: rgba(0,0,0,0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          border-radius: inherit;
         }
 
         .te-badge {
-          position: absolute;
-          top: 12px; right: 12px;
+          display: inline-block;
           background: ${secondaryColor};
           color: white;
           padding: 4px 12px;
           border-radius: 20px;
-          font-size: 0.7rem;
-          font-weight: 700;
+          font-size: 0.68rem;
+          font-weight: 800;
           text-transform: uppercase;
-          letter-spacing: 0.05em;
-          z-index: 10;
+          letter-spacing: 0.06em;
         }
 
         .te-btn-primary {
-          padding: 10px 24px;
-          border-radius: 8px;
+          padding: 12px 28px;
+          border-radius: 10px;
           background: ${primaryColor};
           color: white;
           font-weight: 700;
           text-transform: uppercase;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.06em;
           font-size: 0.8rem;
           border: none;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.25s ease;
         }
         .te-btn-primary:hover {
           filter: brightness(1.1);
           transform: translateY(-2px);
+          box-shadow: 0 10px 24px ${primaryColor}40;
+        }
+
+        .te-benefit-card {
+          transition: transform 0.25s ease, box-shadow 0.25s ease;
+          border-radius: 14px;
+        }
+        .te-benefit-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 16px 32px -8px rgba(0,0,0,0.1);
         }
       `}} />
 
@@ -96,18 +131,19 @@ export default function TiendaExpress({
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
         height: '64px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 2rem',
-        background: 'white',
+        padding: '0 2.5rem',
+        background: 'rgba(255,255,255,0.95)',
         borderBottom: '1px solid #f3f4f6',
-        backdropFilter: 'blur(10px)'
+        backdropFilter: 'blur(20px)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           {logoUrl ? (
-            <img src={logoUrl} alt={siteName} style={{ height: '40px', width: 'auto', borderRadius: '6px' }} />
+            <img src={logoUrl} alt={siteName} style={{ height: '36px', width: 'auto', borderRadius: '6px' }} />
           ) : (
             <div style={{
-              width: 40, height: 40, borderRadius: 8,
-              background: primaryColor, color: 'white',
+              width: 38, height: 38, borderRadius: 10,
+              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+              color: 'white',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontWeight: 900, fontSize: 16
             }}>
@@ -121,124 +157,241 @@ export default function TiendaExpress({
 
         <nav style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
           <a href="#productos" className="te-nav-link">Productos</a>
-          <a href="#contacto" className="te-nav-link">Contacto</a>
+          {phone && <a href="#contacto" className="te-nav-link">Contacto</a>}
           <button className="te-btn-primary">
-            Comprar
+            Ver Catálogo
           </button>
         </nav>
       </header>
 
       {/* HERO */}
       <section style={{
-        paddingTop: 'calc(64px + 3rem)',
-        paddingBottom: '4rem',
-        paddingLeft: '2rem',
-        paddingRight: '2rem',
-        maxWidth: 1100,
-        margin: '0 auto',
-        textAlign: 'center',
-        background: `linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(245, 158, 11, 0.05) 100%)`
+        paddingTop: 'calc(64px)',
+        background: `linear-gradient(135deg, #fafafe 0%, #f5f3ff 50%, #fef9ec 100%)`,
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <h1 className="te-fade" style={{
-          fontSize: 'clamp(2rem, 8vw, 3.5rem)',
-          fontWeight: 900, fontStyle: 'italic',
-          letterSpacing: '-0.04em', lineHeight: 1.1,
-          color: '#111',
-          marginBottom: '1rem'
+        {/* Decorative blobs */}
+        <div style={{
+          position: 'absolute', top: '-80px', right: '-60px',
+          width: '400px', height: '400px', borderRadius: '50%',
+          background: `radial-gradient(circle, ${primaryColor}12 0%, transparent 65%)`,
+          filter: 'blur(50px)', pointerEvents: 'none'
+        }} />
+        <div style={{
+          position: 'absolute', bottom: '-50px', left: '-60px',
+          width: '300px', height: '300px', borderRadius: '50%',
+          background: `radial-gradient(circle, ${secondaryColor}10 0%, transparent 65%)`,
+          filter: 'blur(40px)', pointerEvents: 'none'
+        }} />
+
+        <div style={{
+          maxWidth: 1100, margin: '0 auto',
+          padding: '5rem 2.5rem',
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '3rem', alignItems: 'center',
+          position: 'relative', zIndex: 1
         }}>
-          {heroTitle || `Bienvenido a ${siteName}`}
-        </h1>
-        <p style={{
-          fontSize: '1.1rem',
-          color: '#6b7280', lineHeight: 1.6, fontWeight: 500,
-          maxWidth: 600, margin: '0 auto',
-          marginBottom: '2rem'
+          {/* Left: headline + CTA */}
+          <div>
+            {/* Promo badge */}
+            <div className="te-fade" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '7px 16px', borderRadius: 999,
+              background: `${secondaryColor}15`, border: `1px solid ${secondaryColor}30`,
+              fontSize: '0.78rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
+              color: secondaryColor, marginBottom: '1.75rem'
+            }}>
+              🏷️ Envío gratis en tu primera compra
+            </div>
+
+            <h1 className="te-fade te-fade-d1" style={{
+              fontSize: 'clamp(2.2rem, 7vw, 3.8rem)',
+              fontWeight: 900, fontStyle: 'italic',
+              letterSpacing: '-0.04em', lineHeight: 1.08,
+              color: '#0f172a',
+              marginBottom: '1.25rem',
+              wordBreak: 'break-word'
+            }}>
+              {heroTitle || `Bienvenido a ${siteName}`}
+            </h1>
+            <p className="te-fade te-fade-d2" style={{
+              fontSize: '1.05rem',
+              color: '#6b7280', lineHeight: 1.65,
+              maxWidth: 480, marginBottom: '2.5rem'
+            }}>
+              {heroSubtitle || 'Descubrí nuestros mejores productos con envío rápido y seguro a todo el país.'}
+            </p>
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <a href="#productos" className="te-btn-primary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                Ver productos →
+              </a>
+              {phone && (
+                <a href={`https://wa.me/${phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" style={{
+                  padding: '12px 24px', borderRadius: 10,
+                  border: '2px solid #25d366', color: '#25d366',
+                  fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.06em',
+                  textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+                  transition: 'all 0.2s ease'
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#25d366'; e.currentTarget.style.color = 'white'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#25d366'; }}
+                >
+                  💬 WhatsApp
+                </a>
+              )}
+            </div>
+          </div>
+
+          {/* Right: mini product preview stack */}
+          <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
+            <div style={{ position: 'relative', width: '100%', maxWidth: 340 }}>
+              {/* Background card 3 */}
+              <div style={{
+                position: 'absolute', top: 20, right: -10,
+                width: '88%', height: 90, borderRadius: 16,
+                background: `linear-gradient(135deg, ${primaryColor}20, ${secondaryColor}20)`,
+                border: '1px solid rgba(0,0,0,0.05)',
+                backdropFilter: 'blur(8px)'
+              }} />
+              {/* Background card 2 */}
+              <div style={{
+                position: 'absolute', top: 10, right: 0,
+                width: '92%', height: 90, borderRadius: 16,
+                background: `linear-gradient(135deg, ${primaryColor}15, ${secondaryColor}15)`,
+                border: '1px solid rgba(0,0,0,0.06)'
+              }} />
+              {/* Main card */}
+              <div style={{
+                position: 'relative',
+                background: 'white',
+                borderRadius: 20,
+                padding: '1.5rem',
+                boxShadow: '0 24px 56px rgba(0,0,0,0.12)',
+                border: '1px solid rgba(0,0,0,0.06)'
+              }}>
+                <div style={{
+                  aspectRatio: '16/9', borderRadius: 14, marginBottom: '1rem',
+                  background: DEFAULT_PRODUCTS[0].gradient,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <span style={{ fontSize: '2.5rem' }}>✨</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#9ca3af', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Más Vendido</div>
+                    <div style={{ fontWeight: 800, color: '#111', fontSize: '0.95rem' }}>Producto Premium</div>
+                  </div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 900, color: primaryColor }}>$99.99</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* BENEFITS STRIP */}
+      <section style={{ background: '#0f172a', padding: '0 2.5rem' }}>
+        <div style={{
+          maxWidth: 1100, margin: '0 auto',
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '0'
         }}>
-          {heroSubtitle || 'Descubrí nuestros mejores productos con envío rápido y seguro.'}
-        </p>
-        <button className="te-btn-primary">
-          Explorar Catálogo
-        </button>
+          {BENEFITS.map((b, i) => (
+            <div key={i} style={{
+              padding: '1.75rem 2rem',
+              display: 'flex', alignItems: 'center', gap: '1rem',
+              borderRight: i < BENEFITS.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none'
+            }}>
+              <span style={{ fontSize: '1.4rem', flexShrink: 0 }}>{b.icon}</span>
+              <div>
+                <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'white', marginBottom: '0.15rem' }}>{b.title}</div>
+                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#64748b' }}>{b.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* PRODUCTOS */}
-      <section id="productos" style={{
-        padding: '5rem 2rem',
-        maxWidth: 1100,
-        margin: '0 auto'
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-          <h2 style={{
-            fontSize: 'clamp(2rem, 5vw, 3rem)',
-            fontWeight: 900, fontStyle: 'italic',
-            letterSpacing: '-0.04em',
-            color: '#111',
-            marginBottom: '0.5rem'
+      <section id="productos" style={{ padding: '6rem 2.5rem', maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ marginBottom: '3.5rem' }}>
+          <div style={{
+            display: 'inline-block', padding: '5px 14px', borderRadius: 999,
+            background: '#f3f4f6', fontSize: '0.72rem', fontWeight: 700,
+            letterSpacing: '0.15em', textTransform: 'uppercase', color: '#6b7280',
+            marginBottom: '1rem'
           }}>
-            Nuestros Productos
-          </h2>
-          <p style={{ fontSize: '1rem', color: '#6b7280' }}>
-            Selección de artículos de calidad premium
-          </p>
+            Catálogo
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1rem' }}>
+            <h2 style={{
+              fontSize: 'clamp(2rem, 4.5vw, 3rem)',
+              fontWeight: 900, fontStyle: 'italic',
+              letterSpacing: '-0.04em', color: '#0f172a'
+            }}>
+              Nuestros Productos
+            </h2>
+            <p style={{ fontSize: '0.9rem', color: '#9ca3af', fontWeight: 500 }}>
+              {DEFAULT_PRODUCTS.length} artículos disponibles
+            </p>
+          </div>
         </div>
 
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          gap: '2rem'
+          gap: '1.75rem'
         }}>
           {DEFAULT_PRODUCTS.map((product) => (
-            <div
-              key={product.id}
-              className="te-product-card"
-              style={{
-                padding: '1.5rem',
-                background: '#f9fafb',
-                border: '1px solid #e5e7eb'
-              }}
-            >
-              <div className="te-badge">
-                {product.category}
+            <div key={product.id} className="te-product-card" style={{ padding: '1.5rem' }}>
+              {/* Image area */}
+              <div style={{ position: 'relative', marginBottom: '1.25rem' }}>
+                <div style={{
+                  aspectRatio: '4/3',
+                  borderRadius: '12px',
+                  background: product.gradient,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  overflow: 'hidden'
+                }}>
+                  <span style={{
+                    fontSize: '3.5rem', fontWeight: 900, fontStyle: 'italic',
+                    color: 'rgba(255,255,255,0.25)', letterSpacing: '-0.04em'
+                  }}>
+                    {product.id}
+                  </span>
+                  <div className="te-product-img-overlay">
+                    <span style={{
+                      background: 'white', color: '#111',
+                      padding: '8px 18px', borderRadius: 999,
+                      fontSize: '0.75rem', fontWeight: 800,
+                      letterSpacing: '0.1em', textTransform: 'uppercase'
+                    }}>
+                      Ver detalle
+                    </span>
+                  </div>
+                </div>
+                {/* Category badge */}
+                <div style={{ position: 'absolute', top: 10, right: 10 }}>
+                  <span className="te-badge">{product.category}</span>
+                </div>
               </div>
 
-              {/* Placeholder de imagen */}
-              <div style={{
-                aspectRatio: '1/1',
-                borderRadius: '12px',
-                marginBottom: '1.5rem',
-                background: `linear-gradient(135deg, ${primaryColor}15 0%, ${secondaryColor}15 100%)`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '3rem',
-                fontWeight: 700,
-                color: `${primaryColor}40`,
-                border: '1px solid #e5e7eb'
-              }}>
-                {product.id}
-              </div>
-
-              <h3 style={{
-                fontSize: '1.1rem', fontWeight: 700,
-                marginBottom: '0.75rem', color: '#111'
-              }}>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '0.5rem', color: '#0f172a', letterSpacing: '-0.01em' }}>
                 {product.name}
               </h3>
 
-              <div style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                marginBottom: '1.5rem'
-              }}>
-                <span style={{
-                  fontSize: '1.5rem', fontWeight: 800,
-                  color: primaryColor
-                }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <span style={{ fontSize: '1.4rem', fontWeight: 900, color: primaryColor, letterSpacing: '-0.02em' }}>
                   {product.price}
                 </span>
                 <span style={{
-                  fontSize: '0.75rem', fontWeight: 600,
-                  color: '#9ca3af', textTransform: 'uppercase',
-                  letterSpacing: '0.05em'
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  fontSize: '0.72rem', fontWeight: 700,
+                  color: '#22c55e'
                 }}>
-                  Stock disponible
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />
+                  En stock
                 </span>
               </div>
 
@@ -252,58 +405,72 @@ export default function TiendaExpress({
 
       {/* CONTACTO */}
       <section id="contacto" style={{
-        padding: '4rem 2rem',
+        padding: '5rem 2.5rem',
         background: '#f9fafb',
-        borderTop: '1px solid #e5e7eb',
-        textAlign: 'center'
+        borderTop: '1px solid #e5e7eb'
       }}>
-        <div style={{ maxWidth: 600, margin: '0 auto' }}>
+        <div style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
           <h2 style={{
-            fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
+            fontSize: 'clamp(1.8rem, 4vw, 2.5rem)',
             fontWeight: 900, fontStyle: 'italic',
-            letterSpacing: '-0.04em',
-            color: '#111',
-            marginBottom: '1.5rem'
+            letterSpacing: '-0.04em', color: '#0f172a',
+            marginBottom: '1rem'
           }}>
             ¿Necesitas ayuda?
           </h2>
+          <p style={{ fontSize: '1rem', color: '#6b7280', marginBottom: '2.5rem', lineHeight: 1.6 }}>
+            Nuestro equipo está disponible para ayudarte con tu pedido.
+          </p>
 
           {phone && (
-            <div style={{
-              padding: '1.5rem',
-              background: 'white',
-              borderRadius: '12px',
-              border: '1px solid #e5e7eb',
+            <a href={`https://wa.me/${phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
+              padding: '18px 40px', borderRadius: 14,
+              background: '#25d366', color: 'white',
+              fontSize: '0.92rem', fontWeight: 800, textDecoration: 'none',
+              letterSpacing: '0.04em', textTransform: 'uppercase',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 12px 32px rgba(37,211,102,0.35)',
               marginBottom: '1.5rem'
-            }}>
-              <p style={{ fontSize: '0.9rem', color: '#6b7280', marginBottom: '0.5rem' }}>
-                Contactanos por WhatsApp
-              </p>
-              <a href={`https://wa.me/${phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" style={{
-                fontSize: '1.2rem', fontWeight: 700,
-                color: primaryColor, textDecoration: 'none'
-              }}>
-                {phone}
-              </a>
-            </div>
+            }}
+              onMouseEnter={e => { e.currentTarget.style.filter = 'brightness(1.08)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.filter = 'brightness(1)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+            >
+              💬 Contactar por WhatsApp
+            </a>
           )}
 
-          <button className="te-btn-primary">
-            Ir a Checkout
-          </button>
+          {!phone && (
+            <button className="te-btn-primary" style={{ fontSize: '0.9rem', padding: '16px 40px' }}>
+              Ir a Checkout
+            </button>
+          )}
         </div>
       </section>
 
       {/* FOOTER */}
       <footer style={{
-        padding: '2.5rem',
-        background: 'white',
-        borderTop: '1px solid #f3f4f6',
-        textAlign: 'center',
-        color: '#9ca3af',
-        fontSize: '0.85rem'
+        padding: '2rem 2.5rem',
+        background: '#0f172a',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        flexWrap: 'wrap', gap: '1rem'
       }}>
-        <p>© {new Date().getFullYear()} {siteName}{(!planType || planType === 'basic') && ' — Creado con SitioListo'}</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 8,
+            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontWeight: 900, fontSize: 14, color: 'white'
+          }}>
+            {siteName.charAt(0).toUpperCase()}
+          </div>
+          <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'white', letterSpacing: '-0.02em' }}>
+            {siteName}
+          </span>
+        </div>
+        <p style={{ color: '#475569', fontSize: '0.8rem', fontWeight: 600 }}>
+          © {new Date().getFullYear()} {siteName}{(!planType || planType === 'basic') && ' — Creado con SitioListo'}
+        </p>
       </footer>
     </div>
   );
