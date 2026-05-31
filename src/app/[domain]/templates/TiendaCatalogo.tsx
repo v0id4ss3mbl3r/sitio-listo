@@ -53,6 +53,17 @@ export type TiendaCatalogoProps = {
 
 type CartItem = Product & { quantity: number };
 
+const PRODUCT_GRADIENTS = [
+  'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+  'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+  'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+  'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+  'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
+  'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)',
+  'linear-gradient(135deg, #96fbc4 0%, #f9f586 100%)',
+];
+
 function buildWhatsappMessage(opts: {
   customerName: string;
   customerPhone: string;
@@ -96,6 +107,7 @@ export default function TiendaCatalogo({
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'newest' | 'price_asc' | 'price_desc'>('newest');
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -217,9 +229,57 @@ export default function TiendaCatalogo({
       className="min-h-screen bg-neutral-50 font-sans text-neutral-900 flex flex-col"
       style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
     >
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+          @keyframes tc-fade-in {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0);    }
+          }
+          .tc-fade    { animation: tc-fade-in 0.55s ease-out both; }
+          .tc-fade-d1 { animation-delay: 0.1s; }
+          .tc-fade-d2 { animation-delay: 0.22s; }
+          .tc-fade-d3 { animation-delay: 0.34s; }
+
+          .tc-product-card {
+            transition: transform 0.3s cubic-bezier(0.4,0,0.2,1),
+                        box-shadow 0.3s cubic-bezier(0.4,0,0.2,1);
+          }
+          .tc-product-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px -10px ${themeColor}38;
+          }
+          .tc-product-card:hover .tc-product-overlay { opacity: 1; }
+
+          .tc-product-overlay {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.18);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            border-radius: inherit;
+          }
+
+          /* hide scrollbar on category nav */
+          .tc-cat-nav::-webkit-scrollbar { display: none; }
+          .tc-cat-nav { -ms-overflow-style: none; scrollbar-width: none; }
+
+          .tc-btn-add {
+            transition: filter 0.2s ease, transform 0.15s ease;
+          }
+          .tc-btn-add:hover:not(:disabled) {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+          }
+          .tc-btn-add:active:not(:disabled) { transform: scale(0.97); }
+        `,
+        }}
+      />
+
+      {/* TOAST */}
       {toastMessage && (
         <div
-          className="fixed top-24 left-1/2 -translate-x-1/2 z-50 text-white px-6 py-3 rounded-full shadow-xl font-bold text-sm"
+          className="fixed top-24 left-1/2 -translate-x-1/2 z-50 text-white px-6 py-3 rounded-full shadow-xl font-bold text-sm whitespace-nowrap"
           style={{ backgroundColor: themeColor }}
         >
           {toastMessage}
@@ -227,47 +287,69 @@ export default function TiendaCatalogo({
       )}
 
       {/* HEADER */}
-      <header className="bg-white border-b border-neutral-100 sticky top-0 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 grid grid-cols-3 items-center">
-          <div className="relative w-full max-w-xs hidden sm:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 h-5 w-5" />
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-neutral-100 border-transparent rounded-xl text-sm outline-none focus:bg-white focus:border-neutral-300 focus:ring-4 focus:ring-neutral-100"
-            />
-          </div>
-
+      <header
+        className="sticky top-0 z-40 border-b border-neutral-100 shadow-sm"
+        style={{ background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(16px)' }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
+          {/* Logo */}
           <div
-            className="flex justify-start sm:justify-center items-center cursor-pointer col-span-2 sm:col-span-1"
+            className="flex items-center gap-3 cursor-pointer flex-shrink-0"
             onClick={() => {
               setActiveCategory(null);
               setSearchQuery('');
+              setMobileSearchOpen(false);
             }}
           >
             {logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={logoUrl}
-                alt={siteName}
-                className="h-10 sm:h-12 w-auto object-contain"
-              />
+              <img src={logoUrl} alt={siteName} className="h-9 sm:h-11 w-auto object-contain" />
             ) : (
-              <h1 className="text-2xl font-black tracking-tight uppercase">{siteName}</h1>
+              <>
+                <div
+                  className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center text-white font-black text-lg flex-shrink-0"
+                  style={{ backgroundColor: themeColor }}
+                >
+                  {siteName.charAt(0).toUpperCase()}
+                </div>
+                <span className="font-black text-lg sm:text-xl tracking-tight text-neutral-900 hidden sm:block">
+                  {siteName}
+                </span>
+              </>
             )}
           </div>
 
-          <div className="flex justify-end">
+          {/* Search — desktop */}
+          <div className="relative w-full max-w-sm hidden sm:block">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 h-4 w-4" />
+            <input
+              type="text"
+              placeholder="Buscar productos..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-neutral-100 rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-neutral-200 transition-all"
+            />
+          </div>
+
+          {/* Right actions */}
+          <div className="flex items-center gap-1">
+            {/* Mobile search toggle */}
+            <button
+              onClick={() => setMobileSearchOpen((v) => !v)}
+              className="sm:hidden p-2 rounded-xl hover:bg-neutral-100 text-neutral-600 transition-colors"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+
+            {/* Cart */}
             <button
               onClick={() => {
                 setIsCartOpen(true);
                 setCheckoutStep('cart');
               }}
-              className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl hover:bg-neutral-100 active:scale-95"
+              className="relative flex items-center gap-2 px-3 py-2 sm:px-4 rounded-xl hover:bg-neutral-100 transition-colors"
             >
-              <ShoppingCart className="h-6 w-6 text-neutral-700" />
+              <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-neutral-700" />
               <span className="font-bold text-sm hidden lg:block text-neutral-700">Mi Carrito</span>
               {cartItemsCount > 0 && (
                 <span
@@ -281,37 +363,53 @@ export default function TiendaCatalogo({
           </div>
         </div>
 
+        {/* Mobile search bar */}
+        {mobileSearchOpen && (
+          <div className="sm:hidden px-4 pb-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 h-4 w-4" />
+              <input
+                type="text"
+                placeholder="Buscar productos..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+                className="w-full pl-10 pr-4 py-2.5 bg-neutral-100 rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-neutral-200 transition-all"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Category nav — pill buttons */}
         {categories.length > 0 && (
           <nav className="border-t border-neutral-100 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
-              <ul className="flex items-center gap-6 overflow-x-auto h-14">
+              <ul className="tc-cat-nav flex items-center gap-1 overflow-x-auto h-12">
                 <li>
                   <button
                     onClick={() => setActiveCategory(null)}
-                    className={`whitespace-nowrap text-sm font-bold relative h-14 flex items-center ${activeCategory === null ? 'text-neutral-900' : 'text-neutral-500'}`}
+                    className="whitespace-nowrap text-xs font-bold px-4 py-1.5 rounded-full transition-all"
+                    style={
+                      activeCategory === null
+                        ? { backgroundColor: themeColor, color: '#fff' }
+                        : { color: '#6b7280' }
+                    }
                   >
-                    Todos los productos
-                    {activeCategory === null && (
-                      <span
-                        className="absolute bottom-0 left-0 w-full h-1 rounded-t-md"
-                        style={{ backgroundColor: themeColor }}
-                      />
-                    )}
+                    Todo
                   </button>
                 </li>
                 {categories.map((cat) => (
                   <li key={cat.id}>
                     <button
                       onClick={() => setActiveCategory(cat.id)}
-                      className={`whitespace-nowrap text-sm font-bold relative h-14 flex items-center ${activeCategory === cat.id ? 'text-neutral-900' : 'text-neutral-500'}`}
+                      className="whitespace-nowrap text-xs font-bold px-4 py-1.5 rounded-full transition-all"
+                      style={
+                        activeCategory === cat.id
+                          ? { backgroundColor: themeColor, color: '#fff' }
+                          : { color: '#6b7280' }
+                      }
                     >
                       {cat.name}
-                      {activeCategory === cat.id && (
-                        <span
-                          className="absolute bottom-0 left-0 w-full h-1 rounded-t-md"
-                          style={{ backgroundColor: themeColor }}
-                        />
-                      )}
                     </button>
                   </li>
                 ))}
@@ -322,73 +420,151 @@ export default function TiendaCatalogo({
       </header>
 
       <div className="flex-grow">
+        {/* BANNER + BENEFITS — only on the unconstrained home view */}
         {!searchQuery && activeCategory === null && (
           <>
-            <section className="relative bg-neutral-900 text-white overflow-hidden">
-              <div className="absolute inset-0 opacity-20" style={{ backgroundColor: themeColor }} />
+            {/* HERO BANNER */}
+            <section className="relative overflow-hidden" style={{ background: '#0f172a' }}>
+              {/* Decorative blobs */}
+              <div
+                className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-20 blur-3xl pointer-events-none"
+                style={{
+                  background: `radial-gradient(circle, ${themeColor} 0%, transparent 70%)`,
+                }}
+              />
+              <div
+                className="absolute -bottom-16 -left-16 w-72 h-72 rounded-full opacity-10 blur-3xl pointer-events-none"
+                style={{
+                  background: `radial-gradient(circle, ${themeColor} 0%, transparent 70%)`,
+                }}
+              />
+
               {settings?.banner_image_url && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={settings.banner_image_url}
                   alt=""
-                  className="absolute inset-0 w-full h-full object-cover opacity-30"
+                  className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
                 />
               )}
-              <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-10">
-                <div className="max-w-2xl">
-                  <h2 className="text-4xl sm:text-5xl font-black tracking-tight mb-4 leading-tight">
+
+              <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-14 sm:py-24 flex flex-col sm:flex-row items-center justify-between gap-10 z-10">
+                <div className="max-w-2xl text-center sm:text-left">
+                  {/* Live badge */}
+                  <div
+                    className="tc-fade inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest mb-6"
+                    style={{
+                      background: `${themeColor}22`,
+                      color: themeColor,
+                      border: `1px solid ${themeColor}40`,
+                    }}
+                  >
+                    <span
+                      className="w-1.5 h-1.5 rounded-full animate-pulse"
+                      style={{ background: themeColor }}
+                    />
+                    Catálogo Oficial
+                  </div>
+
+                  <h2
+                    className="tc-fade tc-fade-d1 text-4xl sm:text-5xl font-black tracking-tight text-white mb-4 leading-tight"
+                    style={{ fontStyle: 'italic' }}
+                  >
                     {bannerTitle}
                   </h2>
-                  <p className="text-lg text-neutral-300 mb-8 font-medium">{bannerSubtitle}</p>
+                  <p className="tc-fade tc-fade-d2 text-base sm:text-lg text-neutral-400 mb-8 font-medium">
+                    {bannerSubtitle}
+                  </p>
+                  <a
+                    href="#catalog"
+                    className="tc-fade tc-fade-d3 tc-btn-add inline-flex items-center gap-2 text-sm font-black uppercase tracking-wider text-white px-6 py-3 rounded-xl"
+                    style={{ backgroundColor: themeColor }}
+                  >
+                    Ver catálogo
+                    <ChevronDown className="h-4 w-4" />
+                  </a>
                 </div>
-                <div className="hidden sm:flex w-72 h-72 rounded-full border-8 border-white/10 items-center justify-center relative">
+
+                {/* Right decoration */}
+                <div className="hidden sm:flex items-center justify-center relative w-60 h-60 flex-shrink-0">
                   <div
-                    className="absolute w-56 h-56 rounded-full blur-2xl opacity-50"
+                    className="absolute w-48 h-48 rounded-full blur-3xl opacity-40"
                     style={{ backgroundColor: themeColor }}
                   />
-                  <ShoppingCart className="w-32 h-32 text-white relative z-10 opacity-90" />
+                  <div className="relative z-10 w-36 h-36 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm flex items-center justify-center">
+                    <ShoppingCart className="w-14 h-14 text-white opacity-80" />
+                  </div>
                 </div>
               </div>
             </section>
 
-            <section className="bg-white border-b border-neutral-100">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-10">
-                <div className="flex flex-col items-center text-center">
-                  <Truck className="w-8 h-8 mb-3" style={{ color: themeColor }} />
-                  <h4 className="font-black text-neutral-900 text-sm uppercase tracking-wide">
-                    Envíos a todo el país
-                  </h4>
-                  <p className="text-sm text-neutral-500 mt-1">Llegamos directo a tu puerta.</p>
-                </div>
-                <div className="flex flex-col items-center text-center">
-                  <CreditCard className="w-8 h-8 mb-3" style={{ color: themeColor }} />
-                  <h4 className="font-black text-neutral-900 text-sm uppercase tracking-wide">
-                    Múltiples medios de pago
-                  </h4>
-                  <p className="text-sm text-neutral-500 mt-1">Efectivo, transferencia y tarjetas.</p>
-                </div>
-                <div className="flex flex-col items-center text-center">
-                  <ShieldCheck className="w-8 h-8 mb-3" style={{ color: themeColor }} />
-                  <h4 className="font-black text-neutral-900 text-sm uppercase tracking-wide">
-                    Compra 100% Segura
-                  </h4>
-                  <p className="text-sm text-neutral-500 mt-1">Protegemos todos tus datos.</p>
+            {/* BENEFITS STRIP */}
+            <section
+              style={{
+                background: '#0f172a',
+                borderTop: '1px solid rgba(255,255,255,0.05)',
+              }}
+            >
+              <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/5">
+                  {[
+                    {
+                      icon: <Truck className="w-5 h-5" style={{ color: themeColor }} />,
+                      title: 'Envíos a todo el país',
+                      desc: 'Llegamos directo a tu puerta.',
+                    },
+                    {
+                      icon: <CreditCard className="w-5 h-5" style={{ color: themeColor }} />,
+                      title: 'Múltiples medios de pago',
+                      desc: 'Efectivo, transferencia y tarjetas.',
+                    },
+                    {
+                      icon: <ShieldCheck className="w-5 h-5" style={{ color: themeColor }} />,
+                      title: 'Compra 100% Segura',
+                      desc: 'Protegemos todos tus datos.',
+                    },
+                  ].map((b, i) => (
+                    <div key={i} className="flex items-center gap-4 py-5 px-4 sm:px-6">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{ background: `${themeColor}20` }}
+                      >
+                        {b.icon}
+                      </div>
+                      <div>
+                        <p className="text-white text-[11px] font-black uppercase tracking-wide">
+                          {b.title}
+                        </p>
+                        <p className="text-neutral-500 text-[11px] font-medium mt-0.5">{b.desc}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </section>
           </>
         )}
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        {/* CATALOG HEADER */}
+        <div
+          id="catalog"
+          className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-6 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4"
+        >
           <div>
-            <h2 className="text-3xl font-black tracking-tight text-neutral-900">
+            <div className="inline-block px-3 py-1 rounded-full bg-neutral-100 text-neutral-500 text-[10px] font-black uppercase tracking-[0.15em] mb-2">
+              Catálogo
+            </div>
+            <h2
+              className="text-2xl sm:text-3xl font-black tracking-tight text-neutral-900"
+              style={{ fontStyle: 'italic' }}
+            >
               {searchQuery
                 ? `Resultados para "${searchQuery}"`
                 : activeCategory
                   ? categories.find((c) => c.id === activeCategory)?.name
-                  : 'Catálogo Completo'}
+                  : 'Todos los productos'}
             </h2>
-            <p className="text-neutral-500 text-sm mt-1 font-medium">
+            <p className="text-neutral-400 text-sm mt-1 font-semibold">
               {filteredProducts.length} productos disponibles
             </p>
           </div>
@@ -397,7 +573,7 @@ export default function TiendaCatalogo({
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'newest' | 'price_asc' | 'price_desc')}
-              className="w-full sm:w-auto appearance-none bg-white border border-neutral-200 text-neutral-700 font-bold text-sm py-2.5 pl-4 pr-10 rounded-xl outline-none cursor-pointer"
+              className="w-full sm:w-auto appearance-none bg-white border border-neutral-200 text-neutral-700 font-bold text-sm py-2.5 pl-4 pr-10 rounded-xl outline-none cursor-pointer hover:border-neutral-300 transition-colors"
             >
               <option value="newest">Más Recientes</option>
               <option value="price_asc">Menor Precio</option>
@@ -407,116 +583,163 @@ export default function TiendaCatalogo({
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+        {/* PRODUCT GRID */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5">
           {filteredProducts.length === 0 ? (
-            <div className="col-span-full py-20 text-center">
-              <ShoppingCart className="w-16 h-16 text-neutral-200 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-neutral-900">No hay productos para mostrar.</h3>
-              <p className="text-neutral-500 mt-2">Intentá con otra búsqueda o categoría.</p>
+            <div className="col-span-full py-24 text-center">
+              <div className="w-20 h-20 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto mb-5">
+                <ShoppingCart className="w-9 h-9 text-neutral-300" />
+              </div>
+              <h3 className="text-xl font-black text-neutral-800">No hay productos para mostrar.</h3>
+              <p className="text-neutral-400 mt-2 font-medium text-sm">
+                Intentá con otra búsqueda o categoría.
+              </p>
             </div>
           ) : (
-            filteredProducts.map((product) => (
-              <div
-                key={product.id}
-                className={`bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ${!product.in_stock ? 'opacity-75' : 'cursor-pointer'}`}
-                onClick={() => product.in_stock && setSelectedProduct(product)}
-              >
-                <div className="aspect-square bg-white w-full relative overflow-hidden flex items-center justify-center p-4">
-                  {!product.in_stock && (
-                    <div className="absolute inset-0 bg-white/60 z-20 flex items-center justify-center backdrop-blur-[2px]">
-                      <span className="bg-neutral-900 text-white font-black text-xs tracking-widest uppercase px-4 py-1.5 rounded-full shadow-lg">
-                        Agotado
+            filteredProducts.map((product, idx) => {
+              const gradient = PRODUCT_GRADIENTS[idx % PRODUCT_GRADIENTS.length];
+              return (
+                <div
+                  key={product.id}
+                  className={`tc-product-card bg-white rounded-2xl border border-neutral-100 overflow-hidden flex flex-col ${!product.in_stock ? 'opacity-70' : 'cursor-pointer'}`}
+                  onClick={() => product.in_stock && setSelectedProduct(product)}
+                >
+                  {/* Image area */}
+                  <div className="aspect-square relative overflow-hidden">
+                    {!product.in_stock && (
+                      <div className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-[2px] bg-white/50">
+                        <span className="bg-neutral-900 text-white font-black text-[10px] tracking-widest uppercase px-3 py-1 rounded-full shadow">
+                          Agotado
+                        </span>
+                      </div>
+                    )}
+
+                    {product.compare_at_price && product.compare_at_price > product.price && (
+                      <span
+                        className="absolute top-2 left-2 z-10 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md shadow-sm"
+                        style={{ backgroundColor: themeColor }}
+                      >
+                        {Math.round(
+                          ((product.compare_at_price - product.price) /
+                            product.compare_at_price) *
+                            100
+                        )}
+                        % OFF
                       </span>
-                    </div>
-                  )}
-                  {product.compare_at_price && product.compare_at_price > product.price && (
-                    <span
-                      className="absolute top-3 left-3 z-10 text-white text-[10px] font-black uppercase px-2 py-1 rounded-md shadow-sm"
-                      style={{ backgroundColor: themeColor }}
-                    >
-                      {Math.round(
-                        ((product.compare_at_price - product.price) / product.compare_at_price) *
-                          100
-                      )}
-                      % OFF
-                    </span>
-                  )}
-                  {product.is_featured && (
-                    <span className="absolute top-3 right-3 z-10 bg-amber-500 text-white text-[10px] font-black uppercase px-2 py-1 rounded-md shadow-sm">
-                      Destacado
-                    </span>
-                  )}
-                  {product.image_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      className="w-full h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="text-neutral-300 text-xs font-bold bg-neutral-50 w-full h-full flex items-center justify-center rounded-xl">
-                      Sin imagen
-                    </div>
-                  )}
-                </div>
+                    )}
 
-                <div className="p-4 text-center flex flex-col flex-grow bg-neutral-50/50 border-t border-neutral-50">
-                  <h3 className="text-sm font-bold text-neutral-800 line-clamp-2 min-h-[40px] leading-tight">
-                    {product.name}
-                  </h3>
+                    {product.is_featured && (
+                      <span className="absolute top-2 right-2 z-10 bg-amber-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md shadow-sm">
+                        ★ Dest.
+                      </span>
+                    )}
 
-                  <div className="mt-2 mb-4 flex flex-col items-center justify-center">
-                    <p className="text-lg font-black text-neutral-900">
-                      ${product.price.toLocaleString('es-AR')}
-                    </p>
-                    {product.compare_at_price && product.compare_at_price > product.price ? (
-                      <p className="text-xs text-neutral-400 line-through font-bold mt-0.5">
-                        ${product.compare_at_price.toLocaleString('es-AR')}
-                      </p>
+                    {product.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={product.image_url}
+                        alt={product.name}
+                        className="w-full h-full object-contain mix-blend-multiply p-3 transition-transform duration-500"
+                      />
                     ) : (
-                      <div className="h-4" />
+                      <div
+                        className="w-full h-full flex items-center justify-center"
+                        style={{ background: gradient }}
+                      >
+                        <span className="text-4xl sm:text-5xl font-black italic text-white/25 select-none">
+                          {product.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Hover overlay */}
+                    {product.in_stock && (
+                      <div className="tc-product-overlay rounded-2xl">
+                        <span className="bg-white text-neutral-900 text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full shadow-md">
+                          Ver detalle
+                        </span>
+                      </div>
                     )}
                   </div>
 
-                  <button
-                    disabled={!product.in_stock}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addToCart(product);
-                    }}
-                    className={`mt-auto w-full text-center text-white text-xs font-black py-3 rounded-xl active:scale-95 ${!product.in_stock ? 'bg-neutral-200 text-neutral-400 cursor-not-allowed' : 'hover:opacity-90 shadow-md'}`}
-                    style={product.in_stock ? { backgroundColor: themeColor } : {}}
-                  >
-                    {product.in_stock ? 'Agregar al carrito' : 'Sin Stock'}
-                  </button>
+                  {/* Card info */}
+                  <div className="p-3 flex flex-col flex-grow bg-neutral-50/60 border-t border-neutral-50">
+                    <h3 className="text-xs sm:text-sm font-bold text-neutral-800 line-clamp-2 leading-snug min-h-[36px]">
+                      {product.name}
+                    </h3>
+
+                    <div className="mt-2 mb-3 flex flex-col">
+                      <p className="text-base sm:text-lg font-black" style={{ color: themeColor }}>
+                        ${product.price.toLocaleString('es-AR')}
+                      </p>
+                      {product.compare_at_price && product.compare_at_price > product.price ? (
+                        <p className="text-[11px] text-neutral-400 line-through font-semibold">
+                          ${product.compare_at_price.toLocaleString('es-AR')}
+                        </p>
+                      ) : (
+                        <div className="h-4" />
+                      )}
+                    </div>
+
+                    <button
+                      disabled={!product.in_stock}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(product);
+                      }}
+                      className={`tc-btn-add mt-auto w-full text-center text-white text-[11px] sm:text-xs font-black py-2.5 rounded-xl ${!product.in_stock ? 'bg-neutral-200 !text-neutral-400 cursor-not-allowed' : ''}`}
+                      style={product.in_stock ? { backgroundColor: themeColor } : {}}
+                    >
+                      {product.in_stock ? '+ Agregar' : 'Sin Stock'}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>
 
-      <footer className="bg-white border-t border-neutral-200 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="col-span-1 md:col-span-2">
-            {logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoUrl} alt="Logo" className="h-10 w-auto object-contain mb-4 opacity-80" />
-            ) : (
-              <h2 className="text-2xl font-black uppercase tracking-tight text-neutral-800 mb-4">
-                {siteName}
-              </h2>
-            )}
-            <p className="text-neutral-500 text-sm leading-relaxed max-w-sm">{storeDescription}</p>
+      {/* FOOTER */}
+      <footer style={{ background: '#0f172a' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="md:col-span-2">
+            <div className="flex items-center gap-3 mb-4">
+              {logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={logoUrl}
+                  alt="Logo"
+                  className="h-10 w-auto object-contain opacity-80"
+                />
+              ) : (
+                <>
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-lg flex-shrink-0"
+                    style={{ backgroundColor: themeColor }}
+                  >
+                    {siteName.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-xl font-black text-white tracking-tight">{siteName}</span>
+                </>
+              )}
+            </div>
+            <p className="text-neutral-500 text-sm leading-relaxed max-w-sm font-medium">
+              {storeDescription}
+            </p>
           </div>
 
           <div>
-            <h4 className="font-black text-neutral-900 mb-4 uppercase text-sm tracking-wide">
+            <h4 className="font-black text-white mb-4 uppercase text-[11px] tracking-[0.12em]">
               Contacto
             </h4>
-            <ul className="space-y-3 text-sm text-neutral-500 font-medium">
+            <ul className="space-y-2.5 text-sm text-neutral-500 font-medium">
               {whatsappNumbers.map((w) => (
-                <li key={w.id}>
+                <li key={w.id} className="flex items-center gap-2">
+                  <span
+                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: themeColor }}
+                  />
                   {w.label}: {w.phone || '—'}
                 </li>
               ))}
@@ -524,21 +747,19 @@ export default function TiendaCatalogo({
           </div>
         </div>
 
-        <div className="border-t border-neutral-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-neutral-400 text-xs font-bold">
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-neutral-600 text-xs font-bold">
               © {new Date().getFullYear()} {siteName}. Todos los derechos reservados.
             </p>
             {showBranding && (
-              <p className="text-neutral-400 text-xs font-bold">
-                <a
-                  href="https://sitiolisto.com.ar"
-                  className="hover:underline"
-                  style={{ color: themeColor }}
-                >
-                  Creado con SitioListo
-                </a>
-              </p>
+              <a
+                href="https://sitiolisto.com.ar"
+                className="text-xs font-bold hover:opacity-80 transition-opacity"
+                style={{ color: themeColor }}
+              >
+                Creado con SitioListo
+              </a>
             )}
           </div>
         </div>
@@ -548,74 +769,111 @@ export default function TiendaCatalogo({
       {selectedProduct && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6">
           <div
-            className="absolute inset-0 bg-neutral-900/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-neutral-900/70 backdrop-blur-sm"
             onClick={() => setSelectedProduct(null)}
           />
 
           <div className="relative bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
             <button
               onClick={() => setSelectedProduct(null)}
-              className="absolute top-4 right-4 z-10 bg-white/80 backdrop-blur p-2 rounded-full text-neutral-500 hover:text-neutral-900"
+              className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur p-2 rounded-full text-neutral-400 hover:text-neutral-900 transition-colors shadow-md"
             >
               <X className="h-5 w-5" />
             </button>
 
-            <div className="w-full md:w-1/2 bg-white p-6 sm:p-10 flex items-center justify-center min-h-[300px]">
+            {/* Image panel */}
+            <div className="w-full md:w-1/2 flex items-center justify-center min-h-[260px] sm:min-h-[340px] p-8 bg-neutral-50">
               {selectedProduct.image_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={selectedProduct.image_url}
                   alt={selectedProduct.name}
-                  className="w-full h-full object-contain mix-blend-multiply"
+                  className="w-full h-full object-contain mix-blend-multiply max-h-64 sm:max-h-80"
                 />
               ) : (
-                <div className="text-neutral-400 font-bold bg-neutral-50 w-full h-full flex items-center justify-center rounded-2xl">
-                  Sin imagen
+                <div
+                  className="w-full h-48 sm:h-64 rounded-2xl flex items-center justify-center"
+                  style={{ background: PRODUCT_GRADIENTS[0] }}
+                >
+                  <span className="text-6xl font-black italic text-white/25 select-none">
+                    {selectedProduct.name.charAt(0).toUpperCase()}
+                  </span>
                 </div>
               )}
             </div>
 
-            <div className="w-full md:w-1/2 p-6 sm:p-10 flex flex-col overflow-y-auto bg-neutral-50/50">
-              <h2 className="text-2xl sm:text-3xl font-black text-neutral-900 leading-tight mb-2">
+            {/* Details panel */}
+            <div className="w-full md:w-1/2 p-6 sm:p-8 flex flex-col overflow-y-auto">
+              {selectedProduct.is_featured && (
+                <span className="inline-flex self-start items-center gap-1.5 bg-amber-50 text-amber-600 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full mb-3 border border-amber-100">
+                  ★ Destacado
+                </span>
+              )}
+
+              <h2
+                className="text-2xl sm:text-3xl font-black text-neutral-900 leading-tight mb-3"
+                style={{ fontStyle: 'italic' }}
+              >
                 {selectedProduct.name}
               </h2>
 
-              <div className="flex items-end gap-3 mb-6">
-                <p className="text-4xl font-black text-neutral-900">
+              <div className="flex items-end gap-3 mb-5">
+                <p className="text-3xl sm:text-4xl font-black" style={{ color: themeColor }}>
                   ${selectedProduct.price.toLocaleString('es-AR')}
                 </p>
                 {selectedProduct.compare_at_price &&
                   selectedProduct.compare_at_price > selectedProduct.price && (
-                    <p className="text-lg text-neutral-400 line-through font-bold mb-1">
-                      ${selectedProduct.compare_at_price.toLocaleString('es-AR')}
-                    </p>
+                    <div className="flex flex-col items-start pb-1">
+                      <span
+                        className="text-[10px] font-black uppercase tracking-wider text-white px-2 py-0.5 rounded-md mb-1"
+                        style={{ backgroundColor: themeColor }}
+                      >
+                        {Math.round(
+                          ((selectedProduct.compare_at_price - selectedProduct.price) /
+                            selectedProduct.compare_at_price) *
+                            100
+                        )}
+                        % OFF
+                      </span>
+                      <p className="text-base text-neutral-400 line-through font-bold">
+                        ${selectedProduct.compare_at_price.toLocaleString('es-AR')}
+                      </p>
+                    </div>
                   )}
               </div>
 
-              <div className="text-neutral-600 mb-8 whitespace-pre-wrap flex-grow font-medium leading-relaxed">
-                {selectedProduct.description || 'Este producto no tiene descripción adicional.'}
+              <div className="flex-grow">
+                <p className="text-neutral-600 whitespace-pre-wrap font-medium leading-relaxed text-sm">
+                  {selectedProduct.description || 'Este producto no tiene descripción adicional.'}
+                </p>
               </div>
 
-              <div className="mt-auto pt-6 border-t border-neutral-200">
-                <button
-                  onClick={() => {
-                    addToCart(selectedProduct);
-                    setSelectedProduct(null);
-                    setIsCartOpen(true);
-                  }}
-                  className="w-full text-white font-black py-4 rounded-xl active:scale-95 shadow-lg flex items-center justify-center gap-2 hover:opacity-90"
-                  style={{ backgroundColor: themeColor }}
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                  Agregar al Carrito
-                </button>
+              <div className="mt-6 pt-5 border-t border-neutral-100">
+                {!selectedProduct.in_stock ? (
+                  <div className="w-full bg-neutral-100 text-neutral-400 font-black py-4 rounded-xl text-center text-sm">
+                    Sin Stock
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      addToCart(selectedProduct);
+                      setSelectedProduct(null);
+                      setIsCartOpen(true);
+                    }}
+                    className="tc-btn-add w-full text-white font-black py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm"
+                    style={{ backgroundColor: themeColor }}
+                  >
+                    <ShoppingCart className="h-5 w-5" />
+                    Agregar al Carrito
+                  </button>
+                )}
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* CARRITO */}
+      {/* CART DRAWER */}
       <div
         className={`fixed inset-0 z-[70] transition-opacity duration-300 ${isCartOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
@@ -627,64 +885,83 @@ export default function TiendaCatalogo({
         <div
           className={`absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col transform transition-transform duration-300 ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}
         >
-          <div className="p-6 border-b border-neutral-100 flex items-center justify-between bg-white">
-            <h3 className="text-xl font-black text-neutral-900">
-              {checkoutStep === 'cart'
-                ? 'Tu Pedido'
-                : checkoutStep === 'form'
-                  ? 'Datos del Pedido'
-                  : '¡Listo!'}
-            </h3>
+          {/* Drawer header */}
+          <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-white">
+            <div>
+              <h3 className="text-lg font-black text-neutral-900">
+                {checkoutStep === 'cart'
+                  ? 'Tu Pedido'
+                  : checkoutStep === 'form'
+                    ? 'Datos del Pedido'
+                    : '¡Listo!'}
+              </h3>
+              {checkoutStep === 'cart' && cartItemsCount > 0 && (
+                <p className="text-xs text-neutral-400 font-semibold mt-0.5">
+                  {cartItemsCount} {cartItemsCount === 1 ? 'producto' : 'productos'}
+                </p>
+              )}
+            </div>
             <button
               onClick={() => setIsCartOpen(false)}
-              className="text-neutral-400 hover:text-neutral-900 p-1 bg-neutral-100 rounded-full"
+              className="text-neutral-400 hover:text-neutral-700 p-2 bg-neutral-100 hover:bg-neutral-200 rounded-full transition-colors"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </button>
           </div>
 
+          {/* Drawer body */}
           <div className="flex-grow overflow-y-auto bg-neutral-50/30">
             {checkoutStep === 'cart' && (
-              <div className="p-6 space-y-4">
+              <div className="p-5 space-y-3">
                 {cartItemsCount === 0 ? (
-                  <div className="flex flex-col items-center justify-center pt-20 text-neutral-400">
-                    <ShoppingCart className="h-16 w-16 mb-4 opacity-50" />
-                    <p className="font-bold">Tu carrito está vacío.</p>
+                  <div className="flex flex-col items-center justify-center pt-20 text-neutral-400 gap-3">
+                    <div className="w-16 h-16 rounded-2xl bg-neutral-100 flex items-center justify-center">
+                      <ShoppingCart className="h-8 w-8 opacity-40" />
+                    </div>
+                    <p className="font-bold text-sm">Tu carrito está vacío.</p>
+                    <p className="text-xs text-neutral-300 font-medium">
+                      ¡Agregá productos para comenzar!
+                    </p>
                   </div>
                 ) : (
                   Object.values(cart).map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center gap-4 p-3 border border-neutral-100 rounded-2xl bg-white shadow-sm"
+                      className="flex items-center gap-3 p-3 border border-neutral-100 rounded-2xl bg-white shadow-sm"
                     >
                       {item.image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={item.image_url}
                           alt={item.name}
-                          className="w-16 h-16 object-contain rounded-xl bg-neutral-50 p-1"
+                          className="w-14 h-14 object-contain rounded-xl bg-neutral-50 p-1 flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-16 h-16 bg-neutral-100 rounded-xl flex items-center justify-center text-[10px] text-neutral-400 font-bold">
-                          Sin foto
-                        </div>
+                        <div
+                          className="w-14 h-14 rounded-xl flex-shrink-0"
+                          style={{ background: PRODUCT_GRADIENTS[0] }}
+                        />
                       )}
                       <div className="flex-grow min-w-0">
-                        <p className="font-bold text-neutral-900 text-sm truncate">{item.name}</p>
-                        <p className="font-black text-sm" style={{ color: themeColor }}>
+                        <p className="font-bold text-neutral-800 text-xs leading-tight line-clamp-2">
+                          {item.name}
+                        </p>
+                        <p className="font-black text-sm mt-0.5" style={{ color: themeColor }}>
                           ${(item.price * item.quantity).toLocaleString('es-AR')}
                         </p>
-                        <div className="flex items-center gap-3 mt-2">
+                        <div className="flex items-center gap-2 mt-1.5">
                           <button
                             onClick={() => updateQuantity(item.id, -1)}
-                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-neutral-100 hover:bg-neutral-200 font-black text-neutral-600"
+                            className="w-6 h-6 flex items-center justify-center rounded-lg bg-neutral-100 hover:bg-neutral-200 font-black text-neutral-600 text-sm transition-colors"
                           >
-                            -
+                            −
                           </button>
-                          <span className="text-sm font-black w-4 text-center">{item.quantity}</span>
+                          <span className="text-xs font-black w-4 text-center text-neutral-700">
+                            {item.quantity}
+                          </span>
                           <button
                             onClick={() => updateQuantity(item.id, 1)}
-                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-neutral-100 hover:bg-neutral-200 font-black text-neutral-600"
+                            className="w-6 h-6 flex items-center justify-center rounded-lg bg-neutral-100 hover:bg-neutral-200 font-black text-neutral-600 text-sm transition-colors"
                           >
                             +
                           </button>
@@ -692,9 +969,9 @@ export default function TiendaCatalogo({
                       </div>
                       <button
                         onClick={() => removeFromCart(item.id)}
-                        className="text-neutral-300 hover:text-red-500 p-2"
+                        className="text-neutral-300 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-50 transition-colors flex-shrink-0"
                       >
-                        <Trash2 className="h-5 w-5" />
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   ))
@@ -703,9 +980,9 @@ export default function TiendaCatalogo({
             )}
 
             {checkoutStep === 'form' && (
-              <form id="checkout-form" onSubmit={handleConfirmOrder} className="p-6 space-y-5">
+              <form id="checkout-form" onSubmit={handleConfirmOrder} className="p-5 space-y-4">
                 <div>
-                  <label className="block text-xs font-black text-neutral-500 uppercase mb-2">
+                  <label className="block text-[10px] font-black text-neutral-400 uppercase tracking-wider mb-1.5">
                     Tu Nombre
                   </label>
                   <input
@@ -713,12 +990,12 @@ export default function TiendaCatalogo({
                     required
                     value={customerData.name}
                     onChange={(e) => setCustomerData({ ...customerData, name: e.target.value })}
-                    className="w-full p-3.5 border border-neutral-200 rounded-xl text-neutral-900 outline-none focus:border-neutral-400 focus:ring-4 focus:ring-neutral-100"
+                    className="w-full p-3.5 border border-neutral-200 rounded-xl text-neutral-900 outline-none focus:border-neutral-400 focus:ring-2 focus:ring-neutral-100 text-sm transition-all"
                     placeholder="Ej: Juan Pérez"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-neutral-500 uppercase mb-2">
+                  <label className="block text-[10px] font-black text-neutral-400 uppercase tracking-wider mb-1.5">
                     Tu Teléfono
                   </label>
                   <input
@@ -726,13 +1003,13 @@ export default function TiendaCatalogo({
                     required
                     value={customerData.phone}
                     onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })}
-                    className="w-full p-3.5 border border-neutral-200 rounded-xl text-neutral-900 outline-none focus:border-neutral-400 focus:ring-4 focus:ring-neutral-100"
+                    className="w-full p-3.5 border border-neutral-200 rounded-xl text-neutral-900 outline-none focus:border-neutral-400 focus:ring-2 focus:ring-neutral-100 text-sm transition-all"
                     placeholder="Ej: 11-2345-6789"
                   />
                 </div>
                 {whatsappNumbers.length > 1 && (
                   <div>
-                    <label className="block text-xs font-black text-neutral-500 uppercase mb-2">
+                    <label className="block text-[10px] font-black text-neutral-400 uppercase tracking-wider mb-1.5">
                       Enviar pedido a:
                     </label>
                     <select
@@ -740,7 +1017,7 @@ export default function TiendaCatalogo({
                       onChange={(e) =>
                         setCustomerData({ ...customerData, selectedSeller: e.target.value })
                       }
-                      className="w-full p-3.5 border border-neutral-200 rounded-xl text-neutral-900 bg-white outline-none font-bold"
+                      className="w-full p-3.5 border border-neutral-200 rounded-xl text-neutral-900 bg-white outline-none font-bold text-sm"
                     >
                       {whatsappNumbers.map((opt) => (
                         <option key={opt.id} value={opt.phone}>
@@ -751,14 +1028,14 @@ export default function TiendaCatalogo({
                   </div>
                 )}
                 <div>
-                  <label className="block text-xs font-black text-neutral-500 uppercase mb-2">
+                  <label className="block text-[10px] font-black text-neutral-400 uppercase tracking-wider mb-1.5">
                     Observaciones
                   </label>
                   <textarea
                     rows={3}
                     value={customerData.notes}
                     onChange={(e) => setCustomerData({ ...customerData, notes: e.target.value })}
-                    className="w-full p-3.5 border border-neutral-200 rounded-xl text-neutral-900 outline-none focus:border-neutral-400 focus:ring-4 focus:ring-neutral-100"
+                    className="w-full p-3.5 border border-neutral-200 rounded-xl text-neutral-900 outline-none focus:border-neutral-400 focus:ring-2 focus:ring-neutral-100 text-sm transition-all resize-none"
                     placeholder="Aclaraciones sobre el pedido..."
                   />
                 </div>
@@ -766,32 +1043,35 @@ export default function TiendaCatalogo({
             )}
 
             {checkoutStep === 'success' && (
-              <div className="p-8 flex flex-col items-center justify-center h-full text-center space-y-4">
-                <CheckCircle2 className="h-20 w-20 text-green-500" />
-                <h3 className="text-2xl font-black text-neutral-900">¡Pedido enviado!</h3>
-                <p className="text-neutral-500 font-medium">
-                  Abrimos WhatsApp con el resumen de tu pedido. Confirmá el envío del mensaje
-                  para que recibamos tu compra.
+              <div className="p-8 flex flex-col items-center justify-center h-full text-center gap-4">
+                <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center">
+                  <CheckCircle2 className="h-12 w-12 text-green-500" />
+                </div>
+                <h3 className="text-xl font-black text-neutral-900">¡Pedido enviado!</h3>
+                <p className="text-neutral-500 font-medium text-sm max-w-xs">
+                  Abrimos WhatsApp con el resumen de tu pedido. Confirmá el envío del mensaje para
+                  que recibamos tu compra.
                 </p>
                 <button
                   onClick={() => {
                     setIsCartOpen(false);
                     setCheckoutStep('cart');
                   }}
-                  className="mt-6 font-bold hover:opacity-80"
+                  className="mt-4 font-black text-sm hover:opacity-70 transition-opacity"
                   style={{ color: themeColor }}
                 >
-                  Volver a la tienda
+                  ← Volver a la tienda
                 </button>
               </div>
             )}
           </div>
 
+          {/* Drawer footer */}
           {checkoutStep !== 'success' && cartItemsCount > 0 && (
-            <div className="p-6 border-t border-neutral-100 bg-white">
-              <div className="flex items-center justify-between mb-5">
-                <span className="text-neutral-500 font-bold">Total a pagar:</span>
-                <span className="text-3xl font-black text-neutral-900">
+            <div className="p-5 border-t border-neutral-100 bg-white">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-neutral-500 font-bold text-sm">Total a pagar:</span>
+                <span className="text-2xl font-black" style={{ color: themeColor }}>
                   ${cartTotal.toLocaleString('es-AR')}
                 </span>
               </div>
@@ -799,26 +1079,26 @@ export default function TiendaCatalogo({
               {checkoutStep === 'cart' ? (
                 <button
                   onClick={() => setCheckoutStep('form')}
-                  className="w-full text-white font-black py-4 rounded-xl active:scale-95 shadow-lg hover:opacity-90"
+                  className="tc-btn-add w-full text-white font-black py-4 rounded-xl shadow-lg text-sm"
                   style={{ backgroundColor: themeColor }}
                 >
-                  Continuar Compra
+                  Continuar Compra →
                 </button>
               ) : (
                 <div className="flex gap-3">
                   <button
                     onClick={() => setCheckoutStep('cart')}
-                    className="px-5 py-4 font-black text-neutral-500 hover:text-neutral-900 bg-neutral-100 hover:bg-neutral-200 rounded-xl"
+                    className="px-4 py-4 font-black text-neutral-500 hover:text-neutral-900 bg-neutral-100 hover:bg-neutral-200 rounded-xl transition-colors text-sm"
                   >
-                    Atrás
+                    ← Atrás
                   </button>
                   <button
                     type="submit"
                     form="checkout-form"
-                    className="flex-grow text-white font-black py-4 rounded-xl active:scale-95 shadow-lg hover:opacity-90"
+                    className="tc-btn-add flex-grow text-white font-black py-4 rounded-xl shadow-lg text-sm"
                     style={{ backgroundColor: themeColor }}
                   >
-                    Confirmar Pedido por WhatsApp
+                    Confirmar por WhatsApp
                   </button>
                 </div>
               )}
