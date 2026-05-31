@@ -1,6 +1,10 @@
 import { z } from 'zod';
 
 import { PLANS } from '@/lib/constants';
+import { THEME_LIST } from '@/lib/themes';
+
+// Ids de tema válidos, derivados del registro de presets (single source).
+const THEME_IDS = THEME_LIST.map((t) => t.id);
 
 // Schemas de zod para parsear el shape de los bodies de la API.
 // La validación de reglas de negocio (subdominios reservados, dominios
@@ -193,6 +197,11 @@ export const adminUpdateTemplateSchema = z.object({
   sort_order: z.number().int().min(0).max(9999).optional(),
   is_active: z.boolean().optional(),
   tags: z.array(z.string().min(1).max(40)).max(20).optional(),
+});
+
+// ─── admin: apariencia (app_settings global) ──────────────────
+export const adminUpdateSettingsSchema = z.object({
+  theme_id: z.enum(THEME_IDS as [string, ...string[]]),
 });
 
 // Helper para parsear un body de Request y devolver un error 400 estructurado

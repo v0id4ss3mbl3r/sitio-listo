@@ -9,6 +9,7 @@ const links = [
   { href: '/admin/suscripciones', label: 'Suscripciones' },
   { href: '/admin/sitios', label: 'Sitios' },
   { href: '/admin/plantillas', label: 'Plantillas' },
+  { href: '/admin/apariencia', label: 'Apariencia' },
 ];
 
 export default function AdminSubNav() {

@@ -50,6 +50,10 @@
   --radius-xl: 1.5rem;
   --radius-full: 9999px;
 
+  /* Fuente de títulos — var dedicada para que los temas (Glow/Vivo) la puedan
+     pisar sin tocar el resto. Default = serif "de imprenta" (look Oficina). */
+  --font-heading: var(--font-serif), Georgia, 'Times New Roman', serif;
+
   /* Transitions */
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -129,7 +133,7 @@ body {
 /* Titulos: serif "de imprenta". Aplicar via etiqueta para que todo lo
    que no tenga clase específica herede el estilo de lectura. */
 h1, h2, h3, h4 {
-  font-family: var(--font-serif), Georgia, 'Times New Roman', serif;
+  font-family: var(--font-heading);
   font-weight: 600;
   letter-spacing: -0.015em;
   line-height: 1.25;

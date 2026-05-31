@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, JetBrains_Mono, Source_Serif_4 } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { fetchAppThemeCached } from "@/lib/appSettings";
+import { getTheme, themeRootCss } from "@/lib/themes";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -63,18 +65,27 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Tema global del producto (elegido por admin en /admin/apariencia).
+  // oficina (default) → themeRootCss devuelve '' y no inyecta nada.
+  const theme = getTheme(await fetchAppThemeCached());
+  const themeCss = themeRootCss(theme);
+
   return (
     <html
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${jetbrainsMono.variable} ${sourceSerif.variable}`}
+      data-app-theme={theme.id}
       suppressHydrationWarning
     >
       <body>
+        {themeCss && (
+          <style dangerouslySetInnerHTML={{ __html: themeCss }} />
+        )}
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
