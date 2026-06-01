@@ -8,7 +8,7 @@ export default function PricingTable() {
   const plans = Object.values(PLANS).filter((p) => !HIDDEN_FROM_LANDING.has(p.slug));
 
   return (
-    <section id="precios" style={{ padding: '6rem 1.5rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <section id="precios" style={{ padding: '6rem 1.5rem', maxWidth: '1280px', margin: '0 auto' }}>
       <div style={{ textAlign: 'center', marginBottom: '4rem', maxWidth: '600px', margin: '0 auto 4rem' }}>
         <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-primary-light)' }}>
           Precios
@@ -21,13 +21,13 @@ export default function PricingTable() {
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', alignItems: 'stretch' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.25rem', alignItems: 'stretch' }}>
         {plans.map((plan) => (
           <div
             key={plan.slug}
             className="glass-card"
             style={{
-              padding: '2.5rem 2rem',
+              padding: '2rem 1.5rem',
               display: 'flex',
               flexDirection: 'column',
               position: 'relative',
@@ -57,7 +57,7 @@ export default function PricingTable() {
             </span>
 
             <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'baseline', gap: '0.25rem' }}>
-              <span style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+              <span style={{ fontSize: '2.1rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
                 {plan.priceDisplay}
               </span>
               <span style={{ fontSize: '0.95rem', color: 'var(--text-muted)' }}>/mes</span>

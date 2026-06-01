@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Check, Loader2 } from 'lucide-react';
 
+import { Toast, type ToastData } from '@/components/Toast';
+
 interface ThemeCard {
   id: string;
   label: string;
@@ -25,12 +27,12 @@ export default function ThemeSelector({
   const router = useRouter();
   const [selected, setSelected] = useState(current);
   const [saving, setSaving] = useState<string | null>(null);
-  const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+  const [toast, setToast] = useState<ToastData>(null);
 
   async function apply(id: string) {
     if (id === selected || saving) return;
     setSaving(id);
-    setMsg(null);
+    setToast(null);
     try {
       const res = await fetch('/api/admin/settings', {
         method: 'PATCH',
@@ -42,12 +44,13 @@ export default function ThemeSelector({
         throw new Error(body.error || 'No se pudo guardar');
       }
       setSelected(id);
-      setMsg({ type: 'ok', text: 'Tema aplicado.' });
+      const label = themes.find((x) => x.id === id)?.label ?? id;
+      setToast({ type: 'ok', text: `Tema "${label}" aplicado.` });
       // Re-renderiza los Server Components (incluido el layout raíz) → el
       // nuevo tema se aplica en vivo sin recargar la página.
       router.refresh();
     } catch (e) {
-      setMsg({ type: 'err', text: e instanceof Error ? e.message : 'Error' });
+      setToast({ type: 'err', text: e instanceof Error ? e.message : 'Error' });
     } finally {
       setSaving(null);
     }
@@ -145,17 +148,7 @@ export default function ThemeSelector({
         })}
       </div>
 
-      {msg && (
-        <p
-          style={{
-            marginTop: '1rem',
-            fontSize: '0.875rem',
-            color: msg.type === 'ok' ? 'var(--color-secondary)' : '#c0392b',
-          }}
-        >
-          {msg.text}
-        </p>
-      )}
+      <Toast toast={toast} onClose={() => setToast(null)} />
 
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}.spin{animation:spin 0.8s linear infinite}`}</style>
     </div>
