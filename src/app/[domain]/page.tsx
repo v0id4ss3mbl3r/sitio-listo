@@ -113,7 +113,7 @@ export default async function TenantHome({
     );
   }
   if (template_id === 'servicios-pro') {
-    return <ServiciosPro {...props} services={home?.content?.services} />;
+    return <ServiciosPro {...props} services={home?.content?.services} theme={theme} />;
   }
   if (template_id === 'tienda-express') {
     return <TiendaExpress {...props} />;
