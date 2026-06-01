@@ -2,6 +2,8 @@
 
 import React from 'react';
 
+import { getTheme, type Theme } from '@/lib/themes';
+
 interface TemplateProps {
   siteName?: string;
   primaryColor?: string;
@@ -11,6 +13,10 @@ interface TemplateProps {
   heroSubtitle?: string;
   ctaText?: string;
   features?: Array<{ title: string; description: string; icon: string }>;
+  /** Tema visual (Oficina/Glow/Vivo). El tema define el "ambiente" (fondo,
+   *  texto, fuentes, sombras, glow/flat); los colores de marca del sitio
+   *  (primaryColor/secondaryColor) siguen siendo el acento. */
+  theme?: Theme;
 }
 
 const DEFAULT_FEATURES = [
@@ -25,7 +31,7 @@ const STATS = [
   { value: '< 3 min', label: 'Tiempo de setup' },
 ];
 
-// Gradient colors per feature card icon background
+// Gradientes vivos para los íconos — solo se usan en temas con gradientes.
 const ICON_GRADIENTS = [
   'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
   'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
@@ -44,15 +50,56 @@ export default function LandingPro({
   heroSubtitle,
   ctaText = 'Comenzar Ahora',
   features = DEFAULT_FEATURES,
+  theme = getTheme('glow'),
 }: TemplateProps) {
+  const t = theme.tokens;
+  const isGlow = t.surface === 'glow';
+  const showBlobs = t.gradientGlow !== 'transparent';
+
+  // Acento = color de marca del sitio. El tema decide si va en gradiente o sólido.
+  const accent = primaryColor;
+  const accent2 = secondaryColor;
+  const accentGradient = t.useGradients
+    ? `linear-gradient(135deg, ${accent}, ${accent2})`
+    : accent;
+
+  // Fondo de página: gradiente sutil en glow, sólido en flat.
+  const pageBg = isGlow
+    ? `linear-gradient(135deg, ${t.bgBase} 0%, ${t.bgSubtle} 100%)`
+    : t.bgBase;
+
+  // Sombras de botón derivadas del acento (glow) o planas (flat).
+  const btnShadow = isGlow ? `0 20px 40px -10px ${accent}66` : t.shadowCard;
+  const btnShadowHover = isGlow ? `0 28px 55px -10px ${accent}8c` : t.shadowElevated;
+
+  // Tipografía de títulos según el tema.
+  const headingFont: React.CSSProperties = {
+    fontFamily: t.fontHeading,
+    fontStyle: t.headingItalic ? 'italic' : 'normal',
+    fontWeight: t.headingWeight,
+  };
+
+  // El "destacado" del headline: gradiente de acento o color sólido.
+  const headlineAccent: React.CSSProperties = t.useGradients
+    ? { background: accentGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }
+    : { color: accent };
+
+  // Fondo de tarjetas de feature: frosted en glow, sólido en flat.
+  const cardBg = isGlow ? 'rgba(255,255,255,0.04)' : t.bgCard;
+  const iconShadow = isGlow ? '0 8px 24px rgba(0,0,0,0.3)' : t.shadowCard;
+  const stripBg = isGlow ? 'rgba(255,255,255,0.03)' : t.bgCard;
+  const ctaBg = isGlow
+    ? `linear-gradient(135deg, ${accent}1f 0%, ${accent2}10 100%)`
+    : t.bgSubtle;
+
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: '#f1f5f9', fontFamily: "var(--font-inter), system-ui, sans-serif", overflowX: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: pageBg, color: t.textPrimary, fontFamily: t.fontBody, overflowX: 'hidden' }}>
       <style dangerouslySetInnerHTML={{ __html: `
         .lp-nav-link {
-          font-size: 0.875rem; font-weight: 600; color: #cbd5e1; text-decoration: none;
+          font-size: 0.875rem; font-weight: 600; color: ${t.textSecondary}; text-decoration: none;
           transition: color 0.3s ease;
         }
-        .lp-nav-link:hover { color: white; }
+        .lp-nav-link:hover { color: ${t.textPrimary}; }
 
         @keyframes lp-fade-in {
           from { opacity: 0; transform: translateY(30px); }
@@ -64,22 +111,9 @@ export default function LandingPro({
         .lp-delay-3 { animation-delay: 0.3s; }
         .lp-delay-4 { animation-delay: 0.45s; }
 
-        @keyframes lp-float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-14px); }
-        }
-
-        @keyframes lp-pulse-ring {
-          0% { transform: scale(0.92); opacity: 0.7; }
-          100% { transform: scale(1.08); opacity: 0; }
-        }
-        .lp-pulse-ring {
-          animation: lp-pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
         .lp-feature-card {
           transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-          border-radius: 20px;
+          border-radius: ${t.radiusLg};
           position: relative;
           overflow: hidden;
         }
@@ -87,20 +121,20 @@ export default function LandingPro({
           content: '';
           position: absolute;
           inset: 0;
-          background: linear-gradient(135deg, rgba(99,102,241,0.08) 0%, transparent 60%);
+          background: linear-gradient(135deg, ${accent}14 0%, transparent 60%);
           opacity: 0;
           transition: opacity 0.35s ease;
         }
         .lp-feature-card:hover::before { opacity: 1; }
         .lp-feature-card:hover {
           transform: translateY(-10px);
-          box-shadow: 0 32px 60px -12px rgba(99, 102, 241, 0.35);
-          border-color: rgba(99, 102, 241, 0.4) !important;
+          box-shadow: ${btnShadowHover};
+          border-color: ${t.borderHover} !important;
         }
 
         .lp-btn {
           padding: 14px 32px;
-          border-radius: 12px;
+          border-radius: ${t.radiusMd};
           font-weight: 700;
           font-size: 0.95rem;
           text-transform: uppercase;
@@ -114,40 +148,36 @@ export default function LandingPro({
           gap: 0.5rem;
         }
         .lp-btn-primary {
-          background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor});
-          color: white;
-          box-shadow: 0 20px 40px -10px rgba(99, 102, 241, 0.4);
+          background: ${accentGradient};
+          color: #fff;
+          box-shadow: ${btnShadow};
         }
         .lp-btn-primary:hover {
           transform: translateY(-3px);
-          box-shadow: 0 28px 55px -10px rgba(99, 102, 241, 0.55);
-          filter: brightness(1.08);
+          box-shadow: ${btnShadowHover};
+          filter: brightness(1.06);
         }
         .lp-btn-outline {
           background: transparent;
-          border: 2px solid rgba(255,255,255,0.2) !important;
-          color: white;
+          border: 2px solid ${t.borderHover} !important;
+          color: ${t.textPrimary};
         }
         .lp-btn-outline:hover {
-          background: rgba(255,255,255,0.07);
-          border-color: rgba(255,255,255,0.4) !important;
+          background: ${accent}14;
+          border-color: ${accent} !important;
         }
 
         .lp-stat-item {
           text-align: center;
           padding: 0 2rem;
-          border-right: 1px solid rgba(255,255,255,0.08);
+          border-right: 1px solid ${t.borderSubtle};
         }
         .lp-stat-item:last-child { border-right: none; }
 
-        @keyframes lp-shimmer {
-          0% { background-position: -200% center; }
-          100% { background-position: 200% center; }
-        }
         .lp-cta-bg {
-          background: linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(245,158,11,0.06) 100%);
-          border: 1px solid rgba(99,102,241,0.25);
-          border-radius: 32px;
+          background: ${ctaBg};
+          border: 1px solid ${t.borderHover};
+          border-radius: ${t.radiusXl};
         }
       `}} />
 
@@ -157,20 +187,21 @@ export default function LandingPro({
         height: '72px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 3rem',
-        background: 'rgba(15, 23, 42, 0.85)',
+        background: `${t.bgBase}E6`,
         backdropFilter: 'blur(24px)',
-        borderBottom: `1px solid rgba(99, 102, 241, 0.15)`
+        borderBottom: `1px solid ${t.borderSubtle}`
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
           <div style={{
-            width: 34, height: 34, borderRadius: 10,
-            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+            width: 34, height: 34, borderRadius: t.radiusSm,
+            background: accentGradient,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontWeight: 900, fontSize: 15, color: 'white', fontStyle: 'italic'
+            fontWeight: 900, fontSize: 15, color: 'white',
+            fontStyle: t.headingItalic ? 'italic' : 'normal'
           }}>
             {siteName.charAt(0).toUpperCase()}
           </div>
-          <span style={{ fontWeight: 900, fontSize: 17, letterSpacing: '-0.03em', textTransform: 'uppercase' }}>
+          <span style={{ fontWeight: 900, fontSize: 17, letterSpacing: '-0.03em', textTransform: 'uppercase', color: t.textPrimary }}>
             {siteName}
           </span>
         </div>
@@ -185,27 +216,31 @@ export default function LandingPro({
 
       {/* HERO */}
       <section style={{ paddingTop: 'calc(72px + 7rem)', paddingBottom: '5rem', paddingLeft: '3rem', paddingRight: '3rem', maxWidth: 1200, margin: '0 auto', position: 'relative' }}>
-        {/* Decorative blobs */}
-        <div style={{ position: 'absolute', top: '10%', right: '-100px', width: '600px', height: '600px', borderRadius: '50%', background: `radial-gradient(circle, ${primaryColor}12 0%, transparent 65%)`, filter: 'blur(60px)', zIndex: 0, pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: '0', left: '-80px', width: '400px', height: '400px', borderRadius: '50%', background: `radial-gradient(circle, ${secondaryColor}0A 0%, transparent 65%)`, filter: 'blur(40px)', zIndex: 0, pointerEvents: 'none' }} />
+        {/* Blobs decorativos — solo en temas con glow */}
+        {showBlobs && (
+          <>
+            <div style={{ position: 'absolute', top: '10%', right: '-100px', width: '600px', height: '600px', borderRadius: '50%', background: `radial-gradient(circle, ${accent}1f 0%, transparent 65%)`, filter: 'blur(60px)', zIndex: 0, pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', bottom: '0', left: '-80px', width: '400px', height: '400px', borderRadius: '50%', background: `radial-gradient(circle, ${accent2}14 0%, transparent 65%)`, filter: 'blur(40px)', zIndex: 0, pointerEvents: 'none' }} />
+          </>
+        )}
 
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 720 }}>
           {/* Badge */}
           <div className="lp-fade" style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             padding: '8px 18px', borderRadius: 999,
-            border: `1px solid rgba(${parseInt(secondaryColor.slice(1,3),16)}, ${parseInt(secondaryColor.slice(3,5),16)}, ${parseInt(secondaryColor.slice(5,7),16)}, 0.35)`,
+            border: `1px solid ${accent2}59`,
             fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-            color: secondaryColor, background: `rgba(${parseInt(secondaryColor.slice(1,3),16)}, ${parseInt(secondaryColor.slice(3,5),16)}, ${parseInt(secondaryColor.slice(5,7),16)}, 0.1)`,
+            color: accent2, background: `${accent2}1a`,
             marginBottom: '2rem'
           }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: secondaryColor, boxShadow: `0 0 8px ${secondaryColor}` }} />
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: accent2, boxShadow: isGlow ? `0 0 8px ${accent2}` : 'none' }} />
             Solución Profesional
           </div>
 
           <h1 className="lp-fade lp-delay-1" style={{
+            ...headingFont,
             fontSize: 'clamp(3rem, 9vw, 5.5rem)',
-            fontWeight: 900, fontStyle: 'italic',
             letterSpacing: '-0.04em', lineHeight: 1.05,
             marginBottom: '1.5rem',
             wordBreak: 'break-word'
@@ -214,7 +249,7 @@ export default function LandingPro({
               <>
                 Transforma tu visión
                 <br />
-                <span style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                <span style={headlineAccent}>
                   en realidad digital
                 </span>
               </>
@@ -223,7 +258,7 @@ export default function LandingPro({
 
           <p className="lp-fade lp-delay-2" style={{
             fontSize: 'clamp(1.05rem, 2vw, 1.3rem)',
-            color: '#94a3b8', lineHeight: 1.65, fontWeight: 400,
+            color: t.textMuted, lineHeight: 1.65, fontWeight: 400,
             maxWidth: 580, marginBottom: '2.5rem'
           }}>
             {heroSubtitle || 'Crea experiencias digitales que impulsan resultados. Herramientas modernas, sin complicaciones técnicas.'}
@@ -241,18 +276,19 @@ export default function LandingPro({
           {/* Stats strip */}
           <div className="lp-fade lp-delay-4" style={{
             display: 'flex',
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.07)',
-            borderRadius: 16,
+            background: stripBg,
+            border: `1px solid ${t.borderSubtle}`,
+            boxShadow: isGlow ? 'none' : t.shadowCard,
+            borderRadius: t.radiusLg,
             padding: '1.5rem 0',
             width: 'fit-content'
           }}>
             {STATS.map((stat, i) => (
               <div key={i} className="lp-stat-item">
-                <div style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 900, fontStyle: 'italic', letterSpacing: '-0.03em', color: 'white', lineHeight: 1 }}>
+                <div style={{ ...headingFont, fontSize: 'clamp(1.5rem, 3vw, 2rem)', letterSpacing: '-0.03em', color: t.textPrimary, lineHeight: 1 }}>
                   {stat.value}
                 </div>
-                <div style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#64748b', marginTop: '0.35rem' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: t.textMuted, marginTop: '0.35rem' }}>
                   {stat.label}
                 </div>
               </div>
@@ -262,26 +298,26 @@ export default function LandingPro({
       </section>
 
       {/* FEATURES */}
-      <section id="features" style={{ padding: '7rem 3rem', background: 'rgba(99, 102, 241, 0.04)', borderTop: '1px solid rgba(99, 102, 241, 0.12)', borderBottom: '1px solid rgba(99, 102, 241, 0.12)' }}>
+      <section id="features" style={{ padding: '7rem 3rem', background: t.bgSubtle, borderTop: `1px solid ${t.borderSubtle}`, borderBottom: `1px solid ${t.borderSubtle}` }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '4.5rem' }}>
             <div style={{
               display: 'inline-block', padding: '6px 16px', borderRadius: 999,
-              background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)',
+              background: `${accent}1f`, border: `1px solid ${accent}40`,
               fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase',
-              color: primaryColor, marginBottom: '1.25rem'
+              color: accent, marginBottom: '1.25rem'
             }}>
               Características
             </div>
             <h2 style={{
+              ...headingFont,
               fontSize: 'clamp(2.2rem, 5vw, 3.2rem)',
-              fontWeight: 900, fontStyle: 'italic',
               letterSpacing: '-0.04em', lineHeight: 1.2,
-              marginBottom: '1rem'
+              marginBottom: '1rem', color: t.textPrimary
             }}>
               Todo lo que necesitas para crecer
             </h2>
-            <p style={{ fontSize: '1.05rem', color: '#94a3b8', maxWidth: 520, margin: '0 auto', lineHeight: 1.65 }}>
+            <p style={{ fontSize: '1.05rem', color: t.textMuted, maxWidth: 520, margin: '0 auto', lineHeight: 1.65 }}>
               Herramientas pensadas para resultados reales desde el primer día
             </p>
           </div>
@@ -297,24 +333,25 @@ export default function LandingPro({
                 className="lp-feature-card"
                 style={{
                   padding: '2.25rem',
-                  background: 'rgba(30, 41, 59, 0.6)',
-                  border: '1px solid rgba(99, 102, 241, 0.15)',
-                  backdropFilter: 'blur(20px)'
+                  background: cardBg,
+                  border: `1px solid ${t.borderSubtle}`,
+                  boxShadow: isGlow ? 'none' : t.shadowCard,
+                  backdropFilter: isGlow ? 'blur(20px)' : 'none'
                 }}
               >
                 <div style={{
-                  width: 56, height: 56, borderRadius: 16,
-                  background: ICON_GRADIENTS[idx % ICON_GRADIENTS.length],
+                  width: 56, height: 56, borderRadius: t.radiusMd,
+                  background: t.useGradients ? ICON_GRADIENTS[idx % ICON_GRADIENTS.length] : accent,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '1.6rem', marginBottom: '1.5rem',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.3)'
+                  boxShadow: iconShadow
                 }}>
                   {feature.icon}
                 </div>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.65rem', color: 'white', letterSpacing: '-0.02em' }}>
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.65rem', color: t.textPrimary, letterSpacing: '-0.02em' }}>
                   {feature.title}
                 </h3>
-                <p style={{ color: '#94a3b8', lineHeight: 1.65, fontSize: '0.92rem' }}>
+                <p style={{ color: t.textMuted, lineHeight: 1.65, fontSize: '0.92rem' }}>
                   {feature.description}
                 </p>
               </div>
@@ -327,19 +364,21 @@ export default function LandingPro({
       <section id="cta" style={{ padding: '7rem 3rem' }}>
         <div style={{ maxWidth: 860, margin: '0 auto' }}>
           <div className="lp-cta-bg" style={{ padding: 'clamp(3rem,6vw,5rem)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-            {/* Decorative blob inside CTA */}
-            <div style={{ position: 'absolute', top: '-30%', left: '50%', transform: 'translateX(-50%)', width: '400px', height: '200px', borderRadius: '50%', background: `radial-gradient(ellipse, ${primaryColor}18 0%, transparent 70%)`, filter: 'blur(30px)', pointerEvents: 'none' }} />
+            {/* Blob decorativo dentro del CTA — solo glow */}
+            {showBlobs && (
+              <div style={{ position: 'absolute', top: '-30%', left: '50%', transform: 'translateX(-50%)', width: '400px', height: '200px', borderRadius: '50%', background: `radial-gradient(ellipse, ${accent}2e 0%, transparent 70%)`, filter: 'blur(30px)', pointerEvents: 'none' }} />
+            )}
 
             <div style={{ position: 'relative', zIndex: 1 }}>
               <h2 style={{
+                ...headingFont,
                 fontSize: 'clamp(2rem, 5vw, 3.2rem)',
-                fontWeight: 900, fontStyle: 'italic',
                 letterSpacing: '-0.04em', lineHeight: 1.15,
-                marginBottom: '1.25rem'
+                marginBottom: '1.25rem', color: t.textPrimary
               }}>
                 ¿Listo para comenzar?
               </h2>
-              <p style={{ fontSize: '1.1rem', color: '#94a3b8', marginBottom: '2.5rem', maxWidth: 520, margin: '0 auto 2.5rem', lineHeight: 1.65 }}>
+              <p style={{ fontSize: '1.1rem', color: t.textMuted, marginBottom: '2.5rem', maxWidth: 520, margin: '0 auto 2.5rem', lineHeight: 1.65 }}>
                 Únete a cientos de empresas que ya están transformando sus resultados con {siteName}
               </p>
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -358,14 +397,14 @@ export default function LandingPro({
       {/* FOOTER */}
       <footer style={{
         padding: '2.5rem 3rem',
-        borderTop: '1px solid rgba(99, 102, 241, 0.12)',
+        borderTop: `1px solid ${t.borderSubtle}`,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         flexWrap: 'wrap', gap: '1rem',
-        color: '#475569',
+        color: t.textMuted,
         fontSize: '0.82rem',
         fontWeight: 600
       }}>
-        <span style={{ fontWeight: 900, fontSize: 15, letterSpacing: '-0.03em', textTransform: 'uppercase', color: '#64748b' }}>
+        <span style={{ fontWeight: 900, fontSize: 15, letterSpacing: '-0.03em', textTransform: 'uppercase', color: t.textSecondary }}>
           {siteName}
         </span>
         <p>© {new Date().getFullYear()} {siteName}{(!planType || planType === 'basic') && ' — Creado con SitioListo'}</p>

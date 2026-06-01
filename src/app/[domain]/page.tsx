@@ -13,6 +13,7 @@ import {
   fetchSitePagesCached,
   getHomeContent,
 } from './_components/fetchers';
+import { getTheme, TEMPLATE_DEFAULT_THEME } from '@/lib/themes';
 
 export async function generateMetadata({
   params,
@@ -91,6 +92,10 @@ export default async function TenantHome({
 
   const { template_id } = site;
 
+  // Tema visual de la plantilla. Por ahora se deriva del default por plantilla;
+  // en una fase posterior saldrá de sites.theme_id (elegible por admin/cliente).
+  const theme = getTheme(TEMPLATE_DEFAULT_THEME[template_id]);
+
   if (template_id === 'sabor-urbano') {
     return <SaborUrbano {...props} />;
   }
@@ -103,6 +108,7 @@ export default async function TenantHome({
         {...props}
         ctaText={home?.content?.ctaText}
         features={home?.content?.features}
+        theme={theme}
       />
     );
   }
