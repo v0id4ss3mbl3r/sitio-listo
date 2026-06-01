@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { PLANS, PlanType } from '@/lib/constants';
 
 export default async function PanelPage() {
@@ -10,29 +11,29 @@ export default async function PanelPage() {
     redirect('/login');
   }
 
-  // Obtenemos el perfil para el nombre
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name')
-    .eq('id', user.id)
-    .single();
-
-  // Obtenemos el sitio del usuario
-  const { data: site } = await supabase
-    .from('sites')
-    .select('id, subdomain, is_active, template_id')
-    .eq('user_id', user.id)
-    .single();
-
-  // Obtenemos la suscripción activa
-  const { data: subscription } = await supabase
-    .from('subscriptions')
-    .select('plan_type, status')
-    .eq('user_id', user.id)
-    .eq('status', 'authorized')
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single();
+  // Perfil, sitio y suscripción en paralelo (son independientes) → 1 sola
+  // tanda de round-trips en vez de 3 en serie. maybeSingle evita el error
+  // ruidoso cuando todavía no hay sitio/suscripción.
+  const [{ data: profile }, { data: site }, { data: subscription }] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', user.id)
+      .maybeSingle(),
+    supabase
+      .from('sites')
+      .select('id, subdomain, is_active, template_id')
+      .eq('user_id', user.id)
+      .maybeSingle(),
+    supabase
+      .from('subscriptions')
+      .select('plan_type, status')
+      .eq('user_id', user.id)
+      .eq('status', 'authorized')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
   const firstName = profile?.full_name?.split(' ')[0] 
     || user.user_metadata?.full_name?.split(' ')[0] 
@@ -68,9 +69,9 @@ export default async function PanelPage() {
               <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
                 Aún no has configurado tu sitio. Elegí una plantilla y un subdominio para empezar.
               </p>
-              <a href="/editor" className="btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '0.9rem', textAlign: 'center', display: 'block', boxSizing: 'border-box' }}>
+              <Link href="/editor" className="btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '0.9rem', textAlign: 'center', display: 'block', boxSizing: 'border-box' }}>
                 Configurar Sitio
-              </a>
+              </Link>
             </>
           ) : site.is_active ? (
             <>
@@ -85,18 +86,18 @@ export default async function PanelPage() {
                   {site.subdomain}.sitiolisto.com.ar ↗
                 </a>
               </div>
-              <a href="/editor" className="btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '0.9rem', textAlign: 'center', display: 'block', boxSizing: 'border-box' }}>
+              <Link href="/editor" className="btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '0.9rem', textAlign: 'center', display: 'block', boxSizing: 'border-box' }}>
                 Editar Sitio
-              </a>
+              </Link>
             </>
           ) : (
             <>
               <p style={{ color: '#ef4444', fontSize: '0.9rem', marginBottom: '1.5rem', fontWeight: 500 }}>
                 Tu sitio está pausado debido a que no tienes una suscripción activa.
               </p>
-              <a href="/cuenta" className="btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '0.9rem', textAlign: 'center', display: 'block', boxSizing: 'border-box' }}>
+              <Link href="/cuenta" className="btn-primary" style={{ width: '100%', padding: '0.75rem', fontSize: '0.9rem', textAlign: 'center', display: 'block', boxSizing: 'border-box' }}>
                 Reactivar Plan
-              </a>
+              </Link>
             </>
           )}
         </div>
@@ -128,9 +129,9 @@ export default async function PanelPage() {
             </p>
           </div>
 
-          <a href="/cuenta" className="btn-outline" style={{ width: '100%', padding: '0.75rem', fontSize: '0.9rem', textAlign: 'center', display: 'block', boxSizing: 'border-box' }}>
+          <Link href="/cuenta" className="btn-outline" style={{ width: '100%', padding: '0.75rem', fontSize: '0.9rem', textAlign: 'center', display: 'block', boxSizing: 'border-box' }}>
             {subscription?.status === 'authorized' ? 'Gestionar Plan' : 'Ver Planes'}
-          </a>
+          </Link>
         </div>
 
       </div>

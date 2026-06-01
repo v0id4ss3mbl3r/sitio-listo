@@ -77,6 +77,11 @@ export default function EditorPage() {
 
   useEffect(() => {
     async function loadData() {
+      // /api/sites y /api/pages usan la sesión del server, no necesitan el
+      // user del cliente → los disparamos ya, en paralelo con el getUser.
+      const sitePromise = fetch('/api/sites').then((r) => r.json());
+      const pagesPromise = fetch('/api/pages').then((r) => r.json());
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
@@ -99,12 +104,7 @@ export default function EditorPage() {
       setIsAdmin(profileData?.role === 'admin');
       setCanThemeOverride(profileData?.can_customize_theme ?? false);
 
-      const [siteRes, pagesRes] = await Promise.all([
-        fetch('/api/sites'),
-        fetch('/api/pages'),
-      ]);
-      const siteData = await siteRes.json();
-      const pagesData = await pagesRes.json();
+      const [siteData, pagesData] = await Promise.all([sitePromise, pagesPromise]);
 
       if (siteData.site) {
         setSubdomain(siteData.site.subdomain || '');
