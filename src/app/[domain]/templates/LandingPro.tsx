@@ -54,6 +54,9 @@ export default function LandingPro({
 }: TemplateProps) {
   const t = theme.tokens;
   const isGlow = t.surface === 'glow';
+  // Claro vs oscuro lo decide el modo (Vivo es glow pero claro). isGlow queda
+  // solo para efectos (gradientes/blobs/glow); isDark para fondos/superficies.
+  const isDark = theme.mode === 'dark';
   const showBlobs = t.gradientGlow !== 'transparent';
 
   // Acento = color de marca del sitio. El tema decide si va en gradiente o sólido.
@@ -85,9 +88,9 @@ export default function LandingPro({
     : { color: accent };
 
   // Fondo de tarjetas de feature: frosted en glow, sólido en flat.
-  const cardBg = isGlow ? 'rgba(255,255,255,0.04)' : t.bgCard;
-  const iconShadow = isGlow ? '0 8px 24px rgba(0,0,0,0.3)' : t.shadowCard;
-  const stripBg = isGlow ? 'rgba(255,255,255,0.03)' : t.bgCard;
+  const cardBg = isDark ? 'rgba(255,255,255,0.04)' : t.bgCard;
+  const iconShadow = isDark ? '0 8px 24px rgba(0,0,0,0.3)' : t.shadowCard;
+  const stripBg = isDark ? 'rgba(255,255,255,0.03)' : t.bgCard;
   const ctaBg = isGlow
     ? `linear-gradient(135deg, ${accent}1f 0%, ${accent2}10 100%)`
     : t.bgSubtle;
@@ -278,7 +281,7 @@ export default function LandingPro({
             display: 'flex',
             background: stripBg,
             border: `1px solid ${t.borderSubtle}`,
-            boxShadow: isGlow ? 'none' : t.shadowCard,
+            boxShadow: isDark ? 'none' : t.shadowCard,
             borderRadius: t.radiusLg,
             padding: '1.5rem 0',
             width: 'fit-content'
@@ -335,8 +338,8 @@ export default function LandingPro({
                   padding: '2.25rem',
                   background: cardBg,
                   border: `1px solid ${t.borderSubtle}`,
-                  boxShadow: isGlow ? 'none' : t.shadowCard,
-                  backdropFilter: isGlow ? 'blur(20px)' : 'none'
+                  boxShadow: isDark ? 'none' : t.shadowCard,
+                  backdropFilter: isDark ? 'blur(20px)' : 'none'
                 }}
               >
                 <div style={{

@@ -47,6 +47,8 @@ export default function ServiciosPro({
 }: TemplateProps) {
   const t = theme.tokens;
   const isGlow = t.surface === 'glow';
+  // Claro vs oscuro = modo (Vivo es glow pero claro). isGlow solo para efectos.
+  const isDark = theme.mode === 'dark';
   const showBlobs = t.gradientGlow !== 'transparent';
 
   const accent = primaryColor;
@@ -60,8 +62,8 @@ export default function ServiciosPro({
     fontStyle: t.headingItalic ? 'italic' : 'normal',
     fontWeight: t.headingWeight,
   };
-  const cardBg = isGlow ? 'rgba(255,255,255,0.04)' : t.bgCard;
-  const subCardBg = isGlow ? 'rgba(255,255,255,0.03)' : t.bgSubtle;
+  const cardBg = isDark ? 'rgba(255,255,255,0.04)' : t.bgCard;
+  const subCardBg = isDark ? 'rgba(255,255,255,0.03)' : t.bgSubtle;
   const btnShadowHover = isGlow ? `0 16px 32px ${accent}66` : t.shadowElevated;
 
   // Pill de etiqueta de sección con tinte de acento.
@@ -305,7 +307,7 @@ export default function ServiciosPro({
                   padding: '2rem',
                   background: subCardBg,
                   border: `1px solid ${t.borderSubtle}`,
-                  boxShadow: isGlow ? 'none' : t.shadowCard,
+                  boxShadow: isDark ? 'none' : t.shadowCard,
                   textAlign: 'left'
                 }}
               >
@@ -465,7 +467,7 @@ export default function ServiciosPro({
                 padding: '1.5rem 2rem',
                 background: cardBg, borderRadius: t.radiusMd,
                 border: `1px solid ${t.borderSubtle}`,
-                boxShadow: isGlow ? 'none' : t.shadowCard,
+                boxShadow: isDark ? 'none' : t.shadowCard,
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem'
               }}>
                 <div>
@@ -482,7 +484,7 @@ export default function ServiciosPro({
                 padding: '1.5rem 2rem',
                 background: cardBg, borderRadius: t.radiusMd,
                 border: `1px solid ${t.borderSubtle}`,
-                boxShadow: isGlow ? 'none' : t.shadowCard,
+                boxShadow: isDark ? 'none' : t.shadowCard,
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem'
               }}>
                 <div>
@@ -505,7 +507,7 @@ export default function ServiciosPro({
       {/* FOOTER — banda oscura de cierre (consistente en todos los temas) */}
       <footer style={{
         padding: '2.5rem 3rem',
-        background: isGlow ? t.bgSubtle : '#0f172a',
+        background: isDark ? t.bgSubtle : '#0f172a',
         borderTop: `1px solid ${t.borderSubtle}`,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         flexWrap: 'wrap', gap: '1rem'

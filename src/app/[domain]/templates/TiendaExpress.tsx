@@ -46,6 +46,8 @@ export default function TiendaExpress({
 }: TemplateProps) {
   const t = theme.tokens;
   const isGlow = t.surface === 'glow';
+  // Claro vs oscuro = modo (Vivo es glow pero claro). isGlow solo para efectos.
+  const isDark = theme.mode === 'dark';
   const showBlobs = t.gradientGlow !== 'transparent';
 
   const accent = primaryColor;
@@ -58,9 +60,9 @@ export default function TiendaExpress({
     fontStyle: t.headingItalic ? 'italic' : 'normal',
     fontWeight: t.headingWeight,
   };
-  const cardBg = isGlow ? 'rgba(255,255,255,0.05)' : t.bgCard;
-  const subCardBg = isGlow ? 'rgba(255,255,255,0.04)' : t.bgSubtle;
-  const darkBg = isGlow ? t.bgSubtle : '#0f172a';
+  const cardBg = isDark ? 'rgba(255,255,255,0.05)' : t.bgCard;
+  const subCardBg = isDark ? 'rgba(255,255,255,0.04)' : t.bgSubtle;
+  const darkBg = isDark ? t.bgSubtle : '#0f172a';
   const heroBg = `linear-gradient(135deg, ${t.bgSubtle} 0%, ${accent}0d 55%, ${accent2}0a 100%)`;
   const btnShadowHover = isGlow ? `0 10px 24px ${accent}66` : t.shadowElevated;
 
@@ -95,7 +97,7 @@ export default function TiendaExpress({
           overflow: hidden;
           background: ${subCardBg};
           border: 1px solid ${t.borderSubtle};
-          box-shadow: ${isGlow ? 'none' : t.shadowCard};
+          box-shadow: ${isDark ? 'none' : t.shadowCard};
         }
         .te-product-card:hover {
           transform: translateY(-8px);

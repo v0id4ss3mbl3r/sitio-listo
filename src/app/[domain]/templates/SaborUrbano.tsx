@@ -71,6 +71,8 @@ export default function SaborUrbano({
 
   const t = theme.tokens;
   const isGlow = t.surface === 'glow';
+  // Claro vs oscuro = modo (Vivo es glow pero claro). isGlow solo para efectos.
+  const isDark = theme.mode === 'dark';
   const accent = primaryColor;
 
   const pageBg = isGlow ? `linear-gradient(135deg, ${t.bgBase} 0%, ${t.bgSubtle} 100%)` : t.bgBase;
@@ -79,8 +81,8 @@ export default function SaborUrbano({
     fontStyle: t.headingItalic ? 'italic' : 'normal',
     fontWeight: t.headingWeight,
   };
-  const cardBg = isGlow ? 'rgba(255,255,255,0.03)' : t.bgCard;
-  const darkBg = isGlow ? t.bgSubtle : '#0a0a0a';
+  const cardBg = isDark ? 'rgba(255,255,255,0.03)' : t.bgCard;
+  const darkBg = isDark ? t.bgSubtle : '#0a0a0a';
   // El hero es una foto oscura; el overlay funde hacia el fondo del tema.
   const heroOverlay = `linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, transparent 38%, ${t.bgBase}E6 86%, ${t.bgBase} 100%)`;
 
@@ -108,12 +110,12 @@ export default function SaborUrbano({
         .su-card {
           background: ${cardBg};
           border: 1px solid ${t.borderSubtle};
-          box-shadow: ${isGlow ? 'none' : t.shadowCard};
+          box-shadow: ${isDark ? 'none' : t.shadowCard};
           transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
         }
         .su-card:hover {
           transform: translateY(-4px);
-          box-shadow: ${isGlow ? 'none' : t.shadowElevated};
+          box-shadow: ${isDark ? 'none' : t.shadowElevated};
           border-color: ${t.borderHover};
         }
 

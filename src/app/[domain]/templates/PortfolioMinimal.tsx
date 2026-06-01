@@ -39,6 +39,8 @@ export default function PortfolioMinimal({
 }: TemplateProps) {
   const t = theme.tokens;
   const isGlow = t.surface === 'glow';
+  // Claro vs oscuro = modo (Vivo es glow pero claro). isGlow solo para efectos.
+  const isDark = theme.mode === 'dark';
 
   const accent = primaryColor;
   const accent2 = secondaryColor;
@@ -50,8 +52,8 @@ export default function PortfolioMinimal({
     fontStyle: t.headingItalic ? 'italic' : 'normal',
     fontWeight: t.headingWeight,
   };
-  // Banda oscura (proyectos / footer): negro en temas claros, bgSubtle en glow.
-  const darkBg = isGlow ? t.bgSubtle : '#111';
+  // Banda oscura (proyectos / footer): negro en temas claros, bgSubtle en oscuro.
+  const darkBg = isDark ? t.bgSubtle : '#111';
 
   return (
     <div style={{ minHeight: '100vh', background: pageBg, color: t.textPrimary, fontFamily: t.fontBody, overflowX: 'hidden' }}>

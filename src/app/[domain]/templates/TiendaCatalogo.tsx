@@ -13,6 +13,8 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 
+import { getTheme, type Theme } from '@/lib/themes';
+
 type Category = {
   id: string;
   name: string;
@@ -49,6 +51,10 @@ export type TiendaCatalogoProps = {
   products: Product[];
   categories: Category[];
   settings: StoreSettings | null;
+  /** Tema visual. Define el ambiente (fondo/superficies/texto/tipografía);
+   *  el acento sigue siendo settings.theme_color. Las bandas oscuras
+   *  (hero/beneficios/footer) se mantienen oscuras en todos los temas. */
+  theme?: Theme;
 };
 
 type CartItem = Product & { quantity: number };
@@ -97,8 +103,41 @@ export default function TiendaCatalogo({
   products,
   categories,
   settings,
+  theme = getTheme('vivo'),
 }: TiendaCatalogoProps) {
-  const themeColor = settings?.theme_color || primaryColor || '#171717';
+  const t = theme.tokens;
+  // El modo (no el 'surface') decide claro vs oscuro: Vivo es glow pero claro.
+  const isDark = theme.mode === 'dark';
+  const themeColor = settings?.theme_color || primaryColor || t.primary;
+
+  // Superficies derivadas del tema. Las bandas oscuras (hero/footer) usan
+  // BAND fijo; el resto del storefront sale de estas variables.
+  const pageBg = isDark ? '#0f172a' : t.bgSubtle;
+  const surface = isDark ? '#1b2335' : '#ffffff';
+  const surfaceTranslucent = isDark ? 'rgba(27,35,53,0.92)' : 'rgba(255,255,255,0.97)';
+  const subtle = isDark ? 'rgba(255,255,255,0.06)' : '#f4f4f5';
+  const subtleHover = isDark ? 'rgba(255,255,255,0.10)' : '#e7e5e4';
+  const BAND = '#0f172a';
+
+  const headingFont: React.CSSProperties = {
+    fontFamily: t.fontHeading,
+    fontStyle: t.headingItalic ? 'italic' : 'normal',
+    fontWeight: t.headingWeight,
+  };
+
+  const rootStyle = {
+    fontFamily: t.fontBody,
+    background: pageBg,
+    color: t.textPrimary,
+    '--tc-surface': surface,
+    '--tc-subtle': subtle,
+    '--tc-subtle-h': subtleHover,
+    '--tc-text': t.textPrimary,
+    '--tc-text2': t.textSecondary,
+    '--tc-muted': t.textMuted,
+    '--tc-border': t.borderSubtle,
+  } as React.CSSProperties;
+
   const whatsappNumbers =
     settings?.whatsapp_numbers && settings.whatsapp_numbers.length > 0
       ? settings.whatsapp_numbers
@@ -226,8 +265,8 @@ export default function TiendaCatalogo({
 
   return (
     <main
-      className="min-h-screen bg-neutral-50 font-sans text-neutral-900 flex flex-col"
-      style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+      className="min-h-screen font-sans text-[var(--tc-text)] flex flex-col"
+      style={rootStyle}
     >
       <style
         dangerouslySetInnerHTML={{
@@ -288,8 +327,8 @@ export default function TiendaCatalogo({
 
       {/* HEADER */}
       <header
-        className="sticky top-0 z-40 border-b border-neutral-100 shadow-sm"
-        style={{ background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(16px)' }}
+        className="sticky top-0 z-40 border-b border-[var(--tc-border)] shadow-sm"
+        style={{ background: surfaceTranslucent, backdropFilter: 'blur(16px)' }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
           {/* Logo */}
@@ -312,7 +351,7 @@ export default function TiendaCatalogo({
                 >
                   {siteName.charAt(0).toUpperCase()}
                 </div>
-                <span className="font-black text-lg sm:text-xl tracking-tight text-neutral-900 hidden sm:block">
+                <span className="font-black text-lg sm:text-xl tracking-tight text-[var(--tc-text)] hidden sm:block">
                   {siteName}
                 </span>
               </>
@@ -321,13 +360,13 @@ export default function TiendaCatalogo({
 
           {/* Search — desktop */}
           <div className="relative w-full max-w-sm hidden sm:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--tc-muted)] h-4 w-4" />
             <input
               type="text"
               placeholder="Buscar productos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-neutral-100 rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-neutral-200 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-[var(--tc-subtle)] rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--tc-border)] transition-all text-[var(--tc-text)]"
             />
           </div>
 
@@ -336,7 +375,7 @@ export default function TiendaCatalogo({
             {/* Mobile search toggle */}
             <button
               onClick={() => setMobileSearchOpen((v) => !v)}
-              className="sm:hidden p-2 rounded-xl hover:bg-neutral-100 text-neutral-600 transition-colors"
+              className="sm:hidden p-2 rounded-xl hover:bg-[var(--tc-subtle)] text-[var(--tc-text2)] transition-colors"
             >
               <Search className="h-5 w-5" />
             </button>
@@ -347,10 +386,10 @@ export default function TiendaCatalogo({
                 setIsCartOpen(true);
                 setCheckoutStep('cart');
               }}
-              className="relative flex items-center gap-2 px-3 py-2 sm:px-4 rounded-xl hover:bg-neutral-100 transition-colors"
+              className="relative flex items-center gap-2 px-3 py-2 sm:px-4 rounded-xl hover:bg-[var(--tc-subtle)] transition-colors"
             >
-              <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-neutral-700" />
-              <span className="font-bold text-sm hidden lg:block text-neutral-700">Mi Carrito</span>
+              <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-[var(--tc-text2)]" />
+              <span className="font-bold text-sm hidden lg:block text-[var(--tc-text2)]">Mi Carrito</span>
               {cartItemsCount > 0 && (
                 <span
                   className="absolute -top-1 -right-1 text-white text-[10px] font-black h-5 w-5 flex items-center justify-center rounded-full shadow-md"
@@ -367,14 +406,14 @@ export default function TiendaCatalogo({
         {mobileSearchOpen && (
           <div className="sm:hidden px-4 pb-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--tc-muted)] h-4 w-4" />
               <input
                 type="text"
                 placeholder="Buscar productos..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 autoFocus
-                className="w-full pl-10 pr-4 py-2.5 bg-neutral-100 rounded-xl text-sm outline-none focus:bg-white focus:ring-2 focus:ring-neutral-200 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-[var(--tc-subtle)] rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--tc-border)] transition-all text-[var(--tc-text)]"
               />
             </div>
           </div>
@@ -382,7 +421,7 @@ export default function TiendaCatalogo({
 
         {/* Category nav — pill buttons */}
         {categories.length > 0 && (
-          <nav className="border-t border-neutral-100 bg-white">
+          <nav className="border-t border-[var(--tc-border)]" style={{ background: surface }}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
               <ul className="tc-cat-nav flex items-center gap-1 overflow-x-auto h-12">
                 <li>
@@ -392,7 +431,7 @@ export default function TiendaCatalogo({
                     style={
                       activeCategory === null
                         ? { backgroundColor: themeColor, color: '#fff' }
-                        : { color: '#6b7280' }
+                        : { color: t.textMuted }
                     }
                   >
                     Todo
@@ -406,7 +445,7 @@ export default function TiendaCatalogo({
                       style={
                         activeCategory === cat.id
                           ? { backgroundColor: themeColor, color: '#fff' }
-                          : { color: '#6b7280' }
+                          : { color: t.textMuted }
                       }
                     >
                       {cat.name}
@@ -423,8 +462,8 @@ export default function TiendaCatalogo({
         {/* BANNER + BENEFITS — only on the unconstrained home view */}
         {!searchQuery && activeCategory === null && (
           <>
-            {/* HERO BANNER */}
-            <section className="relative overflow-hidden" style={{ background: '#0f172a' }}>
+            {/* HERO BANNER — banda oscura constante */}
+            <section className="relative overflow-hidden" style={{ background: BAND }}>
               {/* Decorative blobs */}
               <div
                 className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-20 blur-3xl pointer-events-none"
@@ -468,7 +507,7 @@ export default function TiendaCatalogo({
 
                   <h2
                     className="tc-fade tc-fade-d1 text-4xl sm:text-5xl font-black tracking-tight text-white mb-4 leading-tight"
-                    style={{ fontStyle: 'italic' }}
+                    style={headingFont}
                   >
                     {bannerTitle}
                   </h2>
@@ -498,10 +537,10 @@ export default function TiendaCatalogo({
               </div>
             </section>
 
-            {/* BENEFITS STRIP */}
+            {/* BENEFITS STRIP — banda oscura constante */}
             <section
               style={{
-                background: '#0f172a',
+                background: BAND,
                 borderTop: '1px solid rgba(255,255,255,0.05)',
               }}
             >
@@ -551,12 +590,12 @@ export default function TiendaCatalogo({
           className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-6 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4"
         >
           <div>
-            <div className="inline-block px-3 py-1 rounded-full bg-neutral-100 text-neutral-500 text-[10px] font-black uppercase tracking-[0.15em] mb-2">
+            <div className="inline-block px-3 py-1 rounded-full bg-[var(--tc-subtle)] text-[var(--tc-muted)] text-[10px] font-black uppercase tracking-[0.15em] mb-2">
               Catálogo
             </div>
             <h2
-              className="text-2xl sm:text-3xl font-black tracking-tight text-neutral-900"
-              style={{ fontStyle: 'italic' }}
+              className="text-2xl sm:text-3xl font-black tracking-tight text-[var(--tc-text)]"
+              style={headingFont}
             >
               {searchQuery
                 ? `Resultados para "${searchQuery}"`
@@ -564,7 +603,7 @@ export default function TiendaCatalogo({
                   ? categories.find((c) => c.id === activeCategory)?.name
                   : 'Todos los productos'}
             </h2>
-            <p className="text-neutral-400 text-sm mt-1 font-semibold">
+            <p className="text-[var(--tc-muted)] text-sm mt-1 font-semibold">
               {filteredProducts.length} productos disponibles
             </p>
           </div>
@@ -573,13 +612,13 @@ export default function TiendaCatalogo({
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'newest' | 'price_asc' | 'price_desc')}
-              className="w-full sm:w-auto appearance-none bg-white border border-neutral-200 text-neutral-700 font-bold text-sm py-2.5 pl-4 pr-10 rounded-xl outline-none cursor-pointer hover:border-neutral-300 transition-colors"
+              className="w-full sm:w-auto appearance-none border border-[var(--tc-border)] text-[var(--tc-text2)] font-bold text-sm py-2.5 pl-4 pr-10 rounded-xl outline-none cursor-pointer transition-colors bg-[var(--tc-surface)]"
             >
               <option value="newest">Más Recientes</option>
               <option value="price_asc">Menor Precio</option>
               <option value="price_desc">Mayor Precio</option>
             </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--tc-muted)] pointer-events-none" />
           </div>
         </div>
 
@@ -587,11 +626,11 @@ export default function TiendaCatalogo({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5">
           {filteredProducts.length === 0 ? (
             <div className="col-span-full py-24 text-center">
-              <div className="w-20 h-20 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto mb-5">
-                <ShoppingCart className="w-9 h-9 text-neutral-300" />
+              <div className="w-20 h-20 rounded-2xl bg-[var(--tc-subtle)] flex items-center justify-center mx-auto mb-5">
+                <ShoppingCart className="w-9 h-9 text-[var(--tc-muted)]" />
               </div>
-              <h3 className="text-xl font-black text-neutral-800">No hay productos para mostrar.</h3>
-              <p className="text-neutral-400 mt-2 font-medium text-sm">
+              <h3 className="text-xl font-black text-[var(--tc-text)]">No hay productos para mostrar.</h3>
+              <p className="text-[var(--tc-muted)] mt-2 font-medium text-sm">
                 Intentá con otra búsqueda o categoría.
               </p>
             </div>
@@ -601,13 +640,13 @@ export default function TiendaCatalogo({
               return (
                 <div
                   key={product.id}
-                  className={`tc-product-card bg-white rounded-2xl border border-neutral-100 overflow-hidden flex flex-col ${!product.in_stock ? 'opacity-70' : 'cursor-pointer'}`}
+                  className={`tc-product-card rounded-2xl border border-[var(--tc-border)] overflow-hidden flex flex-col bg-[var(--tc-surface)] ${!product.in_stock ? 'opacity-70' : 'cursor-pointer'}`}
                   onClick={() => product.in_stock && setSelectedProduct(product)}
                 >
                   {/* Image area */}
                   <div className="aspect-square relative overflow-hidden">
                     {!product.in_stock && (
-                      <div className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-[2px] bg-white/50">
+                      <div className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-[2px] bg-black/40">
                         <span className="bg-neutral-900 text-white font-black text-[10px] tracking-widest uppercase px-3 py-1 rounded-full shadow">
                           Agotado
                         </span>
@@ -639,7 +678,7 @@ export default function TiendaCatalogo({
                       <img
                         src={product.image_url}
                         alt={product.name}
-                        className="w-full h-full object-contain mix-blend-multiply p-3 transition-transform duration-500"
+                        className="w-full h-full object-contain p-3 transition-transform duration-500"
                       />
                     ) : (
                       <div
@@ -663,8 +702,8 @@ export default function TiendaCatalogo({
                   </div>
 
                   {/* Card info */}
-                  <div className="p-3 flex flex-col flex-grow bg-neutral-50/60 border-t border-neutral-50">
-                    <h3 className="text-xs sm:text-sm font-bold text-neutral-800 line-clamp-2 leading-snug min-h-[36px]">
+                  <div className="p-3 flex flex-col flex-grow border-t border-[var(--tc-border)]">
+                    <h3 className="text-xs sm:text-sm font-bold text-[var(--tc-text)] line-clamp-2 leading-snug min-h-[36px]">
                       {product.name}
                     </h3>
 
@@ -673,7 +712,7 @@ export default function TiendaCatalogo({
                         ${product.price.toLocaleString('es-AR')}
                       </p>
                       {product.compare_at_price && product.compare_at_price > product.price ? (
-                        <p className="text-[11px] text-neutral-400 line-through font-semibold">
+                        <p className="text-[11px] text-[var(--tc-muted)] line-through font-semibold">
                           ${product.compare_at_price.toLocaleString('es-AR')}
                         </p>
                       ) : (
@@ -687,7 +726,7 @@ export default function TiendaCatalogo({
                         e.stopPropagation();
                         addToCart(product);
                       }}
-                      className={`tc-btn-add mt-auto w-full text-center text-white text-[11px] sm:text-xs font-black py-2.5 rounded-xl ${!product.in_stock ? 'bg-neutral-200 !text-neutral-400 cursor-not-allowed' : ''}`}
+                      className={`tc-btn-add mt-auto w-full text-center text-white text-[11px] sm:text-xs font-black py-2.5 rounded-xl ${!product.in_stock ? 'bg-[var(--tc-subtle)] !text-[var(--tc-muted)] cursor-not-allowed' : ''}`}
                       style={product.in_stock ? { backgroundColor: themeColor } : {}}
                     >
                       {product.in_stock ? '+ Agregar' : 'Sin Stock'}
@@ -700,8 +739,8 @@ export default function TiendaCatalogo({
         </div>
       </div>
 
-      {/* FOOTER */}
-      <footer style={{ background: '#0f172a' }}>
+      {/* FOOTER — banda oscura constante */}
+      <footer style={{ background: BAND }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
@@ -769,26 +808,26 @@ export default function TiendaCatalogo({
       {selectedProduct && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6">
           <div
-            className="absolute inset-0 bg-neutral-900/70 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={() => setSelectedProduct(null)}
           />
 
-          <div className="relative bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
+          <div className="relative w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] bg-[var(--tc-surface)]">
             <button
               onClick={() => setSelectedProduct(null)}
-              className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur p-2 rounded-full text-neutral-400 hover:text-neutral-900 transition-colors shadow-md"
+              className="absolute top-4 right-4 z-10 backdrop-blur p-2 rounded-full text-[var(--tc-muted)] hover:text-[var(--tc-text)] transition-colors shadow-md bg-[var(--tc-subtle)]"
             >
               <X className="h-5 w-5" />
             </button>
 
             {/* Image panel */}
-            <div className="w-full md:w-1/2 flex items-center justify-center min-h-[260px] sm:min-h-[340px] p-8 bg-neutral-50">
+            <div className="w-full md:w-1/2 flex items-center justify-center min-h-[260px] sm:min-h-[340px] p-8 bg-[var(--tc-subtle)]">
               {selectedProduct.image_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={selectedProduct.image_url}
                   alt={selectedProduct.name}
-                  className="w-full h-full object-contain mix-blend-multiply max-h-64 sm:max-h-80"
+                  className="w-full h-full object-contain max-h-64 sm:max-h-80"
                 />
               ) : (
                 <div
@@ -811,8 +850,8 @@ export default function TiendaCatalogo({
               )}
 
               <h2
-                className="text-2xl sm:text-3xl font-black text-neutral-900 leading-tight mb-3"
-                style={{ fontStyle: 'italic' }}
+                className="text-2xl sm:text-3xl font-black text-[var(--tc-text)] leading-tight mb-3"
+                style={headingFont}
               >
                 {selectedProduct.name}
               </h2>
@@ -835,7 +874,7 @@ export default function TiendaCatalogo({
                         )}
                         % OFF
                       </span>
-                      <p className="text-base text-neutral-400 line-through font-bold">
+                      <p className="text-base text-[var(--tc-muted)] line-through font-bold">
                         ${selectedProduct.compare_at_price.toLocaleString('es-AR')}
                       </p>
                     </div>
@@ -843,14 +882,14 @@ export default function TiendaCatalogo({
               </div>
 
               <div className="flex-grow">
-                <p className="text-neutral-600 whitespace-pre-wrap font-medium leading-relaxed text-sm">
+                <p className="text-[var(--tc-text2)] whitespace-pre-wrap font-medium leading-relaxed text-sm">
                   {selectedProduct.description || 'Este producto no tiene descripción adicional.'}
                 </p>
               </div>
 
-              <div className="mt-6 pt-5 border-t border-neutral-100">
+              <div className="mt-6 pt-5 border-t border-[var(--tc-border)]">
                 {!selectedProduct.in_stock ? (
-                  <div className="w-full bg-neutral-100 text-neutral-400 font-black py-4 rounded-xl text-center text-sm">
+                  <div className="w-full bg-[var(--tc-subtle)] text-[var(--tc-muted)] font-black py-4 rounded-xl text-center text-sm">
                     Sin Stock
                   </div>
                 ) : (
@@ -878,17 +917,17 @@ export default function TiendaCatalogo({
         className={`fixed inset-0 z-[70] transition-opacity duration-300 ${isCartOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
         <div
-          className="absolute inset-0 bg-neutral-900/60 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           onClick={() => setIsCartOpen(false)}
         />
 
         <div
-          className={`absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col transform transition-transform duration-300 ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}
+          className={`absolute right-0 top-0 h-full w-full max-w-md shadow-2xl flex flex-col transform transition-transform duration-300 bg-[var(--tc-surface)] ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}
         >
           {/* Drawer header */}
-          <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-white">
+          <div className="p-5 border-b border-[var(--tc-border)] flex items-center justify-between" style={{ background: surface }}>
             <div>
-              <h3 className="text-lg font-black text-neutral-900">
+              <h3 className="text-lg font-black text-[var(--tc-text)]">
                 {checkoutStep === 'cart'
                   ? 'Tu Pedido'
                   : checkoutStep === 'form'
@@ -896,30 +935,30 @@ export default function TiendaCatalogo({
                     : '¡Listo!'}
               </h3>
               {checkoutStep === 'cart' && cartItemsCount > 0 && (
-                <p className="text-xs text-neutral-400 font-semibold mt-0.5">
+                <p className="text-xs text-[var(--tc-muted)] font-semibold mt-0.5">
                   {cartItemsCount} {cartItemsCount === 1 ? 'producto' : 'productos'}
                 </p>
               )}
             </div>
             <button
               onClick={() => setIsCartOpen(false)}
-              className="text-neutral-400 hover:text-neutral-700 p-2 bg-neutral-100 hover:bg-neutral-200 rounded-full transition-colors"
+              className="text-[var(--tc-muted)] hover:text-[var(--tc-text)] p-2 bg-[var(--tc-subtle)] hover:bg-[var(--tc-subtle-h)] rounded-full transition-colors"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
 
           {/* Drawer body */}
-          <div className="flex-grow overflow-y-auto bg-neutral-50/30">
+          <div className="flex-grow overflow-y-auto" style={{ background: pageBg }}>
             {checkoutStep === 'cart' && (
               <div className="p-5 space-y-3">
                 {cartItemsCount === 0 ? (
-                  <div className="flex flex-col items-center justify-center pt-20 text-neutral-400 gap-3">
-                    <div className="w-16 h-16 rounded-2xl bg-neutral-100 flex items-center justify-center">
+                  <div className="flex flex-col items-center justify-center pt-20 text-[var(--tc-muted)] gap-3">
+                    <div className="w-16 h-16 rounded-2xl bg-[var(--tc-subtle)] flex items-center justify-center">
                       <ShoppingCart className="h-8 w-8 opacity-40" />
                     </div>
                     <p className="font-bold text-sm">Tu carrito está vacío.</p>
-                    <p className="text-xs text-neutral-300 font-medium">
+                    <p className="text-xs text-[var(--tc-muted)] font-medium">
                       ¡Agregá productos para comenzar!
                     </p>
                   </div>
@@ -927,14 +966,14 @@ export default function TiendaCatalogo({
                   Object.values(cart).map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center gap-3 p-3 border border-neutral-100 rounded-2xl bg-white shadow-sm"
+                      className="flex items-center gap-3 p-3 border border-[var(--tc-border)] rounded-2xl shadow-sm bg-[var(--tc-surface)]"
                     >
                       {item.image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={item.image_url}
                           alt={item.name}
-                          className="w-14 h-14 object-contain rounded-xl bg-neutral-50 p-1 flex-shrink-0"
+                          className="w-14 h-14 object-contain rounded-xl bg-[var(--tc-subtle)] p-1 flex-shrink-0"
                         />
                       ) : (
                         <div
@@ -943,7 +982,7 @@ export default function TiendaCatalogo({
                         />
                       )}
                       <div className="flex-grow min-w-0">
-                        <p className="font-bold text-neutral-800 text-xs leading-tight line-clamp-2">
+                        <p className="font-bold text-[var(--tc-text)] text-xs leading-tight line-clamp-2">
                           {item.name}
                         </p>
                         <p className="font-black text-sm mt-0.5" style={{ color: themeColor }}>
@@ -952,16 +991,16 @@ export default function TiendaCatalogo({
                         <div className="flex items-center gap-2 mt-1.5">
                           <button
                             onClick={() => updateQuantity(item.id, -1)}
-                            className="w-6 h-6 flex items-center justify-center rounded-lg bg-neutral-100 hover:bg-neutral-200 font-black text-neutral-600 text-sm transition-colors"
+                            className="w-6 h-6 flex items-center justify-center rounded-lg bg-[var(--tc-subtle)] hover:bg-[var(--tc-subtle-h)] font-black text-[var(--tc-text2)] text-sm transition-colors"
                           >
                             −
                           </button>
-                          <span className="text-xs font-black w-4 text-center text-neutral-700">
+                          <span className="text-xs font-black w-4 text-center text-[var(--tc-text2)]">
                             {item.quantity}
                           </span>
                           <button
                             onClick={() => updateQuantity(item.id, 1)}
-                            className="w-6 h-6 flex items-center justify-center rounded-lg bg-neutral-100 hover:bg-neutral-200 font-black text-neutral-600 text-sm transition-colors"
+                            className="w-6 h-6 flex items-center justify-center rounded-lg bg-[var(--tc-subtle)] hover:bg-[var(--tc-subtle-h)] font-black text-[var(--tc-text2)] text-sm transition-colors"
                           >
                             +
                           </button>
@@ -969,7 +1008,7 @@ export default function TiendaCatalogo({
                       </div>
                       <button
                         onClick={() => removeFromCart(item.id)}
-                        className="text-neutral-300 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-50 transition-colors flex-shrink-0"
+                        className="text-[var(--tc-muted)] hover:text-red-400 p-1.5 rounded-lg hover:bg-red-50 transition-colors flex-shrink-0"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -982,7 +1021,7 @@ export default function TiendaCatalogo({
             {checkoutStep === 'form' && (
               <form id="checkout-form" onSubmit={handleConfirmOrder} className="p-5 space-y-4">
                 <div>
-                  <label className="block text-[10px] font-black text-neutral-400 uppercase tracking-wider mb-1.5">
+                  <label className="block text-[10px] font-black text-[var(--tc-muted)] uppercase tracking-wider mb-1.5">
                     Tu Nombre
                   </label>
                   <input
@@ -990,12 +1029,12 @@ export default function TiendaCatalogo({
                     required
                     value={customerData.name}
                     onChange={(e) => setCustomerData({ ...customerData, name: e.target.value })}
-                    className="w-full p-3.5 border border-neutral-200 rounded-xl text-neutral-900 outline-none focus:border-neutral-400 focus:ring-2 focus:ring-neutral-100 text-sm transition-all"
+                    className="w-full p-3.5 border border-[var(--tc-border)] rounded-xl text-[var(--tc-text)] outline-none focus:ring-2 focus:ring-[var(--tc-border)] text-sm transition-all bg-[var(--tc-surface)]"
                     placeholder="Ej: Juan Pérez"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-neutral-400 uppercase tracking-wider mb-1.5">
+                  <label className="block text-[10px] font-black text-[var(--tc-muted)] uppercase tracking-wider mb-1.5">
                     Tu Teléfono
                   </label>
                   <input
@@ -1003,13 +1042,13 @@ export default function TiendaCatalogo({
                     required
                     value={customerData.phone}
                     onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })}
-                    className="w-full p-3.5 border border-neutral-200 rounded-xl text-neutral-900 outline-none focus:border-neutral-400 focus:ring-2 focus:ring-neutral-100 text-sm transition-all"
+                    className="w-full p-3.5 border border-[var(--tc-border)] rounded-xl text-[var(--tc-text)] outline-none focus:ring-2 focus:ring-[var(--tc-border)] text-sm transition-all bg-[var(--tc-surface)]"
                     placeholder="Ej: 11-2345-6789"
                   />
                 </div>
                 {whatsappNumbers.length > 1 && (
                   <div>
-                    <label className="block text-[10px] font-black text-neutral-400 uppercase tracking-wider mb-1.5">
+                    <label className="block text-[10px] font-black text-[var(--tc-muted)] uppercase tracking-wider mb-1.5">
                       Enviar pedido a:
                     </label>
                     <select
@@ -1017,7 +1056,7 @@ export default function TiendaCatalogo({
                       onChange={(e) =>
                         setCustomerData({ ...customerData, selectedSeller: e.target.value })
                       }
-                      className="w-full p-3.5 border border-neutral-200 rounded-xl text-neutral-900 bg-white outline-none font-bold text-sm"
+                      className="w-full p-3.5 border border-[var(--tc-border)] rounded-xl text-[var(--tc-text)] outline-none font-bold text-sm bg-[var(--tc-surface)]"
                     >
                       {whatsappNumbers.map((opt) => (
                         <option key={opt.id} value={opt.phone}>
@@ -1028,14 +1067,14 @@ export default function TiendaCatalogo({
                   </div>
                 )}
                 <div>
-                  <label className="block text-[10px] font-black text-neutral-400 uppercase tracking-wider mb-1.5">
+                  <label className="block text-[10px] font-black text-[var(--tc-muted)] uppercase tracking-wider mb-1.5">
                     Observaciones
                   </label>
                   <textarea
                     rows={3}
                     value={customerData.notes}
                     onChange={(e) => setCustomerData({ ...customerData, notes: e.target.value })}
-                    className="w-full p-3.5 border border-neutral-200 rounded-xl text-neutral-900 outline-none focus:border-neutral-400 focus:ring-2 focus:ring-neutral-100 text-sm transition-all resize-none"
+                    className="w-full p-3.5 border border-[var(--tc-border)] rounded-xl text-[var(--tc-text)] outline-none focus:ring-2 focus:ring-[var(--tc-border)] text-sm transition-all resize-none bg-[var(--tc-surface)]"
                     placeholder="Aclaraciones sobre el pedido..."
                   />
                 </div>
@@ -1047,8 +1086,8 @@ export default function TiendaCatalogo({
                 <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center">
                   <CheckCircle2 className="h-12 w-12 text-green-500" />
                 </div>
-                <h3 className="text-xl font-black text-neutral-900">¡Pedido enviado!</h3>
-                <p className="text-neutral-500 font-medium text-sm max-w-xs">
+                <h3 className="text-xl font-black text-[var(--tc-text)]">¡Pedido enviado!</h3>
+                <p className="text-[var(--tc-muted)] font-medium text-sm max-w-xs">
                   Abrimos WhatsApp con el resumen de tu pedido. Confirmá el envío del mensaje para
                   que recibamos tu compra.
                 </p>
@@ -1068,9 +1107,9 @@ export default function TiendaCatalogo({
 
           {/* Drawer footer */}
           {checkoutStep !== 'success' && cartItemsCount > 0 && (
-            <div className="p-5 border-t border-neutral-100 bg-white">
+            <div className="p-5 border-t border-[var(--tc-border)]" style={{ background: surface }}>
               <div className="flex items-center justify-between mb-4">
-                <span className="text-neutral-500 font-bold text-sm">Total a pagar:</span>
+                <span className="text-[var(--tc-text2)] font-bold text-sm">Total a pagar:</span>
                 <span className="text-2xl font-black" style={{ color: themeColor }}>
                   ${cartTotal.toLocaleString('es-AR')}
                 </span>
@@ -1088,7 +1127,7 @@ export default function TiendaCatalogo({
                 <div className="flex gap-3">
                   <button
                     onClick={() => setCheckoutStep('cart')}
-                    className="px-4 py-4 font-black text-neutral-500 hover:text-neutral-900 bg-neutral-100 hover:bg-neutral-200 rounded-xl transition-colors text-sm"
+                    className="px-4 py-4 font-black text-[var(--tc-text2)] bg-[var(--tc-subtle)] hover:bg-[var(--tc-subtle-h)] rounded-xl transition-colors text-sm"
                   >
                     ← Atrás
                   </button>

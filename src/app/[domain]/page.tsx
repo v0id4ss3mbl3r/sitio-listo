@@ -130,6 +130,7 @@ export default async function TenantHome({
         products={catalog.products}
         categories={catalog.categories}
         settings={catalog.settings}
+        theme={theme}
       />
     );
   }
