@@ -18,6 +18,9 @@ export const createSiteSchema = z.object({
   // El contenido del sitio (nombre, colores, hero, etc) vive en pages.
   // Solo recibimos el name para inicializar la home en la primera creación.
   name: z.string().min(1).max(120).optional(),
+  // Tema visual elegido por el dueño. Solo se persiste si tiene permiso
+  // (gateado en el endpoint). null = volver al default de la plantilla.
+  theme_id: z.enum(THEME_IDS as [string, ...string[]]).nullable().optional(),
 });
 
 export type CreateSiteInput = z.infer<typeof createSiteSchema>;
@@ -204,6 +207,11 @@ export const adminUpdateTemplateSchema = z.object({
 // ─── admin: apariencia (app_settings global) ──────────────────
 export const adminUpdateSettingsSchema = z.object({
   theme_id: z.enum(THEME_IDS as [string, ...string[]]),
+});
+
+// ─── admin: usuarios ──────────────────────────────────────────
+export const adminUpdateUserSchema = z.object({
+  can_customize_theme: z.boolean().optional(),
 });
 
 // Helper para parsear un body de Request y devolver un error 400 estructurado

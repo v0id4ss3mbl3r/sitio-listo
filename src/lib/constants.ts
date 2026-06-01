@@ -135,6 +135,17 @@ export function hasCatalogFeature(plan: string, feature: CatalogFeature): boolea
   return features?.has(feature) ?? false;
 }
 
+// Planes que incluyen elegir el tema visual del sitio sin override manual.
+const THEME_CUSTOMIZATION_PLANS = ['pro', 'extremo', 'personalizado'];
+
+// ¿El usuario puede elegir el tema de su sitio desde el editor?
+// true si su plan lo incluye (Pro/Extremo/Personalizado) o si tiene el
+// override manual (profiles.can_customize_theme) que otorga el admin.
+export function canCustomizeTheme(planSlug: string, override?: boolean | null): boolean {
+  if (override) return true;
+  return THEME_CUSTOMIZATION_PLANS.includes(planSlug);
+}
+
 // Subdominios que NO pueden ser reclamados por usuarios — chocan con el routing
 // del producto, con servicios estándar o son confusos para la marca.
 export const RESERVED_SUBDOMAINS: ReadonlySet<string> = new Set([

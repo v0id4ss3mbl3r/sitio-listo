@@ -46,7 +46,7 @@ export default async function AdminUsuarioDetallePage({
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id, email, full_name, role, blocked_until, created_at')
+    .select('id, email, full_name, role, blocked_until, can_customize_theme, created_at')
     .eq('id', id)
     .maybeSingle();
 
@@ -105,12 +105,23 @@ export default async function AdminUsuarioDetallePage({
                 BLOQUEADO hasta {new Date(profile.blocked_until).toLocaleDateString('es-AR')}
               </span>
             )}
+            {profile.can_customize_theme && (
+              <span style={{ padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.7rem', background: 'rgba(139,111,63,0.18)', color: 'var(--color-primary)', fontWeight: 600 }}>
+                TEMA EDITABLE
+              </span>
+            )}
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
               Registrado: {new Date(profile.created_at).toLocaleDateString('es-AR')}
             </span>
           </div>
         </div>
-        <UserActions userId={profile.id} email={profile.email} isBlocked={!!isBlocked} isAdmin={profile.role === 'admin'} />
+        <UserActions
+          userId={profile.id}
+          email={profile.email}
+          isBlocked={!!isBlocked}
+          isAdmin={profile.role === 'admin'}
+          canCustomizeTheme={!!profile.can_customize_theme}
+        />
       </div>
 
       {/* Stats */}

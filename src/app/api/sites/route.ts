@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 
 import { createClient } from '@/lib/supabase/server';
-import { canUseTemplate } from '@/lib/constants';
+import { canCustomizeTheme, canUseTemplate } from '@/lib/constants';
 import { isAdmin } from '@/lib/auth/getAdminUser';
 import { captureError } from '@/lib/logger';
 import { createSiteSchema, parseJson } from '@/lib/schemas';
@@ -25,6 +25,7 @@ export async function POST(req: Request) {
       custom_domain: rawCustomDomain,
       template_id,
       name,
+      theme_id,
     } = parsed.data;
 
     const subdomainResult = validateSubdomain(rawSubdomain);
@@ -97,6 +98,21 @@ export async function POST(req: Request) {
       );
     }
 
+    // ¿Puede elegir el tema? Por plan (Pro/Extremo) o por override manual del
+    // admin (profiles.can_customize_theme). Si no, ignoramos theme_id en vez
+    // de fallar (el resto del guardado sigue normal).
+    let canTheme = admin;
+    if (!canTheme) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('can_customize_theme')
+        .eq('id', user.id)
+        .maybeSingle();
+      canTheme = canCustomizeTheme(userPlanType, profile?.can_customize_theme);
+    }
+    const themeUpdate =
+      canTheme && theme_id !== undefined ? { theme_id } : {};
+
     // Upsert (crear o actualizar) el sitio del usuario.
     // TODO Sprint 1.5: aceptar siteId explícito y aplicar PLAN_SITE_LIMITS para Extremo.
     // Hoy seguimos forzando un único sitio por usuario.
@@ -131,6 +147,7 @@ export async function POST(req: Request) {
           custom_domain_status: customDomainStatus,
           template_id,
           plan_type: userPlanType,
+          ...themeUpdate,
           updated_at: new Date().toISOString(),
         })
         .eq('id', userSite.id)
@@ -146,6 +163,7 @@ export async function POST(req: Request) {
           custom_domain_status: custom_domain ? 'pending' : null,
           template_id,
           plan_type: userPlanType,
+          ...themeUpdate,
           is_active: true,
         })
         .select()

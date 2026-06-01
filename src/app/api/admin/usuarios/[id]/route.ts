@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { createServiceRoleClient, requireAdmin } from '@/lib/admin/api';
 import { captureError } from '@/lib/logger';
+import { adminUpdateUserSchema, parseJson } from '@/lib/schemas';
 
 export async function GET(
   _req: Request,
@@ -17,7 +18,7 @@ export async function GET(
     const [profileRes, sitesRes, subsRes, notifsRes] = await Promise.all([
       supabase
         .from('profiles')
-        .select('id, email, full_name, avatar_url, role, blocked_until, created_at, updated_at')
+        .select('id, email, full_name, avatar_url, role, blocked_until, can_customize_theme, created_at, updated_at')
         .eq('id', id)
         .maybeSingle(),
       supabase
@@ -51,6 +52,38 @@ export async function GET(
   } catch (error) {
     captureError(error, { source: 'admin-users-get' });
     return NextResponse.json({ error: 'Error al cargar usuario' }, { status: 500 });
+  }
+}
+
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const guard = await requireAdmin();
+    if (!guard.ok) return guard.response;
+    const { supabase } = guard;
+
+    const { id } = await params;
+    const parsed = await parseJson(req, adminUpdateUserSchema);
+    if (!parsed.ok) return parsed.response;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ ...parsed.data, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select('id, can_customize_theme')
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) {
+      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
+    }
+
+    return NextResponse.json({ profile: data });
+  } catch (error) {
+    captureError(error, { source: 'admin-users-patch' });
+    return NextResponse.json({ error: 'Error al actualizar usuario' }, { status: 500 });
   }
 }
 

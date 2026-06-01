@@ -8,14 +8,24 @@ type Props = {
   email: string;
   isBlocked: boolean;
   isAdmin: boolean;
+  canCustomizeTheme: boolean;
 };
 
 type Modal = null | 'block' | 'notify' | 'setPassword';
 
-export default function UserActions({ userId, email, isBlocked, isAdmin }: Props) {
+export default function UserActions({ userId, email, isBlocked, isAdmin, canCustomizeTheme }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [modal, setModal] = useState<Modal>(null);
+
+  async function toggleTheme() {
+    const ok = await call(`/api/admin/usuarios/${userId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ can_customize_theme: !canCustomizeTheme }),
+    });
+    if (ok) router.refresh();
+  }
 
   async function call(url: string, init: RequestInit) {
     setBusy(true);
@@ -61,6 +71,9 @@ export default function UserActions({ userId, email, isBlocked, isAdmin }: Props
           Bloquear
         </button>
       )}
+      <button disabled={busy} onClick={toggleTheme} className="btn-ghost" title="Permitir que el usuario elija el tema de su sitio (override del plan)">
+        {canCustomizeTheme ? 'Quitar tema editable' : 'Permitir tema editable'}
+      </button>
       <button disabled={busy} onClick={resetPassword} className="btn-ghost">
         Reset pass (email)
       </button>

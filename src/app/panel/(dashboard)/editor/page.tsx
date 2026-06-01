@@ -10,8 +10,10 @@ import {
   PlanType,
   TEMPLATES,
   TemplateId,
+  canCustomizeTheme,
   hasCatalogFeature,
 } from '@/lib/constants';
+import { THEME_LIST } from '@/lib/themes';
 import { CatalogManager } from './_components/CatalogManager';
 import { PagesManager } from './_components/PagesManager';
 
@@ -42,6 +44,8 @@ export default function EditorPage() {
   const [customDomain, setCustomDomain] = useState('');
   const [customDomainStatus, setCustomDomainStatus] = useState<'pending' | 'verified' | 'failed' | null>(null);
   const [templateId, setTemplateId] = useState('sabor-urbano');
+  const [themeId, setThemeId] = useState(''); // '' = default de la plantilla
+  const [canThemeOverride, setCanThemeOverride] = useState(false);
   const [siteName, setSiteName] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#6366f1');
   const [secondaryColor, setSecondaryColor] = useState('#f59e0b');
@@ -86,13 +90,14 @@ export default function EditorPage() {
           .maybeSingle(),
         supabase
           .from('profiles')
-          .select('role')
+          .select('role, can_customize_theme')
           .eq('id', user.id)
           .maybeSingle(),
       ]);
 
       setSubscription(subData);
       setIsAdmin(profileData?.role === 'admin');
+      setCanThemeOverride(profileData?.can_customize_theme ?? false);
 
       const [siteRes, pagesRes] = await Promise.all([
         fetch('/api/sites'),
@@ -106,6 +111,7 @@ export default function EditorPage() {
         setCustomDomain(siteData.site.custom_domain || '');
         setCustomDomainStatus(siteData.site.custom_domain_status ?? null);
         setTemplateId(siteData.site.template_id || 'sabor-urbano');
+        setThemeId(siteData.site.theme_id || '');
         setSubdomainStatus('available');
       }
 
@@ -196,6 +202,7 @@ export default function EditorPage() {
           custom_domain: customDomain.toLowerCase().trim() || null,
           template_id: templateId,
           name: siteName,
+          theme_id: themeId || null,
         }),
       });
       const siteData = await siteRes.json();
@@ -272,6 +279,9 @@ export default function EditorPage() {
     : hasActivePlan && subscription
       ? subscription.plan_type
       : 'free';
+
+  // ¿Puede elegir el tema visual de su sitio? Por plan o por override del admin.
+  const canTheme = isAdmin || canCustomizeTheme(userPlan, canThemeOverride);
 
   const trialDaysLeft = subscription?.trial_end_date
     ? Math.max(
@@ -503,6 +513,68 @@ export default function EditorPage() {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Tema visual */}
+            <div className="glass-card" style={{ padding: '2rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)' }}>Tema visual</h2>
+                {!canTheme && (
+                  <span style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: 'white', fontSize: '0.65rem', fontWeight: 800, padding: '0.25rem 0.6rem', borderRadius: '20px', letterSpacing: '0.05em' }}>
+                    PRO
+                  </span>
+                )}
+              </div>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+                Define el ambiente del sitio (fondo, tipografía, estilo). Tus colores de marca se mantienen como acento.
+              </p>
+
+              {canTheme ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                  {/* Default de la plantilla */}
+                  <div
+                    onClick={() => setThemeId('')}
+                    style={{
+                      padding: '1.25rem', borderRadius: '14px', cursor: 'pointer',
+                      border: `2px solid ${themeId === '' ? 'var(--color-primary)' : 'var(--border-subtle)'}`,
+                      background: themeId === '' ? 'rgba(139,111,63,0.06)' : 'var(--bg-dark-secondary)',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <div style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Default</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>El tema propio de la plantilla.</div>
+                  </div>
+                  {THEME_LIST.map((th) => {
+                    const selected = themeId === th.id;
+                    return (
+                      <div
+                        key={th.id}
+                        onClick={() => setThemeId(th.id)}
+                        style={{
+                          padding: '1.25rem', borderRadius: '14px', cursor: 'pointer',
+                          border: `2px solid ${selected ? 'var(--color-primary)' : 'var(--border-subtle)'}`,
+                          background: selected ? 'rgba(139,111,63,0.06)' : 'var(--bg-dark-secondary)',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+                          <span style={{ width: 16, height: 16, borderRadius: 5, background: th.tokens.primary, flexShrink: 0 }} />
+                          <span style={{ width: 16, height: 16, borderRadius: 5, background: th.tokens.secondary, flexShrink: 0 }} />
+                          <strong style={{ color: 'var(--text-primary)', fontSize: '0.95rem' }}>{th.label}</strong>
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>{th.description}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ padding: '1.25rem', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.05)', border: '1px solid rgba(245, 158, 11, 0.2)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <AlertCircle size={18} color="#f59e0b" />
+                  <p style={{ fontSize: '0.85rem', color: '#f59e0b', fontWeight: 500 }}>
+                    Elegir el tema visual está disponible en el plan Pro o Extremo.
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="glass-card" style={{ padding: '2rem' }}>
