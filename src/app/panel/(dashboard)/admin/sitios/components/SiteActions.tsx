@@ -3,12 +3,15 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { THEME_LIST } from '@/lib/themes';
+
 type Props = {
   siteId: string;
   subdomain: string;
   customDomain: string | null;
   isActive: boolean;
   isBanned: boolean;
+  themeId: string | null;
 };
 
 export default function SiteActions({
@@ -17,6 +20,7 @@ export default function SiteActions({
   customDomain,
   isActive,
   isBanned,
+  themeId,
 }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -43,6 +47,11 @@ export default function SiteActions({
 
   async function toggleActive() {
     await patch({ is_active: !isActive });
+  }
+
+  async function changeTheme(value: string) {
+    // '' = volver al default de la plantilla (theme_id null).
+    await patch({ theme_id: value || null });
   }
 
   async function toggleBan() {
@@ -105,7 +114,22 @@ export default function SiteActions({
   }
 
   return (
-    <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center' }}>
+      <select
+        value={themeId ?? ''}
+        disabled={busy}
+        onChange={(e) => changeTheme(e.target.value)}
+        className="input-base"
+        title="Tema visual del sitio"
+        style={{ padding: '0.3rem 0.5rem', fontSize: '0.8rem', width: 'auto', minWidth: '130px' }}
+      >
+        <option value="">Tema: default</option>
+        {THEME_LIST.map((t) => (
+          <option key={t.id} value={t.id}>
+            Tema: {t.label}
+          </option>
+        ))}
+      </select>
       <button disabled={busy} onClick={toggleActive} className="btn-ghost">
         {isActive ? 'Desactivar' : 'Activar'}
       </button>

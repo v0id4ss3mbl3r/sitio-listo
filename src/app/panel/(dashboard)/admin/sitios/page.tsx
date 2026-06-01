@@ -15,6 +15,7 @@ type Row = {
   template_id: string;
   is_active: boolean;
   is_banned: boolean;
+  theme_id: string | null;
   created_at: string;
   updated_at: string;
   profiles: { email: string; full_name: string | null } | null;
@@ -36,7 +37,7 @@ export default async function AdminSitiosPage({
   let query = supabase
     .from('sites')
     .select(
-      `id, subdomain, custom_domain, template_id, is_active, is_banned,
+      `id, subdomain, custom_domain, template_id, is_active, is_banned, theme_id,
        created_at, updated_at,
        profiles!sites_user_id_fkey(email, full_name)`,
       { count: 'exact' }
@@ -175,6 +176,7 @@ export default async function AdminSitiosPage({
                     customDomain={site.custom_domain}
                     isActive={site.is_active}
                     isBanned={site.is_banned}
+                    themeId={site.theme_id}
                   />
                 </td>
               </tr>

@@ -177,6 +177,8 @@ export const adminUpdateSiteSchema = z.object({
   is_active: z.boolean().optional(),
   is_banned: z.boolean().optional(),
   template_id: z.string().min(1).max(64).optional(),
+  // null = volver al default de la plantilla.
+  theme_id: z.enum(THEME_IDS as [string, ...string[]]).nullable().optional(),
 });
 
 // ─── admin: suscripciones ─────────────────────────────────────

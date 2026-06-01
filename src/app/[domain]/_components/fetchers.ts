@@ -11,6 +11,7 @@ export type SiteRow = {
   user_id: string;
   template_id: string;
   is_active: boolean;
+  theme_id: string | null;
 };
 
 export type PageRow = {
@@ -47,7 +48,7 @@ export function fetchSiteCached(domain: string) {
       const supabase = createPublicClient();
       const { data } = await supabase
         .from('sites')
-        .select('id, user_id, template_id, is_active')
+        .select('id, user_id, template_id, is_active, theme_id')
         .eq(column, safe)
         .maybeSingle();
 

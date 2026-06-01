@@ -92,9 +92,9 @@ export default async function TenantHome({
 
   const { template_id } = site;
 
-  // Tema visual de la plantilla. Por ahora se deriva del default por plantilla;
-  // en una fase posterior saldrá de sites.theme_id (elegible por admin/cliente).
-  const theme = getTheme(TEMPLATE_DEFAULT_THEME[template_id]);
+  // Tema visual del sitio: el elegido en sites.theme_id, o el default de la
+  // plantilla si no se asignó ninguno.
+  const theme = getTheme(site.theme_id ?? TEMPLATE_DEFAULT_THEME[template_id]);
 
   if (template_id === 'sabor-urbano') {
     return <SaborUrbano {...props} />;
