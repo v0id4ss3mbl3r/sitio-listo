@@ -2,6 +2,8 @@
 
 import React from 'react';
 
+import { getTheme, type Theme } from '@/lib/themes';
+
 interface TemplateProps {
   siteName?: string;
   primaryColor?: string;
@@ -11,6 +13,8 @@ interface TemplateProps {
   heroSubtitle?: string;
   phone?: string;
   logoUrl?: string;
+  /** Tema visual. Define el ambiente; los colores de marca son el acento. */
+  theme?: Theme;
 }
 
 const DEFAULT_PRODUCTS = [
@@ -38,15 +42,43 @@ export default function TiendaExpress({
   heroSubtitle,
   phone = '',
   logoUrl = '',
+  theme = getTheme('vivo'),
 }: TemplateProps) {
+  const t = theme.tokens;
+  const isGlow = t.surface === 'glow';
+  const showBlobs = t.gradientGlow !== 'transparent';
+
+  const accent = primaryColor;
+  const accent2 = secondaryColor;
+  const accentGradient = t.useGradients ? `linear-gradient(135deg, ${accent}, ${accent2})` : accent;
+
+  const pageBg = isGlow ? `linear-gradient(135deg, ${t.bgBase} 0%, ${t.bgSubtle} 100%)` : t.bgBase;
+  const headingFont: React.CSSProperties = {
+    fontFamily: t.fontHeading,
+    fontStyle: t.headingItalic ? 'italic' : 'normal',
+    fontWeight: t.headingWeight,
+  };
+  const cardBg = isGlow ? 'rgba(255,255,255,0.05)' : t.bgCard;
+  const subCardBg = isGlow ? 'rgba(255,255,255,0.04)' : t.bgSubtle;
+  const darkBg = isGlow ? t.bgSubtle : '#0f172a';
+  const heroBg = `linear-gradient(135deg, ${t.bgSubtle} 0%, ${accent}0d 55%, ${accent2}0a 100%)`;
+  const btnShadowHover = isGlow ? `0 10px 24px ${accent}66` : t.shadowElevated;
+
+  const labelPill: React.CSSProperties = {
+    display: 'inline-block', padding: '5px 14px', borderRadius: 999,
+    background: `${accent}1f`, fontSize: '0.72rem', fontWeight: 700,
+    letterSpacing: '0.15em', textTransform: 'uppercase', color: accent,
+    marginBottom: '1rem',
+  };
+
   return (
-    <div style={{ minHeight: '100vh', background: '#ffffff', color: '#111827', fontFamily: "var(--font-inter), system-ui, sans-serif", overflowX: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: pageBg, color: t.textPrimary, fontFamily: t.fontBody, overflowX: 'hidden' }}>
       <style dangerouslySetInnerHTML={{ __html: `
         .te-nav-link {
-          font-size: 0.875rem; font-weight: 600; color: #6b7280; text-decoration: none;
+          font-size: 0.875rem; font-weight: 600; color: ${t.textMuted}; text-decoration: none;
           transition: color 0.2s;
         }
-        .te-nav-link:hover { color: ${primaryColor}; }
+        .te-nav-link:hover { color: ${accent}; }
 
         @keyframes te-fade-in {
           from { opacity: 0; transform: translateY(20px); }
@@ -58,16 +90,17 @@ export default function TiendaExpress({
 
         .te-product-card {
           transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-          border-radius: 16px;
+          border-radius: ${t.radiusLg};
           position: relative;
           overflow: hidden;
-          background: #f9fafb;
-          border: 1px solid #e5e7eb;
+          background: ${subCardBg};
+          border: 1px solid ${t.borderSubtle};
+          box-shadow: ${isGlow ? 'none' : t.shadowCard};
         }
         .te-product-card:hover {
           transform: translateY(-8px);
-          box-shadow: 0 24px 48px -10px rgba(99, 102, 241, 0.2);
-          border-color: ${primaryColor}30;
+          box-shadow: ${btnShadowHover};
+          border-color: ${t.borderHover};
         }
         .te-product-card:hover .te-product-img-overlay {
           opacity: 1;
@@ -87,7 +120,7 @@ export default function TiendaExpress({
 
         .te-badge {
           display: inline-block;
-          background: ${secondaryColor};
+          background: ${accent2};
           color: white;
           padding: 4px 12px;
           border-radius: 20px;
@@ -99,8 +132,8 @@ export default function TiendaExpress({
 
         .te-btn-primary {
           padding: 12px 28px;
-          border-radius: 10px;
-          background: ${primaryColor};
+          border-radius: ${t.radiusSm};
+          background: ${accentGradient};
           color: white;
           font-weight: 700;
           text-transform: uppercase;
@@ -113,12 +146,12 @@ export default function TiendaExpress({
         .te-btn-primary:hover {
           filter: brightness(1.1);
           transform: translateY(-2px);
-          box-shadow: 0 10px 24px ${primaryColor}40;
+          box-shadow: ${btnShadowHover};
         }
 
         .te-benefit-card {
           transition: transform 0.25s ease, box-shadow 0.25s ease;
-          border-radius: 14px;
+          border-radius: ${t.radiusMd};
         }
         .te-benefit-card:hover {
           transform: translateY(-4px);
@@ -132,17 +165,18 @@ export default function TiendaExpress({
         height: '64px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 2.5rem',
-        background: 'rgba(255,255,255,0.95)',
-        borderBottom: '1px solid #f3f4f6',
+        background: `${t.bgBase}F2`,
+        borderBottom: `1px solid ${t.borderSubtle}`,
         backdropFilter: 'blur(20px)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={logoUrl} alt={siteName} style={{ height: '36px', width: 'auto', borderRadius: '6px' }} />
           ) : (
             <div style={{
-              width: 38, height: 38, borderRadius: 10,
-              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+              width: 38, height: 38, borderRadius: t.radiusSm,
+              background: accentGradient,
               color: 'white',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontWeight: 900, fontSize: 16
@@ -150,7 +184,7 @@ export default function TiendaExpress({
               {siteName.charAt(0).toUpperCase()}
             </div>
           )}
-          <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#111', letterSpacing: '-0.02em' }}>
+          <span style={{ fontWeight: 800, fontSize: '1.05rem', color: t.textPrimary, letterSpacing: '-0.02em' }}>
             {siteName}
           </span>
         </div>
@@ -167,23 +201,27 @@ export default function TiendaExpress({
       {/* HERO */}
       <section style={{
         paddingTop: 'calc(64px)',
-        background: `linear-gradient(135deg, #fafafe 0%, #f5f3ff 50%, #fef9ec 100%)`,
+        background: heroBg,
         position: 'relative',
         overflow: 'hidden'
       }}>
-        {/* Decorative blobs */}
-        <div style={{
-          position: 'absolute', top: '-80px', right: '-60px',
-          width: '400px', height: '400px', borderRadius: '50%',
-          background: `radial-gradient(circle, ${primaryColor}12 0%, transparent 65%)`,
-          filter: 'blur(50px)', pointerEvents: 'none'
-        }} />
-        <div style={{
-          position: 'absolute', bottom: '-50px', left: '-60px',
-          width: '300px', height: '300px', borderRadius: '50%',
-          background: `radial-gradient(circle, ${secondaryColor}10 0%, transparent 65%)`,
-          filter: 'blur(40px)', pointerEvents: 'none'
-        }} />
+        {/* Blobs decorativos — solo en temas con glow */}
+        {showBlobs && (
+          <>
+            <div style={{
+              position: 'absolute', top: '-80px', right: '-60px',
+              width: '400px', height: '400px', borderRadius: '50%',
+              background: `radial-gradient(circle, ${accent}14 0%, transparent 65%)`,
+              filter: 'blur(50px)', pointerEvents: 'none'
+            }} />
+            <div style={{
+              position: 'absolute', bottom: '-50px', left: '-60px',
+              width: '300px', height: '300px', borderRadius: '50%',
+              background: `radial-gradient(circle, ${accent2}10 0%, transparent 65%)`,
+              filter: 'blur(40px)', pointerEvents: 'none'
+            }} />
+          </>
+        )}
 
         <div style={{
           maxWidth: 1100, margin: '0 auto',
@@ -198,18 +236,18 @@ export default function TiendaExpress({
             <div className="te-fade" style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               padding: '7px 16px', borderRadius: 999,
-              background: `${secondaryColor}15`, border: `1px solid ${secondaryColor}30`,
+              background: `${accent2}1f`, border: `1px solid ${accent2}30`,
               fontSize: '0.78rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
-              color: secondaryColor, marginBottom: '1.75rem'
+              color: accent2, marginBottom: '1.75rem'
             }}>
               🏷️ Envío gratis en tu primera compra
             </div>
 
             <h1 className="te-fade te-fade-d1" style={{
+              ...headingFont,
               fontSize: 'clamp(2.2rem, 7vw, 3.8rem)',
-              fontWeight: 900, fontStyle: 'italic',
               letterSpacing: '-0.04em', lineHeight: 1.08,
-              color: '#0f172a',
+              color: t.textPrimary,
               marginBottom: '1.25rem',
               wordBreak: 'break-word'
             }}>
@@ -217,7 +255,7 @@ export default function TiendaExpress({
             </h1>
             <p className="te-fade te-fade-d2" style={{
               fontSize: '1.05rem',
-              color: '#6b7280', lineHeight: 1.65,
+              color: t.textSecondary, lineHeight: 1.65,
               maxWidth: 480, marginBottom: '2.5rem'
             }}>
               {heroSubtitle || 'Descubrí nuestros mejores productos con envío rápido y seguro a todo el país.'}
@@ -228,7 +266,7 @@ export default function TiendaExpress({
               </a>
               {phone && (
                 <a href={`https://wa.me/${phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" style={{
-                  padding: '12px 24px', borderRadius: 10,
+                  padding: '12px 24px', borderRadius: t.radiusSm,
                   border: '2px solid #25d366', color: '#25d366',
                   fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.06em',
                   textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
@@ -249,29 +287,29 @@ export default function TiendaExpress({
               {/* Background card 3 */}
               <div style={{
                 position: 'absolute', top: 20, right: -10,
-                width: '88%', height: 90, borderRadius: 16,
-                background: `linear-gradient(135deg, ${primaryColor}20, ${secondaryColor}20)`,
-                border: '1px solid rgba(0,0,0,0.05)',
+                width: '88%', height: 90, borderRadius: t.radiusLg,
+                background: `linear-gradient(135deg, ${accent}33, ${accent2}33)`,
+                border: `1px solid ${t.borderSubtle}`,
                 backdropFilter: 'blur(8px)'
               }} />
               {/* Background card 2 */}
               <div style={{
                 position: 'absolute', top: 10, right: 0,
-                width: '92%', height: 90, borderRadius: 16,
-                background: `linear-gradient(135deg, ${primaryColor}15, ${secondaryColor}15)`,
-                border: '1px solid rgba(0,0,0,0.06)'
+                width: '92%', height: 90, borderRadius: t.radiusLg,
+                background: `linear-gradient(135deg, ${accent}26, ${accent2}26)`,
+                border: `1px solid ${t.borderSubtle}`
               }} />
               {/* Main card */}
               <div style={{
                 position: 'relative',
-                background: 'white',
-                borderRadius: 20,
+                background: cardBg,
+                borderRadius: t.radiusXl,
                 padding: '1.5rem',
-                boxShadow: '0 24px 56px rgba(0,0,0,0.12)',
-                border: '1px solid rgba(0,0,0,0.06)'
+                boxShadow: t.shadowElevated,
+                border: `1px solid ${t.borderSubtle}`
               }}>
                 <div style={{
-                  aspectRatio: '16/9', borderRadius: 14, marginBottom: '1rem',
+                  aspectRatio: '16/9', borderRadius: t.radiusMd, marginBottom: '1rem',
                   background: DEFAULT_PRODUCTS[0].gradient,
                   display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
@@ -279,10 +317,10 @@ export default function TiendaExpress({
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#9ca3af', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Más Vendido</div>
-                    <div style={{ fontWeight: 800, color: '#111', fontSize: '0.95rem' }}>Producto Premium</div>
+                    <div style={{ fontSize: '0.65rem', fontWeight: 700, color: t.textMuted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Más Vendido</div>
+                    <div style={{ fontWeight: 800, color: t.textPrimary, fontSize: '0.95rem' }}>Producto Premium</div>
                   </div>
-                  <div style={{ fontSize: '1.25rem', fontWeight: 900, color: primaryColor }}>$99.99</div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 900, color: accent }}>$99.99</div>
                 </div>
               </div>
             </div>
@@ -291,7 +329,7 @@ export default function TiendaExpress({
       </section>
 
       {/* BENEFITS STRIP */}
-      <section style={{ background: '#0f172a', padding: '0 2.5rem' }}>
+      <section style={{ background: darkBg, padding: '0 2.5rem' }}>
         <div style={{
           maxWidth: 1100, margin: '0 auto',
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -306,7 +344,7 @@ export default function TiendaExpress({
               <span style={{ fontSize: '1.4rem', flexShrink: 0 }}>{b.icon}</span>
               <div>
                 <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'white', marginBottom: '0.15rem' }}>{b.title}</div>
-                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#64748b' }}>{b.desc}</div>
+                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#94a3b8' }}>{b.desc}</div>
               </div>
             </div>
           ))}
@@ -316,23 +354,18 @@ export default function TiendaExpress({
       {/* PRODUCTOS */}
       <section id="productos" style={{ padding: '6rem 2.5rem', maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ marginBottom: '3.5rem' }}>
-          <div style={{
-            display: 'inline-block', padding: '5px 14px', borderRadius: 999,
-            background: '#f3f4f6', fontSize: '0.72rem', fontWeight: 700,
-            letterSpacing: '0.15em', textTransform: 'uppercase', color: '#6b7280',
-            marginBottom: '1rem'
-          }}>
+          <div style={labelPill}>
             Catálogo
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1rem' }}>
             <h2 style={{
+              ...headingFont,
               fontSize: 'clamp(2rem, 4.5vw, 3rem)',
-              fontWeight: 900, fontStyle: 'italic',
-              letterSpacing: '-0.04em', color: '#0f172a'
+              letterSpacing: '-0.04em', color: t.textPrimary
             }}>
               Nuestros Productos
             </h2>
-            <p style={{ fontSize: '0.9rem', color: '#9ca3af', fontWeight: 500 }}>
+            <p style={{ fontSize: '0.9rem', color: t.textMuted, fontWeight: 500 }}>
               {DEFAULT_PRODUCTS.length} artículos disponibles
             </p>
           </div>
@@ -349,7 +382,7 @@ export default function TiendaExpress({
               <div style={{ position: 'relative', marginBottom: '1.25rem' }}>
                 <div style={{
                   aspectRatio: '4/3',
-                  borderRadius: '12px',
+                  borderRadius: t.radiusMd,
                   background: product.gradient,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   overflow: 'hidden'
@@ -377,12 +410,12 @@ export default function TiendaExpress({
                 </div>
               </div>
 
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '0.5rem', color: '#0f172a', letterSpacing: '-0.01em' }}>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '0.5rem', color: t.textPrimary, letterSpacing: '-0.01em' }}>
                 {product.name}
               </h3>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                <span style={{ fontSize: '1.4rem', fontWeight: 900, color: primaryColor, letterSpacing: '-0.02em' }}>
+                <span style={{ fontSize: '1.4rem', fontWeight: 900, color: accent, letterSpacing: '-0.02em' }}>
                   {product.price}
                 </span>
                 <span style={{
@@ -406,26 +439,26 @@ export default function TiendaExpress({
       {/* CONTACTO */}
       <section id="contacto" style={{
         padding: '5rem 2.5rem',
-        background: '#f9fafb',
-        borderTop: '1px solid #e5e7eb'
+        background: subCardBg,
+        borderTop: `1px solid ${t.borderSubtle}`
       }}>
         <div style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
           <h2 style={{
+            ...headingFont,
             fontSize: 'clamp(1.8rem, 4vw, 2.5rem)',
-            fontWeight: 900, fontStyle: 'italic',
-            letterSpacing: '-0.04em', color: '#0f172a',
+            letterSpacing: '-0.04em', color: t.textPrimary,
             marginBottom: '1rem'
           }}>
             ¿Necesitas ayuda?
           </h2>
-          <p style={{ fontSize: '1rem', color: '#6b7280', marginBottom: '2.5rem', lineHeight: 1.6 }}>
+          <p style={{ fontSize: '1rem', color: t.textSecondary, marginBottom: '2.5rem', lineHeight: 1.6 }}>
             Nuestro equipo está disponible para ayudarte con tu pedido.
           </p>
 
           {phone && (
             <a href={`https://wa.me/${phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" style={{
               display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
-              padding: '18px 40px', borderRadius: 14,
+              padding: '18px 40px', borderRadius: t.radiusMd,
               background: '#25d366', color: 'white',
               fontSize: '0.92rem', fontWeight: 800, textDecoration: 'none',
               letterSpacing: '0.04em', textTransform: 'uppercase',
@@ -451,14 +484,15 @@ export default function TiendaExpress({
       {/* FOOTER */}
       <footer style={{
         padding: '2rem 2.5rem',
-        background: '#0f172a',
+        background: darkBg,
+        borderTop: `1px solid ${t.borderSubtle}`,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         flexWrap: 'wrap', gap: '1rem'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
           <div style={{
-            width: 32, height: 32, borderRadius: 8,
-            background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+            width: 32, height: 32, borderRadius: t.radiusSm,
+            background: accentGradient,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontWeight: 900, fontSize: 14, color: 'white'
           }}>
@@ -468,7 +502,7 @@ export default function TiendaExpress({
             {siteName}
           </span>
         </div>
-        <p style={{ color: '#475569', fontSize: '0.8rem', fontWeight: 600 }}>
+        <p style={{ color: '#94a3b8', fontSize: '0.8rem', fontWeight: 600 }}>
           © {new Date().getFullYear()} {siteName}{(!planType || planType === 'basic') && ' — Creado con SitioListo'}
         </p>
       </footer>

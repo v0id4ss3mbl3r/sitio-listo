@@ -1,6 +1,8 @@
 "use client";
 import React, { useState } from 'react';
 
+import { getTheme, type Theme } from '@/lib/themes';
+
 export type CategoryId = 'burgers' | 'sides' | 'drinks';
 
 export interface MenuItem {
@@ -24,6 +26,9 @@ interface TemplateProps {
   aboutText?: string;
   categories?: MenuCategory[];
   menuItems?: Record<CategoryId, MenuItem[]>;
+  /** Tema visual. Define el ambiente; los colores de marca son el acento.
+   *  El hero (foto con overlay) se mantiene oscuro en todos los temas. */
+  theme?: Theme;
 }
 
 const DEFAULT_CATEGORIES: MenuCategory[] = [
@@ -48,7 +53,7 @@ const DEFAULT_MENU: Record<CategoryId, MenuItem[]> = {
   ]
 };
 
-// Paleta de colores por slot de ítem para los placeholders del menú
+// Placeholders oscuros (estilo "foto") para los ítems del menú.
 const ITEM_COLORS = ['#1a1a1a', '#141414', '#111111'];
 
 export default function SaborUrbano({
@@ -59,44 +64,62 @@ export default function SaborUrbano({
   heroSubtitle = "Artesanía en cada mordida. Ingredientes reales, recetas propias y la mejor vibra de la ciudad.",
   aboutText = "Nuestra mística nace de la paciencia. Seleccionamos cada corte, horneamos nuestro propio pan y creamos salsas que no existen en ningún otro lugar.",
   categories = DEFAULT_CATEGORIES,
-  menuItems = DEFAULT_MENU
+  menuItems = DEFAULT_MENU,
+  theme = getTheme('glow'),
 }: TemplateProps) {
   const [activeCategory, setActiveCategory] = useState<CategoryId>(categories[0].id);
 
+  const t = theme.tokens;
+  const isGlow = t.surface === 'glow';
+  const accent = primaryColor;
+
+  const pageBg = isGlow ? `linear-gradient(135deg, ${t.bgBase} 0%, ${t.bgSubtle} 100%)` : t.bgBase;
+  const headingFont: React.CSSProperties = {
+    fontFamily: t.fontHeading,
+    fontStyle: t.headingItalic ? 'italic' : 'normal',
+    fontWeight: t.headingWeight,
+  };
+  const cardBg = isGlow ? 'rgba(255,255,255,0.03)' : t.bgCard;
+  const darkBg = isGlow ? t.bgSubtle : '#0a0a0a';
+  // El hero es una foto oscura; el overlay funde hacia el fondo del tema.
+  const heroOverlay = `linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, transparent 38%, ${t.bgBase}E6 86%, ${t.bgBase} 100%)`;
+
   return (
     <div
-      className="min-h-screen bg-[#050505] text-[#f0f0f0] scroll-smooth overflow-x-hidden"
-      style={{ '--primary': primaryColor, fontFamily: "var(--font-inter), system-ui, sans-serif" } as React.CSSProperties}
+      className="min-h-screen scroll-smooth overflow-x-hidden"
+      style={{ '--primary': accent, fontFamily: t.fontBody, background: pageBg, color: t.textPrimary } as React.CSSProperties}
     >
       <style dangerouslySetInnerHTML={{ __html: `
         .su-btn-primary {
           background: var(--primary);
-          color: #000;
+          color: #fff;
           transition: filter 0.2s ease, transform 0.2s ease;
         }
         .su-btn-primary:hover { filter: brightness(1.12); transform: translateY(-2px); }
         .su-btn-primary:active { transform: scale(0.97); }
 
         .su-btn-ghost {
-          border: 1.5px solid rgba(255,255,255,0.15);
-          color: #f0f0f0;
+          border: 1.5px solid ${t.borderHover};
+          color: ${t.textPrimary};
           transition: background 0.2s, border-color 0.2s;
         }
-        .su-btn-ghost:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.4); }
+        .su-btn-ghost:hover { background: ${accent}1f; border-color: ${accent}; }
 
         .su-card {
-          background: rgba(255,255,255,0.025);
-          border: 1px solid rgba(255,255,255,0.06);
-          transition: background 0.25s ease, transform 0.25s ease;
+          background: ${cardBg};
+          border: 1px solid ${t.borderSubtle};
+          box-shadow: ${isGlow ? 'none' : t.shadowCard};
+          transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
         }
         .su-card:hover {
-          background: rgba(255,255,255,0.05);
           transform: translateY(-4px);
+          box-shadow: ${isGlow ? 'none' : t.shadowElevated};
+          border-color: ${t.borderHover};
         }
 
         .su-cat-btn {
           border-bottom: 2px solid transparent;
-          color: #555;
+          color: ${t.textMuted};
           font-size: 11px;
           font-weight: 900;
           letter-spacing: 0.25em;
@@ -110,8 +133,8 @@ export default function SaborUrbano({
           border-right: none;
           white-space: nowrap;
         }
-        .su-cat-btn:hover { color: #aaa; }
-        .su-cat-btn.active { color: #fff; border-bottom-color: var(--primary); }
+        .su-cat-btn:hover { color: ${t.textSecondary}; }
+        .su-cat-btn.active { color: ${t.textPrimary}; border-bottom-color: var(--primary); }
 
         @keyframes su-reveal {
           from { opacity: 0; transform: translateY(28px); }
@@ -135,21 +158,21 @@ export default function SaborUrbano({
         height: '72px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 2rem',
-        background: 'rgba(5,5,5,0.82)',
+        background: `${t.bgBase}D9`,
         backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)'
+        borderBottom: `1px solid ${t.borderSubtle}`
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{
-            width: 40, height: 40, borderRadius: 12,
+            width: 40, height: 40, borderRadius: t.radiusSm,
             background: 'var(--primary)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontWeight: 900, fontSize: 20, color: '#000', fontStyle: 'italic',
+            fontWeight: 900, fontSize: 20, color: '#fff', fontStyle: 'italic',
             flexShrink: 0, fontFamily: 'var(--font-jetbrains)'
           }}>
             {siteName.charAt(0).toUpperCase()}
           </div>
-          <span style={{ fontWeight: 900, fontSize: 18, letterSpacing: '-0.04em', textTransform: 'uppercase', fontStyle: 'italic', fontFamily: 'var(--font-jetbrains)' }}>
+          <span style={{ fontWeight: 900, fontSize: 18, letterSpacing: '-0.04em', textTransform: 'uppercase', fontStyle: 'italic', fontFamily: 'var(--font-jetbrains)', color: t.textPrimary }}>
             {siteName}
           </span>
         </div>
@@ -157,15 +180,15 @@ export default function SaborUrbano({
         <div className="hidden lg:flex" style={{ gap: '2.5rem', alignItems: 'center' }}>
           {['La Carta', 'Historia', 'Visitanos'].map((label, i) => (
             <a key={i} href={['#menu', '#about', '#location'][i]}
-              style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#666', textDecoration: 'none', transition: 'color 0.2s' }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-              onMouseLeave={e => (e.currentTarget.style.color = '#666')}
+              style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase', color: t.textMuted, textDecoration: 'none', transition: 'color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.color = t.textPrimary)}
+              onMouseLeave={e => (e.currentTarget.style.color = t.textMuted)}
             >{label}</a>
           ))}
         </div>
 
         <button className="su-btn-primary" style={{
-          padding: '10px 24px', borderRadius: 10,
+          padding: '10px 24px', borderRadius: t.radiusSm,
           fontSize: 10, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase',
           border: 'none', cursor: 'pointer'
         }}>
@@ -173,7 +196,7 @@ export default function SaborUrbano({
         </button>
       </nav>
 
-      {/* ── HERO ─────────────────────────────────────── */}
+      {/* ── HERO (foto oscura, constante en todos los temas) ── */}
       <section style={{
         position: 'relative', minHeight: '100vh',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -187,10 +210,10 @@ export default function SaborUrbano({
           backgroundSize: 'cover', backgroundPosition: 'center',
           filter: 'brightness(0.28) contrast(1.1)'
         }} />
-        {/* Viñeta inferior */}
+        {/* Viñeta inferior que funde hacia el fondo del tema */}
         <div style={{
           position: 'absolute', inset: 0,
-          background: 'linear-gradient(to bottom, rgba(5,5,5,0.1) 0%, transparent 40%, rgba(5,5,5,0.9) 85%, #050505 100%)'
+          background: heroOverlay
         }} />
 
         <div className="su-reveal" style={{ position: 'relative', zIndex: 10, maxWidth: 900 }}>
@@ -207,18 +230,19 @@ export default function SaborUrbano({
           </div>
 
           <h2 className="su-reveal su-reveal-d2" style={{
+            ...headingFont,
             fontSize: 'clamp(3rem, 11vw, 9.5rem)',
-            fontWeight: 900, fontStyle: 'italic',
             lineHeight: 0.85, letterSpacing: '-0.05em',
             textTransform: 'uppercase',
-            marginBottom: '1.75rem'
+            marginBottom: '1.75rem',
+            color: '#fafafa'
           }}>
             {heroTitle}
           </h2>
 
           <p className="su-reveal su-reveal-d3" style={{
             fontSize: 'clamp(1rem, 2vw, 1.25rem)',
-            color: '#999', maxWidth: 560, margin: '0 auto 3rem',
+            color: '#cbcbcb', maxWidth: 560, margin: '0 auto 3rem',
             lineHeight: 1.6, fontWeight: 500
           }}>
             {heroSubtitle}
@@ -226,17 +250,21 @@ export default function SaborUrbano({
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
             <a href="#menu" className="su-btn-primary" style={{
-              padding: '16px 40px', borderRadius: 14,
+              padding: '16px 40px', borderRadius: t.radiusMd,
               fontSize: 11, fontWeight: 900, letterSpacing: '0.18em', textTransform: 'uppercase',
               textDecoration: 'none', display: 'inline-block'
             }}>
               Explorar Menú
             </a>
-            <a href="#about" className="su-btn-ghost" style={{
-              padding: '16px 40px', borderRadius: 14,
+            <a href="#about" style={{
+              padding: '16px 40px', borderRadius: t.radiusMd,
+              border: '1.5px solid rgba(255,255,255,0.2)', color: '#fafafa',
               fontSize: 11, fontWeight: 900, letterSpacing: '0.18em', textTransform: 'uppercase',
-              textDecoration: 'none', display: 'inline-block'
-            }}>
+              textDecoration: 'none', display: 'inline-block', transition: 'background 0.2s, border-color 0.2s'
+            }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.45)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
+            >
               Nuestra Mística
             </a>
           </div>
@@ -249,16 +277,16 @@ export default function SaborUrbano({
           {/* Encabezado del menú */}
           <div style={{ marginBottom: '4rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center', textAlign: 'center' }}>
             <h3 style={{
+              ...headingFont,
               fontSize: 'clamp(2.5rem, 8vw, 6rem)',
-              fontWeight: 900, fontStyle: 'italic',
               letterSpacing: '-0.05em', textTransform: 'uppercase',
-              lineHeight: 0.85
+              lineHeight: 0.85, color: t.textPrimary
             }}>La Carta</h3>
-            <p style={{ color: '#666', fontSize: '1.05rem', maxWidth: 420 }}>
+            <p style={{ color: t.textMuted, fontSize: '1.05rem', maxWidth: 420 }}>
               Seleccioná una categoría y descubrí nuestra propuesta.
             </p>
             {/* Tabs de categorías */}
-            <div style={{ display: 'flex', gap: '2rem', borderBottom: '1px solid rgba(255,255,255,0.07)', paddingBottom: 0, marginTop: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '2rem', borderBottom: `1px solid ${t.borderSubtle}`, paddingBottom: 0, marginTop: '0.5rem' }}>
               {categories.map(cat => (
                 <button
                   key={cat.id}
@@ -281,40 +309,37 @@ export default function SaborUrbano({
               <div
                 key={`${activeCategory}-${item.id}`}
                 className="su-card su-item-in"
-                style={{ borderRadius: 24, padding: '1.5rem', animationDelay: `${idx * 0.08}s` }}
+                style={{ borderRadius: t.radiusXl, padding: '1.5rem', animationDelay: `${idx * 0.08}s` }}
               >
                 {/* Placeholder visual del ítem */}
                 <div style={{
-                  aspectRatio: '4/3', borderRadius: 16, marginBottom: '1.25rem',
+                  aspectRatio: '4/3', borderRadius: t.radiusMd, marginBottom: '1.25rem',
                   background: ITEM_COLORS[idx % ITEM_COLORS.length],
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 1.5px, transparent 1.5px)',
                   backgroundSize: '18px 18px'
                 }}>
-                  <span style={{ fontSize: '3.5rem', fontWeight: 900, fontStyle: 'italic', color: 'rgba(255,255,255,0.07)' }}>
+                  <span style={{ fontSize: '3.5rem', fontWeight: 900, fontStyle: 'italic', color: 'rgba(255,255,255,0.1)' }}>
                     {item.id}
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.6rem', gap: '0.75rem' }}>
-                  <h4 style={{ fontWeight: 900, fontStyle: 'italic', textTransform: 'uppercase', fontSize: '1.1rem', lineHeight: 1.1, letterSpacing: '-0.02em' }}>
+                  <h4 style={{ ...headingFont, textTransform: 'uppercase', fontSize: '1.1rem', lineHeight: 1.1, letterSpacing: '-0.02em', color: t.textPrimary }}>
                     {item.name}
                   </h4>
                   <span style={{ fontWeight: 900, fontSize: '0.95rem', color: 'var(--primary)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                     {item.price}
                   </span>
                 </div>
-                <p style={{ color: '#555', fontSize: '0.8rem', lineHeight: 1.5, marginBottom: '1.25rem' }}>
+                <p style={{ color: t.textMuted, fontSize: '0.8rem', lineHeight: 1.5, marginBottom: '1.25rem' }}>
                   {item.desc}
                 </p>
-                <button style={{
+                <button className="su-btn-primary" style={{
                   width: '100%', padding: '12px',
-                  borderRadius: 10, background: '#fff', color: '#000',
+                  borderRadius: t.radiusSm,
                   fontSize: 10, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase',
-                  border: 'none', cursor: 'pointer', transition: 'opacity 0.2s'
-                }}
-                  onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
-                  onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-                >
+                  border: 'none', cursor: 'pointer'
+                }}>
                   PEDIR AHORA
                 </button>
               </div>
@@ -324,7 +349,7 @@ export default function SaborUrbano({
       </section>
 
       {/* ── NOSOTROS ─────────────────────────────────── */}
-      <section id="about" style={{ padding: 'clamp(5rem,10vw,10rem) 1.5rem', background: '#080808' }}>
+      <section id="about" style={{ padding: 'clamp(5rem,10vw,10rem) 1.5rem', background: darkBg }}>
         <div style={{
           maxWidth: 1100, margin: '0 auto',
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
@@ -333,13 +358,14 @@ export default function SaborUrbano({
           {/* Imagen / placeholder */}
           <div style={{ position: 'relative' }}>
             <div style={{
-              aspectRatio: '4/5', borderRadius: 32,
+              aspectRatio: '4/5', borderRadius: t.radiusXl,
               overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)',
               background: '#0c0c0c',
               backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 1.5px, transparent 1.5px)',
               backgroundSize: '18px 18px',
               display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/templates/restaurant_hero.png"
                 alt="Historia"
@@ -348,38 +374,38 @@ export default function SaborUrbano({
                 onMouseLeave={e => (e.currentTarget.style.filter = 'grayscale(1) brightness(0.55)')}
               />
             </div>
-            {/* Badge 100% — posicionado relativo a la imagen, sin salirse */}
+            {/* Badge 100% */}
             <div style={{
               position: 'absolute', bottom: '-1.5rem', right: '-1rem',
               width: 120, height: 120, borderRadius: '50%',
-              background: '#050505', border: '6px solid #080808',
+              background: darkBg, border: `6px solid ${isGlow ? t.bgBase : darkBg}`,
               boxShadow: '0 8px 30px rgba(0,0,0,0.6)',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               textAlign: 'center'
             }}>
               <span style={{ fontSize: '1.6rem', fontWeight: 900, fontStyle: 'italic', color: 'var(--primary)', lineHeight: 1 }}>100%</span>
-              <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#888' }}>Calidad</span>
+              <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#aaa' }}>Calidad</span>
             </div>
           </div>
 
           {/* Texto */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             <h3 style={{
+              ...headingFont,
               fontSize: 'clamp(2rem, 7vw, 5rem)',
-              fontWeight: 900, fontStyle: 'italic',
               letterSpacing: '-0.05em', textTransform: 'uppercase',
-              lineHeight: 0.9
+              lineHeight: 0.9, color: t.textPrimary
             }}>
               Fuego<br />& <span style={{ color: 'var(--primary)' }}>Espíritu</span>
             </h3>
-            <p style={{ color: '#777', fontSize: '1.05rem', lineHeight: 1.7, fontWeight: 500 }}>
+            <p style={{ color: t.textSecondary, fontSize: '1.05rem', lineHeight: 1.7, fontWeight: 500 }}>
               {aboutText}
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', paddingTop: '2rem', borderTop: `1px solid ${t.borderSubtle}` }}>
               {[{ n: '12+', l: 'Variedades' }, { n: '5★', l: 'Calificación' }].map(s => (
                 <div key={s.l}>
-                  <span style={{ display: 'block', fontSize: 'clamp(2rem,6vw,3.5rem)', fontWeight: 900, lineHeight: 1, marginBottom: '0.4rem' }}>{s.n}</span>
-                  <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#444' }}>{s.l}</span>
+                  <span style={{ ...headingFont, display: 'block', fontSize: 'clamp(2rem,6vw,3.5rem)', lineHeight: 1, marginBottom: '0.4rem', color: t.textPrimary }}>{s.n}</span>
+                  <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.3em', textTransform: 'uppercase', color: t.textMuted }}>{s.l}</span>
                 </div>
               ))}
             </div>
@@ -395,8 +421,8 @@ export default function SaborUrbano({
           gap: '1.5rem', alignItems: 'stretch'
         }}>
           {/* Horarios */}
-          <div className="su-card" style={{ borderRadius: 28, padding: 'clamp(2rem, 5vw, 3.5rem)', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            <h3 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 900, fontStyle: 'italic', textTransform: 'uppercase', letterSpacing: '-0.04em' }}>
+          <div className="su-card" style={{ borderRadius: t.radiusXl, padding: 'clamp(2rem, 5vw, 3.5rem)', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <h3 style={{ ...headingFont, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', textTransform: 'uppercase', letterSpacing: '-0.04em', color: t.textPrimary }}>
               Horarios
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -407,33 +433,33 @@ export default function SaborUrbano({
               ].map(item => (
                 <div key={item.d} style={{
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  paddingBottom: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.05)'
+                  paddingBottom: '1.25rem', borderBottom: `1px solid ${t.borderSubtle}`
                 }}>
-                  <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#555' }}>{item.d}</span>
-                  <span style={{ fontWeight: 900, fontSize: '1.05rem' }}>{item.h}</span>
+                  <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase', color: t.textMuted }}>{item.d}</span>
+                  <span style={{ fontWeight: 900, fontSize: '1.05rem', color: t.textPrimary }}>{item.h}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Ubicación */}
-          <div className="su-card" style={{ borderRadius: 28, padding: 'clamp(2rem, 5vw, 3.5rem)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '2rem' }}>
+          <div className="su-card" style={{ borderRadius: t.radiusXl, padding: 'clamp(2rem, 5vw, 3.5rem)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '2rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <h3 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 900, fontStyle: 'italic', textTransform: 'uppercase', letterSpacing: '-0.04em' }}>
+              <h3 style={{ ...headingFont, fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', textTransform: 'uppercase', letterSpacing: '-0.04em', color: t.textPrimary }}>
                 Visitanos
               </h3>
               <div>
-                <p style={{ fontSize: 'clamp(1.25rem, 3vw, 2rem)', fontWeight: 900, fontStyle: 'italic', marginBottom: '0.4rem' }}>
+                <p style={{ ...headingFont, fontSize: 'clamp(1.25rem, 3vw, 2rem)', marginBottom: '0.4rem', color: t.textPrimary }}>
                   Av. Siempreviva 742
                 </p>
-                <p style={{ fontSize: '0.8rem', color: '#555', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+                <p style={{ fontSize: '0.8rem', color: t.textMuted, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
                   Buenos Aires, Argentina
                 </p>
               </div>
             </div>
             <button className="su-btn-primary" style={{
               width: '100%', padding: '18px',
-              borderRadius: 14, fontSize: 10, fontWeight: 900,
+              borderRadius: t.radiusMd, fontSize: 10, fontWeight: 900,
               letterSpacing: '0.25em', textTransform: 'uppercase',
               border: 'none', cursor: 'pointer'
             }}>
@@ -446,35 +472,35 @@ export default function SaborUrbano({
       {/* ── FOOTER ───────────────────────────────────── */}
       <footer style={{
         padding: 'clamp(3rem,6vw,5rem) 1.5rem',
-        borderTop: '1px solid rgba(255,255,255,0.05)',
-        background: '#050505',
+        borderTop: `1px solid ${t.borderSubtle}`,
+        background: darkBg,
         textAlign: 'center',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{
-            width: 36, height: 36, borderRadius: 10,
+            width: 36, height: 36, borderRadius: t.radiusSm,
             background: 'var(--primary)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontWeight: 900, fontSize: 18, color: '#000', fontStyle: 'italic', flexShrink: 0
+            fontWeight: 900, fontSize: 18, color: '#fff', fontStyle: 'italic', flexShrink: 0
           }}>
             {siteName.charAt(0).toUpperCase()}
           </div>
-          <span style={{ fontSize: 'clamp(1.25rem,4vw,2rem)', fontWeight: 900, fontStyle: 'italic', textTransform: 'uppercase', letterSpacing: '-0.04em' }}>
+          <span style={{ ...headingFont, fontSize: 'clamp(1.25rem,4vw,2rem)', textTransform: 'uppercase', letterSpacing: '-0.04em', color: '#fafafa' }}>
             {siteName}
           </span>
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'center' }}>
           {['Instagram', 'Facebook', 'WhatsApp'].map(s => (
-            <a key={s} href="#" style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#444', textDecoration: 'none', transition: 'color 0.2s' }}
+            <a key={s} href="#" style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#888', textDecoration: 'none', transition: 'color 0.2s' }}
               onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-              onMouseLeave={e => (e.currentTarget.style.color = '#444')}
+              onMouseLeave={e => (e.currentTarget.style.color = '#888')}
             >{s}</a>
           ))}
         </div>
 
-        <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.4em', textTransform: 'uppercase', color: '#2a2a2a' }}>
+        <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.4em', textTransform: 'uppercase', color: '#666' }}>
           © {new Date().getFullYear()} {siteName}
           {(!planType || planType === 'basic') && ' — Powered by SitioListo'}
         </p>

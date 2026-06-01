@@ -97,10 +97,10 @@ export default async function TenantHome({
   const theme = getTheme(site.theme_id ?? TEMPLATE_DEFAULT_THEME[template_id]);
 
   if (template_id === 'sabor-urbano') {
-    return <SaborUrbano {...props} />;
+    return <SaborUrbano {...props} theme={theme} />;
   }
   if (template_id === 'portfolio-minimal') {
-    return <PortfolioMinimal {...props} />;
+    return <PortfolioMinimal {...props} theme={theme} />;
   }
   if (template_id === 'landing-pro') {
     return (
@@ -116,7 +116,7 @@ export default async function TenantHome({
     return <ServiciosPro {...props} services={home?.content?.services} theme={theme} />;
   }
   if (template_id === 'tienda-express') {
-    return <TiendaExpress {...props} />;
+    return <TiendaExpress {...props} theme={theme} />;
   }
 
   if (template_id === 'tienda-catalogo') {

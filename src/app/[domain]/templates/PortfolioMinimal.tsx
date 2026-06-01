@@ -2,13 +2,18 @@
 
 import React from 'react';
 
+import { getTheme, type Theme } from '@/lib/themes';
+
 interface TemplateProps {
   siteName?: string;
   primaryColor?: string;
+  secondaryColor?: string;
   planType?: string;
   heroTitle?: string;
   heroSubtitle?: string;
   aboutText?: string;
+  /** Tema visual. Define el ambiente; los colores de marca son el acento. */
+  theme?: Theme;
 }
 
 const PROJECTS = [
@@ -25,20 +30,38 @@ const SKILLS = [
 export default function PortfolioMinimal({
   siteName = 'Tu Nombre',
   primaryColor = '#6366f1',
+  secondaryColor = '#f59e0b',
   planType,
   heroTitle,
   heroSubtitle,
-  aboutText
+  aboutText,
+  theme = getTheme('oficina'),
 }: TemplateProps) {
+  const t = theme.tokens;
+  const isGlow = t.surface === 'glow';
+
+  const accent = primaryColor;
+  const accent2 = secondaryColor;
+  const accentGradient = t.useGradients ? `linear-gradient(135deg, ${accent}, ${accent2})` : accent;
+
+  const pageBg = isGlow ? `linear-gradient(135deg, ${t.bgBase} 0%, ${t.bgSubtle} 100%)` : t.bgBase;
+  const headingFont: React.CSSProperties = {
+    fontFamily: t.fontHeading,
+    fontStyle: t.headingItalic ? 'italic' : 'normal',
+    fontWeight: t.headingWeight,
+  };
+  // Banda oscura (proyectos / footer): negro en temas claros, bgSubtle en glow.
+  const darkBg = isGlow ? t.bgSubtle : '#111';
+
   return (
-    <div style={{ minHeight: '100vh', background: '#f8f8f6', color: '#111', fontFamily: "var(--font-inter), system-ui, sans-serif", overflowX: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: pageBg, color: t.textPrimary, fontFamily: t.fontBody, overflowX: 'hidden' }}>
       <style dangerouslySetInnerHTML={{ __html: `
         .pm-nav-link {
           font-size: 10px; font-weight: 900; letter-spacing: 0.25em;
-          text-transform: uppercase; color: #aaa; text-decoration: none;
+          text-transform: uppercase; color: ${t.textMuted}; text-decoration: none;
           transition: color 0.2s;
         }
-        .pm-nav-link:hover { color: #111; }
+        .pm-nav-link:hover { color: ${t.textPrimary}; }
 
         .pm-project-card {
           cursor: pointer;
@@ -64,17 +87,17 @@ export default function PortfolioMinimal({
           display: inline-block;
           padding: 7px 18px;
           border-radius: 999px;
-          border: 1px solid rgba(0,0,0,0.1);
+          border: 1px solid ${t.borderSubtle};
           font-size: 10px; font-weight: 900;
           letter-spacing: 0.2em; text-transform: uppercase;
-          color: #555; background: transparent;
+          color: ${t.textSecondary}; background: transparent;
           transition: all 0.2s ease;
           cursor: default;
         }
         .pm-skill-tag:hover {
-          background: #111;
+          background: ${accent};
           color: #fff;
-          border-color: #111;
+          border-color: ${accent};
         }
 
         .pm-social-link {
@@ -82,7 +105,7 @@ export default function PortfolioMinimal({
           text-transform: uppercase; color: #aaa; text-decoration: none;
           transition: color 0.2s;
         }
-        .pm-social-link:hover { color: #111; }
+        .pm-social-link:hover { color: #fff; }
 
         @keyframes pm-fade {
           from { opacity: 0; transform: translateY(24px); }
@@ -100,11 +123,11 @@ export default function PortfolioMinimal({
         height: '64px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 2.5rem',
-        background: 'rgba(248,248,246,0.9)',
+        background: `${t.bgBase}E6`,
         backdropFilter: 'blur(24px)',
-        borderBottom: '1px solid rgba(0,0,0,0.06)'
+        borderBottom: `1px solid ${t.borderSubtle}`
       }}>
-        <span style={{ fontWeight: 900, fontSize: 17, letterSpacing: '-0.04em', textTransform: 'uppercase', fontStyle: 'italic' }}>
+        <span style={{ ...headingFont, fontSize: 17, letterSpacing: '-0.04em', textTransform: 'uppercase', color: t.textPrimary }}>
           {siteName}
         </span>
         <nav style={{ display: 'flex', gap: '2.5rem', alignItems: 'center' }}>
@@ -119,20 +142,21 @@ export default function PortfolioMinimal({
         <div className="pm-fade" style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
           padding: '5px 14px', borderRadius: 999,
-          border: '1px solid rgba(0,0,0,0.1)',
+          border: `1px solid ${accent}30`,
           fontSize: 9, fontWeight: 900, letterSpacing: '0.3em', textTransform: 'uppercase',
-          color: primaryColor, background: `${primaryColor}12`,
+          color: accent, background: `${accent}12`,
           marginBottom: '2.5rem'
         }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: primaryColor }} />
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: accent }} />
           Estudio Digital
         </div>
 
         <h1 className="pm-fade pm-fade-d1" style={{
+          ...headingFont,
           fontSize: 'clamp(3rem, 10vw, 8.5rem)',
-          fontWeight: 900, fontStyle: 'italic',
           letterSpacing: '-0.05em', lineHeight: 0.88,
           textTransform: 'uppercase',
+          color: t.textPrimary,
           marginBottom: '2.5rem',
           wordBreak: 'break-word'
         }}>
@@ -142,17 +166,17 @@ export default function PortfolioMinimal({
         <div className="pm-fade pm-fade-d2" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '2rem' }}>
           <p style={{
             fontSize: 'clamp(1.05rem, 2.2vw, 1.35rem)',
-            color: '#777', lineHeight: 1.6, fontWeight: 500,
+            color: t.textSecondary, lineHeight: 1.6, fontWeight: 500,
             maxWidth: 520
           }}>
             {heroSubtitle || 'Diseño y estrategia para marcas que buscan destacar en la era digital.'}
           </p>
 
-          {/* Available badge */}
+          {/* Available badge — invierte según tema para mantenerse visible */}
           <div style={{
             display: 'flex', alignItems: 'center', gap: 10,
             padding: '10px 20px', borderRadius: 999,
-            background: '#111', color: '#fff',
+            background: t.textPrimary, color: t.bgBase,
             fontSize: 10, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase',
             flexShrink: 0
           }}>
@@ -164,9 +188,9 @@ export default function PortfolioMinimal({
 
       {/* ── SKILLS ───────────────────────────────────── */}
       <section style={{ padding: '0 2.5rem clamp(4rem,8vw,8rem)', maxWidth: 1280, margin: '0 auto' }}>
-        <div style={{ borderTop: '1px solid rgba(0,0,0,0.07)', paddingTop: '3rem' }}>
+        <div style={{ borderTop: `1px solid ${t.borderSubtle}`, paddingTop: '3rem' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', alignItems: 'center' }}>
-            <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#bbb', marginRight: '0.5rem', flexShrink: 0 }}>
+            <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.3em', textTransform: 'uppercase', color: t.textMuted, marginRight: '0.5rem', flexShrink: 0 }}>
               Servicios
             </span>
             {SKILLS.map(skill => (
@@ -177,16 +201,16 @@ export default function PortfolioMinimal({
       </section>
 
       {/* ── PROYECTOS ────────────────────────────────── */}
-      <section id="work" style={{ background: '#111', color: '#f0f0f0', padding: 'clamp(5rem,10vw,10rem) 2.5rem' }}>
+      <section id="work" style={{ background: darkBg, color: '#f0f0f0', padding: 'clamp(5rem,10vw,10rem) 2.5rem' }}>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div style={{
             display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end',
             gap: '1rem', marginBottom: 'clamp(3rem,6vw,6rem)'
           }}>
-            <h2 style={{ fontSize: 'clamp(2.5rem, 7vw, 5.5rem)', fontWeight: 900, fontStyle: 'italic', letterSpacing: '-0.05em', textTransform: 'uppercase', lineHeight: 0.88 }}>
+            <h2 style={{ ...headingFont, fontSize: 'clamp(2.5rem, 7vw, 5.5rem)', letterSpacing: '-0.05em', textTransform: 'uppercase', lineHeight: 0.88 }}>
               Proyectos
             </h2>
-            <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.4em', textTransform: 'uppercase', color: '#333' }}>
+            <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.4em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)' }}>
               Selección 2023–2024
             </span>
           </div>
@@ -200,7 +224,7 @@ export default function PortfolioMinimal({
               <div key={item.id} className="pm-project-card">
                 {/* Image area */}
                 <div style={{
-                  aspectRatio: '4/3', borderRadius: 20, marginBottom: '1.5rem',
+                  aspectRatio: '4/3', borderRadius: t.radiusLg, marginBottom: '1.5rem',
                   overflow: 'hidden', position: 'relative',
                   background: item.gradient
                 }}>
@@ -248,14 +272,14 @@ export default function PortfolioMinimal({
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
                   <div>
-                    <span style={{ display: 'block', fontSize: 9, fontWeight: 900, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#444', marginBottom: '0.4rem' }}>
+                    <span style={{ display: 'block', fontSize: 9, fontWeight: 900, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: '0.4rem' }}>
                       {item.category}
                     </span>
-                    <h3 style={{ fontSize: 'clamp(1.1rem, 2.5vw, 1.5rem)', fontWeight: 900, fontStyle: 'italic', textTransform: 'uppercase', letterSpacing: '-0.03em', lineHeight: 1 }}>
+                    <h3 style={{ ...headingFont, fontSize: 'clamp(1.1rem, 2.5vw, 1.5rem)', textTransform: 'uppercase', letterSpacing: '-0.03em', lineHeight: 1 }}>
                       {item.title}
                     </h3>
                   </div>
-                  <span style={{ fontSize: 9, fontWeight: 700, color: '#333', letterSpacing: '0.1em', paddingTop: '0.1rem', flexShrink: 0 }}>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', paddingTop: '0.1rem', flexShrink: 0 }}>
                     {item.year}
                   </span>
                 </div>
@@ -273,22 +297,22 @@ export default function PortfolioMinimal({
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3rem', alignItems: 'flex-start' }}>
               <div style={{ flex: '0 0 auto' }}>
                 <div style={{
-                  width: 80, height: 80, borderRadius: 22,
-                  background: '#111', color: '#fff',
+                  width: 80, height: 80, borderRadius: t.radiusXl,
+                  background: t.textPrimary, color: t.bgBase,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 34, fontWeight: 900, fontStyle: 'italic',
+                  fontSize: 34, ...headingFont,
                 }}>
                   {siteName.charAt(0).toUpperCase()}
                 </div>
               </div>
               <div style={{ flex: '1 1 400px' }}>
-                <div style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#bbb', marginBottom: '1.25rem' }}>
+                <div style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.35em', textTransform: 'uppercase', color: t.textMuted, marginBottom: '1.25rem' }}>
                   Sobre mí
                 </div>
                 <p style={{
                   fontSize: 'clamp(1.4rem, 3.5vw, 2.8rem)',
                   fontWeight: 700, lineHeight: 1.15, letterSpacing: '-0.03em',
-                  color: '#111', marginBottom: '2rem'
+                  color: t.textPrimary, marginBottom: '2rem'
                 }}>
                   {aboutText || 'Diseñador independiente que ayuda a marcas con visión a transformar sus ideas en experiencias digitales memorables.'}
                 </p>
@@ -296,7 +320,7 @@ export default function PortfolioMinimal({
             </div>
 
             {/* Stats row */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0', borderTop: '1px solid rgba(0,0,0,0.07)', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0', borderTop: `1px solid ${t.borderSubtle}`, borderBottom: `1px solid ${t.borderSubtle}` }}>
               {[
                 { n: '40+', l: 'Proyectos entregados' },
                 { n: '5 años', l: 'De experiencia' },
@@ -304,11 +328,11 @@ export default function PortfolioMinimal({
               ].map((stat, i) => (
                 <div key={i} style={{
                   flex: '1 1 160px', padding: '2rem 2.5rem',
-                  borderRight: i < 2 ? '1px solid rgba(0,0,0,0.07)' : 'none',
+                  borderRight: i < 2 ? `1px solid ${t.borderSubtle}` : 'none',
                   display: 'flex', flexDirection: 'column', gap: '0.4rem'
                 }}>
-                  <span style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 900, fontStyle: 'italic', letterSpacing: '-0.04em', lineHeight: 1, color: '#111' }}>{stat.n}</span>
-                  <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#bbb' }}>{stat.l}</span>
+                  <span style={{ ...headingFont, fontSize: 'clamp(2rem, 5vw, 3rem)', letterSpacing: '-0.04em', lineHeight: 1, color: t.textPrimary }}>{stat.n}</span>
+                  <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase', color: t.textMuted }}>{stat.l}</span>
                 </div>
               ))}
             </div>
@@ -317,11 +341,11 @@ export default function PortfolioMinimal({
             <div>
               <button style={{
                 padding: '18px 52px', borderRadius: 999,
-                background: primaryColor, color: '#fff',
+                background: accentGradient, color: '#fff',
                 fontSize: 10, fontWeight: 900, letterSpacing: '0.2em', textTransform: 'uppercase',
                 border: 'none', cursor: 'pointer',
                 transition: 'filter 0.2s, transform 0.2s',
-                boxShadow: `0 12px 32px ${primaryColor}40`
+                boxShadow: isGlow ? `0 12px 32px ${accent}40` : t.shadowElevated
               }}
                 onMouseEnter={e => { e.currentTarget.style.filter = 'brightness(1.12)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
                 onMouseLeave={e => { e.currentTarget.style.filter = 'brightness(1)'; e.currentTarget.style.transform = 'translateY(0)'; }}
@@ -336,22 +360,19 @@ export default function PortfolioMinimal({
       {/* ── FOOTER ───────────────────────────────────── */}
       <footer id="contact" style={{
         padding: 'clamp(3rem,6vw,5rem) 2.5rem',
-        background: '#111', color: '#f0f0f0',
+        background: darkBg, color: '#f0f0f0',
         display: 'flex', flexWrap: 'wrap', alignItems: 'center',
         justifyContent: 'space-between', gap: '1.5rem'
       }}>
-        <span style={{ fontWeight: 900, fontSize: 20, letterSpacing: '-0.04em', textTransform: 'uppercase', fontStyle: 'italic' }}>
+        <span style={{ ...headingFont, fontSize: 20, letterSpacing: '-0.04em', textTransform: 'uppercase' }}>
           {siteName}
         </span>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem' }}>
           {['Twitter / X', 'Instagram', 'LinkedIn'].map(s => (
-            <a key={s} href="#" style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.35em', textTransform: 'uppercase', color: '#444', textDecoration: 'none', transition: 'color 0.2s' }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-              onMouseLeave={e => (e.currentTarget.style.color = '#444')}
-            >{s}</a>
+            <a key={s} href="#" className="pm-social-link">{s}</a>
           ))}
         </div>
-        <p style={{ fontSize: 9, fontWeight: 700, color: '#2a2a2a', letterSpacing: '0.3em', textTransform: 'uppercase' }}>
+        <p style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.3em', textTransform: 'uppercase' }}>
           © {new Date().getFullYear()}
           {(!planType || planType === 'basic') && ' — SitioListo'}
         </p>
