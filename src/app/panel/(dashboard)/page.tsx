@@ -2,12 +2,20 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { PLANS, PlanType } from '@/lib/constants';
+import { getRequestAuth } from '@/lib/auth/requestAuth';
 
 export default async function PanelPage() {
+  // El middleware ya validó la sesión y reenvió el user id por header → no
+  // re-llamamos getUser() (una ida-y-vuelta de red menos). Fallback defensivo
+  // a getUser() si el header no estuviera (fuera del flujo de middleware).
+  const auth = await getRequestAuth();
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
+  let userId = auth?.userId ?? null;
+  if (!userId) {
+    const { data: { user } } = await supabase.auth.getUser();
+    userId = user?.id ?? null;
+  }
+  if (!userId) {
     redirect('/login');
   }
 
@@ -18,27 +26,24 @@ export default async function PanelPage() {
     supabase
       .from('profiles')
       .select('full_name')
-      .eq('id', user.id)
+      .eq('id', userId)
       .maybeSingle(),
     supabase
       .from('sites')
       .select('id, subdomain, is_active, template_id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .maybeSingle(),
     supabase
       .from('subscriptions')
       .select('plan_type, status')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('status', 'authorized')
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
   ]);
 
-  const firstName = profile?.full_name?.split(' ')[0] 
-    || user.user_metadata?.full_name?.split(' ')[0] 
-    || user.user_metadata?.name?.split(' ')[0] 
-    || 'Emprendedor';
+  const firstName = profile?.full_name?.split(' ')[0] || 'Emprendedor';
 
   const planName = subscription ? PLANS[subscription.plan_type as PlanType]?.name : 'Plan Gratuito';
 

@@ -108,10 +108,22 @@ export async function middleware(req: NextRequest) {
       }
     }
 
+    // Reenviar el user id + rol ya validados como headers de request, para que
+    // las páginas del server no tengan que re-llamar getUser()/profiles.
+    // Borramos cualquier valor entrante del cliente antes de setear el nuestro
+    // (anti-spoofing). Estos headers van solo en el request, no en la respuesta.
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.delete('x-sl-uid');
+    requestHeaders.delete('x-sl-role');
+    if (user) {
+      requestHeaders.set('x-sl-uid', user.id);
+      if (profileRole) requestHeaders.set('x-sl-role', profileRole);
+    }
+
     // Reescribir internamente a la carpeta /panel manteniendo las cookies refrescadas
     return NextResponse.rewrite(
       new URL(`/panel${url.pathname}${url.search}`, req.url),
-      { headers: response.headers }
+      { request: { headers: requestHeaders }, headers: response.headers }
     );
   }
 

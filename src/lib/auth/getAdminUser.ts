@@ -2,23 +2,32 @@ import { cache } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { createClient } from '@/lib/supabase/server';
+import { getRequestAuth } from '@/lib/auth/requestAuth';
 
-// `cache()` deduplica por request: si el layout admin y la página admin
-// llaman getAdminUser() en el mismo render, se hace UNA sola validación de
-// sesión + UNA query a profiles (en vez de duplicarlas).
+// Guard de admin para Server Components. `cache()` deduplica por request
+// (layout admin + página comparten el resultado).
+//
+// Camino rápido: usa el user id + rol que el middleware ya validó y reenvió
+// por header → cero llamadas de red. Fallback: valida contra Supabase si el
+// header no está (contextos sin middleware).
 export const getAdminUser = cache(async () => {
+  const reqAuth = await getRequestAuth();
+  if (reqAuth) {
+    return reqAuth.role === 'admin' ? { userId: reqAuth.userId } : null;
+  }
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role, full_name, email')
+    .select('role')
     .eq('id', user.id)
     .maybeSingle();
 
   if (profile?.role !== 'admin') return null;
-  return { user, profile };
+  return { userId: user.id };
 });
 
 // Helper liviano: solo chequea el rol. Para usar dentro de handlers que
