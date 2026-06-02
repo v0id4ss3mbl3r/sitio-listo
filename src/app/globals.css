@@ -109,40 +109,47 @@
 /* Base Styles                                                 */
 /* ─────────────────────────────────────────────────────────── */
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* Base dentro de @layer para que las UTILIDADES de Tailwind (mx-auto, px-*,
+   font-*, etc.) ganen sobre estos resets/estilos de elemento. Sin la capa, el
+   reset `* { margin:0; padding:0 }` (sin capa) vencía a las utilidades —los
+   estilos sin capa ganan a los de capa en CSS— y rompía el layout de las
+   plantillas que usan utilidades (p.ej. TiendaCatalogo). */
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
-html {
-  scroll-behavior: smooth;
-}
+  html {
+    scroll-behavior: smooth;
+  }
 
-body {
-  background: var(--bg-dark);
-  color: var(--text-primary);
-  font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
-  font-size: 16px;
-  line-height: 1.65;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
+  body {
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
 
-/* Titulos: serif "de imprenta". Aplicar via etiqueta para que todo lo
-   que no tenga clase específica herede el estilo de lectura. */
-h1, h2, h3, h4 {
-  font-family: var(--font-heading);
-  font-weight: 600;
-  letter-spacing: -0.015em;
-  line-height: 1.25;
-}
+  /* Titulos: serif "de imprenta". Aplicar via etiqueta para que todo lo
+     que no tenga clase específica herede el estilo de lectura. */
+  h1, h2, h3, h4 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+  }
 
-h1 { font-weight: 700; }
+  h1 { font-weight: 700; }
 
-p {
-  line-height: 1.7;
+  p {
+    line-height: 1.7;
+  }
 }
 
 /* Para texto largo (artículos, descripciones), un poco más de aire. */

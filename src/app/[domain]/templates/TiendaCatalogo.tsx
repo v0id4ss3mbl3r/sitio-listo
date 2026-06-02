@@ -13,7 +13,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 
-import { getTheme, type Theme } from '@/lib/themes';
+import { type Theme } from '@/lib/themes';
 
 type Category = {
   id: string;
@@ -51,14 +51,14 @@ export type TiendaCatalogoProps = {
   products: Product[];
   categories: Category[];
   settings: StoreSettings | null;
-  /** Tema visual. Define el ambiente (fondo/superficies/texto/tipografía);
-   *  el acento sigue siendo settings.theme_color. Las bandas oscuras
-   *  (hero/beneficios/footer) se mantienen oscuras en todos los temas. */
+  /** Aceptado por compatibilidad; el catálogo usa settings.theme_color como
+   *  acento sobre un diseño claro fijo (estilo storefront). */
   theme?: Theme;
 };
 
 type CartItem = Product & { quantity: number };
 
+// Placeholders suaves para productos sin imagen.
 const PRODUCT_GRADIENTS = [
   'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
@@ -66,8 +66,6 @@ const PRODUCT_GRADIENTS = [
   'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
   'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
   'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
-  'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)',
-  'linear-gradient(135deg, #96fbc4 0%, #f9f586 100%)',
 ];
 
 function buildWhatsappMessage(opts: {
@@ -103,40 +101,9 @@ export default function TiendaCatalogo({
   products,
   categories,
   settings,
-  theme = getTheme('vivo'),
+  theme,
 }: TiendaCatalogoProps) {
-  const t = theme.tokens;
-  // El modo (no el 'surface') decide claro vs oscuro: Vivo es glow pero claro.
-  const isDark = theme.mode === 'dark';
-  const themeColor = settings?.theme_color || primaryColor || t.primary;
-
-  // Superficies derivadas del tema. Las bandas oscuras (hero/footer) usan
-  // BAND fijo; el resto del storefront sale de estas variables.
-  const pageBg = isDark ? '#0f172a' : t.bgSubtle;
-  const surface = isDark ? '#1b2335' : '#ffffff';
-  const surfaceTranslucent = isDark ? 'rgba(27,35,53,0.92)' : 'rgba(255,255,255,0.97)';
-  const subtle = isDark ? 'rgba(255,255,255,0.06)' : '#f4f4f5';
-  const subtleHover = isDark ? 'rgba(255,255,255,0.10)' : '#e7e5e4';
-  const BAND = '#0f172a';
-
-  const headingFont: React.CSSProperties = {
-    fontFamily: t.fontHeading,
-    fontStyle: t.headingItalic ? 'italic' : 'normal',
-    fontWeight: t.headingWeight,
-  };
-
-  const rootStyle = {
-    fontFamily: t.fontBody,
-    background: pageBg,
-    color: t.textPrimary,
-    '--tc-surface': surface,
-    '--tc-subtle': subtle,
-    '--tc-subtle-h': subtleHover,
-    '--tc-text': t.textPrimary,
-    '--tc-text2': t.textSecondary,
-    '--tc-muted': t.textMuted,
-    '--tc-border': t.borderSubtle,
-  } as React.CSSProperties;
+  const themeColor = settings?.theme_color || primaryColor || theme?.tokens.primary || '#171717';
 
   const whatsappNumbers =
     settings?.whatsapp_numbers && settings.whatsapp_numbers.length > 0
@@ -146,7 +113,6 @@ export default function TiendaCatalogo({
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'newest' | 'price_asc' | 'price_desc'>('newest');
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -164,8 +130,6 @@ export default function TiendaCatalogo({
   const cartKey = `sitiolisto_cart_${siteName.toLowerCase().replace(/\s+/g, '_')}`;
 
   useEffect(() => {
-    // Carga del carrito persistido al mount. setState dentro de useEffect es
-    // el patrón estándar para hidratar state desde localStorage.
     const saved = typeof window !== 'undefined' ? localStorage.getItem(cartKey) : null;
     if (saved) {
       try {
@@ -248,148 +212,82 @@ export default function TiendaCatalogo({
       const matchesCategory = activeCategory === null || p.category_id === activeCategory;
       return matchesSearch && matchesCategory;
     });
-
-    if (sortBy === 'price_asc') return filtered.sort((a, b) => a.price - b.price);
-    if (sortBy === 'price_desc') return filtered.sort((a, b) => b.price - a.price);
+    if (sortBy === 'price_asc') return [...filtered].sort((a, b) => a.price - b.price);
+    if (sortBy === 'price_desc') return [...filtered].sort((a, b) => b.price - a.price);
     return filtered;
   }, [products, searchQuery, activeCategory, sortBy]);
 
-  const showBranding = planType !== 'pro' && planType !== 'extremo' && planType !== 'personalizado';
-  const bannerTitle = settings?.banner_title || 'La mejor selección en un solo lugar.';
-  const bannerSubtitle =
-    settings?.banner_subtitle ||
-    'Explorá nuestro catálogo con las últimas novedades y ofertas exclusivas pensadas para vos.';
+  const showBranding =
+    planType !== 'pro' && planType !== 'extremo' && planType !== 'personalizado';
   const storeDescription =
     settings?.store_description ||
-    'Seleccioná lo que buscás y completá tu pedido directamente de forma segura.';
+    'La mejor plataforma de compras ágiles. Seleccioná lo que buscás y completá tu pedido directamente de forma segura.';
 
   return (
-    <main
-      className="min-h-screen font-sans text-[var(--tc-text)] flex flex-col"
-      style={rootStyle}
-    >
+    <main className="tc-root min-h-screen bg-neutral-50 font-sans text-neutral-900 flex flex-col">
       <style
         dangerouslySetInnerHTML={{
-          __html: `
-          @keyframes tc-fade-in {
-            from { opacity: 0; transform: translateY(16px); }
-            to   { opacity: 1; transform: translateY(0);    }
-          }
-          .tc-fade    { animation: tc-fade-in 0.55s ease-out both; }
-          .tc-fade-d1 { animation-delay: 0.1s; }
-          .tc-fade-d2 { animation-delay: 0.22s; }
-          .tc-fade-d3 { animation-delay: 0.34s; }
-
-          .tc-product-card {
-            transition: transform 0.3s cubic-bezier(0.4,0,0.2,1),
-                        box-shadow 0.3s cubic-bezier(0.4,0,0.2,1);
-          }
-          .tc-product-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 40px -10px ${themeColor}38;
-          }
-          .tc-product-card:hover .tc-product-overlay { opacity: 1; }
-
-          .tc-product-overlay {
-            position: absolute; inset: 0;
-            background: rgba(0,0,0,0.18);
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0;
-            transition: opacity 0.25s ease;
-            border-radius: inherit;
-          }
-
-          /* hide scrollbar on category nav */
-          .tc-cat-nav::-webkit-scrollbar { display: none; }
-          .tc-cat-nav { -ms-overflow-style: none; scrollbar-width: none; }
-
-          .tc-btn-add {
-            transition: filter 0.2s ease, transform 0.15s ease;
-          }
-          .tc-btn-add:hover:not(:disabled) {
-            filter: brightness(1.1);
-            transform: translateY(-1px);
-          }
-          .tc-btn-add:active:not(:disabled) { transform: scale(0.97); }
-        `,
+          __html: `.tc-scroll-hidden::-webkit-scrollbar{display:none}.tc-scroll-hidden{-ms-overflow-style:none;scrollbar-width:none}
+.tc-root h1,.tc-root h2,.tc-root h3,.tc-root h4{font-family:var(--font-inter),system-ui,sans-serif}`,
         }}
       />
 
       {/* TOAST */}
-      {toastMessage && (
-        <div
-          className="fixed top-24 left-1/2 -translate-x-1/2 z-50 text-white px-6 py-3 rounded-full shadow-xl font-bold text-sm whitespace-nowrap"
-          style={{ backgroundColor: themeColor }}
-        >
-          {toastMessage}
-        </div>
-      )}
+      <div
+        className={`fixed top-24 left-1/2 -translate-x-1/2 z-50 text-white px-6 py-3 rounded-full shadow-xl font-bold text-sm transition-all duration-300 ${toastMessage ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}
+        style={{ backgroundColor: themeColor }}
+      >
+        {toastMessage}
+      </div>
 
       {/* HEADER */}
-      <header
-        className="sticky top-0 z-40 border-b border-[var(--tc-border)] shadow-sm"
-        style={{ background: surfaceTranslucent, backdropFilter: 'blur(16px)' }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
-          {/* Logo */}
+      <header className="bg-white border-b border-neutral-100 sticky top-0 z-40 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 grid grid-cols-3 items-center">
+          {/* Search (desktop) */}
+          <div className="relative w-full max-w-xs group hidden sm:block">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 h-5 w-5 transition-colors group-focus-within:text-neutral-900" />
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-neutral-100 border border-transparent rounded-xl text-sm outline-none transition-all focus:bg-white focus:border-neutral-300 focus:ring-4 focus:ring-neutral-100"
+            />
+          </div>
+
+          {/* Logo (centrado) */}
           <div
-            className="flex items-center gap-3 cursor-pointer flex-shrink-0"
+            className="flex justify-start sm:justify-center items-center cursor-pointer col-span-2 sm:col-span-1"
             onClick={() => {
               setActiveCategory(null);
               setSearchQuery('');
-              setMobileSearchOpen(false);
             }}
           >
             {logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoUrl} alt={siteName} className="h-9 sm:h-11 w-auto object-contain" />
+              <img
+                src={logoUrl}
+                alt={siteName}
+                className="h-10 sm:h-12 w-auto object-contain drop-shadow-sm transition-transform hover:scale-105"
+              />
             ) : (
-              <>
-                <div
-                  className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center text-white font-black text-lg flex-shrink-0"
-                  style={{ backgroundColor: themeColor }}
-                >
-                  {siteName.charAt(0).toUpperCase()}
-                </div>
-                <span className="font-black text-lg sm:text-xl tracking-tight text-[var(--tc-text)] hidden sm:block">
-                  {siteName}
-                </span>
-              </>
+              <h1 className="text-2xl font-black tracking-tight uppercase">{siteName}</h1>
             )}
           </div>
 
-          {/* Search — desktop */}
-          <div className="relative w-full max-w-sm hidden sm:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--tc-muted)] h-4 w-4" />
-            <input
-              type="text"
-              placeholder="Buscar productos..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-[var(--tc-subtle)] rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--tc-border)] transition-all text-[var(--tc-text)]"
-            />
-          </div>
-
-          {/* Right actions */}
-          <div className="flex items-center gap-1">
-            {/* Mobile search toggle */}
-            <button
-              onClick={() => setMobileSearchOpen((v) => !v)}
-              className="sm:hidden p-2 rounded-xl hover:bg-[var(--tc-subtle)] text-[var(--tc-text2)] transition-colors"
-            >
-              <Search className="h-5 w-5" />
-            </button>
-
-            {/* Cart */}
+          {/* Carrito */}
+          <div className="flex justify-end">
             <button
               onClick={() => {
                 setIsCartOpen(true);
                 setCheckoutStep('cart');
               }}
-              className="relative flex items-center gap-2 px-3 py-2 sm:px-4 rounded-xl hover:bg-[var(--tc-subtle)] transition-colors"
+              className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all hover:bg-neutral-100 active:scale-95 group"
             >
-              <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-[var(--tc-text2)]" />
-              <span className="font-bold text-sm hidden lg:block text-[var(--tc-text2)]">Mi Carrito</span>
+              <ShoppingCart className="h-6 w-6 text-neutral-700 group-hover:text-neutral-900" />
+              <span className="font-bold text-sm hidden lg:block text-neutral-700 group-hover:text-neutral-900">
+                Mi Carrito
+              </span>
               {cartItemsCount > 0 && (
                 <span
                   className="absolute -top-1 -right-1 text-white text-[10px] font-black h-5 w-5 flex items-center justify-center rounded-full shadow-md"
@@ -402,53 +300,32 @@ export default function TiendaCatalogo({
           </div>
         </div>
 
-        {/* Mobile search bar */}
-        {mobileSearchOpen && (
-          <div className="sm:hidden px-4 pb-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--tc-muted)] h-4 w-4" />
-              <input
-                type="text"
-                placeholder="Buscar productos..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                autoFocus
-                className="w-full pl-10 pr-4 py-2.5 bg-[var(--tc-subtle)] rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--tc-border)] transition-all text-[var(--tc-text)]"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Category nav — pill buttons */}
+        {/* NAVEGACIÓN — categorías */}
         {categories.length > 0 && (
-          <nav className="border-t border-[var(--tc-border)]" style={{ background: surface }}>
+          <nav className="border-t border-neutral-100 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
-              <ul className="tc-cat-nav flex items-center gap-1 overflow-x-auto h-12">
+              <ul className="tc-scroll-hidden flex items-center gap-6 overflow-x-auto h-14">
                 <li>
                   <button
                     onClick={() => setActiveCategory(null)}
-                    className="whitespace-nowrap text-xs font-bold px-4 py-1.5 rounded-full transition-all"
-                    style={
-                      activeCategory === null
-                        ? { backgroundColor: themeColor, color: '#fff' }
-                        : { color: t.textMuted }
-                    }
+                    className={`whitespace-nowrap text-sm font-bold transition-colors relative h-14 flex items-center ${activeCategory === null ? 'text-neutral-900' : 'text-neutral-500 hover:text-neutral-900'}`}
                   >
-                    Todo
+                    Todos los productos
+                    {activeCategory === null && (
+                      <span className="absolute bottom-0 left-0 w-full h-1 rounded-t-md" style={{ backgroundColor: themeColor }} />
+                    )}
                   </button>
                 </li>
                 {categories.map((cat) => (
                   <li key={cat.id}>
                     <button
                       onClick={() => setActiveCategory(cat.id)}
-                      className="whitespace-nowrap text-xs font-bold px-4 py-1.5 rounded-full transition-all"
-                      style={
-                        activeCategory === cat.id
-                          ? { backgroundColor: themeColor, color: '#fff' }
-                          : { color: t.textMuted }
-                      }
+                      className={`whitespace-nowrap text-sm font-bold transition-colors relative h-14 flex items-center ${activeCategory === cat.id ? 'text-neutral-900' : 'text-neutral-500 hover:text-neutral-900'}`}
                     >
                       {cat.name}
+                      {activeCategory === cat.id && (
+                        <span className="absolute bottom-0 left-0 w-full h-1 rounded-t-md" style={{ backgroundColor: themeColor }} />
+                      )}
                     </button>
                   </li>
                 ))}
@@ -459,25 +336,11 @@ export default function TiendaCatalogo({
       </header>
 
       <div className="flex-grow">
-        {/* BANNER + BENEFITS — only on the unconstrained home view */}
+        {/* HERO + TRUST BADGES — solo en la vista principal */}
         {!searchQuery && activeCategory === null && (
           <>
-            {/* HERO BANNER — banda oscura constante */}
-            <section className="relative overflow-hidden" style={{ background: BAND }}>
-              {/* Decorative blobs */}
-              <div
-                className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-20 blur-3xl pointer-events-none"
-                style={{
-                  background: `radial-gradient(circle, ${themeColor} 0%, transparent 70%)`,
-                }}
-              />
-              <div
-                className="absolute -bottom-16 -left-16 w-72 h-72 rounded-full opacity-10 blur-3xl pointer-events-none"
-                style={{
-                  background: `radial-gradient(circle, ${themeColor} 0%, transparent 70%)`,
-                }}
-              />
-
+            <section className="relative bg-neutral-900 text-white overflow-hidden">
+              <div className="absolute inset-0 opacity-20" style={{ backgroundColor: themeColor }} />
               {settings?.banner_image_url && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -486,124 +349,61 @@ export default function TiendaCatalogo({
                   className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none"
                 />
               )}
-
-              <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-14 sm:py-24 flex flex-col sm:flex-row items-center justify-between gap-10 z-10">
-                <div className="max-w-2xl text-center sm:text-left">
-                  {/* Live badge */}
-                  <div
-                    className="tc-fade inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest mb-6"
-                    style={{
-                      background: `${themeColor}22`,
-                      color: themeColor,
-                      border: `1px solid ${themeColor}40`,
-                    }}
-                  >
-                    <span
-                      className="w-1.5 h-1.5 rounded-full animate-pulse"
-                      style={{ background: themeColor }}
-                    />
-                    Catálogo Oficial
-                  </div>
-
-                  <h2
-                    className="tc-fade tc-fade-d1 text-4xl sm:text-5xl font-black tracking-tight text-white mb-4 leading-tight"
-                    style={headingFont}
-                  >
-                    {bannerTitle}
+              <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-10">
+                <div className="max-w-2xl">
+                  <h2 className="text-4xl sm:text-5xl font-black tracking-tight mb-4 leading-tight">
+                    {settings?.banner_title || 'La mejor selección en un solo lugar.'}
                   </h2>
-                  <p className="tc-fade tc-fade-d2 text-base sm:text-lg text-neutral-400 mb-8 font-medium">
-                    {bannerSubtitle}
+                  <p className="text-lg text-neutral-300 mb-8 font-medium">
+                    {settings?.banner_subtitle ||
+                      'Explorá nuestro catálogo con las últimas novedades y ofertas exclusivas pensadas para vos.'}
                   </p>
                   <a
-                    href="#catalog"
-                    className="tc-fade tc-fade-d3 tc-btn-add inline-flex items-center gap-2 text-sm font-black uppercase tracking-wider text-white px-6 py-3 rounded-xl"
-                    style={{ backgroundColor: themeColor }}
+                    href="#catalogo"
+                    className="text-neutral-900 bg-white px-8 py-3.5 rounded-xl font-black hover:bg-neutral-100 transition-all active:scale-95 shadow-xl inline-flex items-center gap-2"
                   >
-                    Ver catálogo
-                    <ChevronDown className="h-4 w-4" />
+                    Ver Catálogo <ChevronDown className="w-5 h-5" />
                   </a>
                 </div>
-
-                {/* Right decoration */}
-                <div className="hidden sm:flex items-center justify-center relative w-60 h-60 flex-shrink-0">
-                  <div
-                    className="absolute w-48 h-48 rounded-full blur-3xl opacity-40"
-                    style={{ backgroundColor: themeColor }}
-                  />
-                  <div className="relative z-10 w-36 h-36 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm flex items-center justify-center">
-                    <ShoppingCart className="w-14 h-14 text-white opacity-80" />
-                  </div>
+                <div className="hidden sm:flex w-72 h-72 rounded-full border-8 border-white/10 items-center justify-center relative shadow-2xl flex-shrink-0">
+                  <div className="absolute w-56 h-56 rounded-full blur-2xl opacity-50" style={{ backgroundColor: themeColor }} />
+                  <ShoppingCart className="w-32 h-32 text-white relative z-10 opacity-90" />
                 </div>
               </div>
             </section>
 
-            {/* BENEFITS STRIP — banda oscura constante */}
-            <section
-              style={{
-                background: BAND,
-                borderTop: '1px solid rgba(255,255,255,0.05)',
-              }}
-            >
-              <div className="max-w-7xl mx-auto px-4 sm:px-6">
-                <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/5">
-                  {[
-                    {
-                      icon: <Truck className="w-5 h-5" style={{ color: themeColor }} />,
-                      title: 'Envíos a todo el país',
-                      desc: 'Llegamos directo a tu puerta.',
-                    },
-                    {
-                      icon: <CreditCard className="w-5 h-5" style={{ color: themeColor }} />,
-                      title: 'Múltiples medios de pago',
-                      desc: 'Efectivo, transferencia y tarjetas.',
-                    },
-                    {
-                      icon: <ShieldCheck className="w-5 h-5" style={{ color: themeColor }} />,
-                      title: 'Compra 100% Segura',
-                      desc: 'Protegemos todos tus datos.',
-                    },
-                  ].map((b, i) => (
-                    <div key={i} className="flex items-center gap-4 py-5 px-4 sm:px-6">
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                        style={{ background: `${themeColor}20` }}
-                      >
-                        {b.icon}
-                      </div>
-                      <div>
-                        <p className="text-white text-[11px] font-black uppercase tracking-wide">
-                          {b.title}
-                        </p>
-                        <p className="text-neutral-500 text-[11px] font-medium mt-0.5">{b.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            <section className="bg-white border-b border-neutral-100">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-10 divide-y sm:divide-y-0 sm:divide-x divide-neutral-100">
+                {[
+                  { icon: Truck, title: 'Envíos a todo el país', desc: 'Llegamos directo a tu puerta.' },
+                  { icon: CreditCard, title: 'Múltiples medios de pago', desc: 'Efectivo, transferencia y tarjetas.' },
+                  { icon: ShieldCheck, title: 'Compra 100% Segura', desc: 'Protegemos todos tus datos.' },
+                ].map((b, i) => (
+                  <div key={i} className="flex flex-col items-center text-center pt-6 first:pt-4 sm:pt-0">
+                    <b.icon className="w-8 h-8 mb-3" style={{ color: themeColor }} />
+                    <h4 className="font-black text-neutral-900 text-sm uppercase tracking-wide">{b.title}</h4>
+                    <p className="text-sm text-neutral-500 mt-1">{b.desc}</p>
+                  </div>
+                ))}
               </div>
             </section>
           </>
         )}
 
-        {/* CATALOG HEADER */}
+        {/* BARRA DE CONTROL */}
         <div
-          id="catalog"
-          className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-6 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4"
+          id="catalogo"
+          className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-6 flex flex-col sm:flex-row items-center justify-between gap-4"
         >
-          <div>
-            <div className="inline-block px-3 py-1 rounded-full bg-[var(--tc-subtle)] text-[var(--tc-muted)] text-[10px] font-black uppercase tracking-[0.15em] mb-2">
-              Catálogo
-            </div>
-            <h2
-              className="text-2xl sm:text-3xl font-black tracking-tight text-[var(--tc-text)]"
-              style={headingFont}
-            >
+          <div className="w-full sm:w-auto">
+            <h2 className="text-3xl font-black tracking-tight text-neutral-900">
               {searchQuery
                 ? `Resultados para "${searchQuery}"`
                 : activeCategory
                   ? categories.find((c) => c.id === activeCategory)?.name
-                  : 'Todos los productos'}
+                  : 'Catálogo Completo'}
             </h2>
-            <p className="text-[var(--tc-muted)] text-sm mt-1 font-semibold">
+            <p className="text-neutral-500 text-sm mt-1 font-medium">
               {filteredProducts.length} productos disponibles
             </p>
           </div>
@@ -612,193 +412,161 @@ export default function TiendaCatalogo({
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'newest' | 'price_asc' | 'price_desc')}
-              className="w-full sm:w-auto appearance-none border border-[var(--tc-border)] text-[var(--tc-text2)] font-bold text-sm py-2.5 pl-4 pr-10 rounded-xl outline-none cursor-pointer transition-colors bg-[var(--tc-surface)]"
+              className="w-full sm:w-auto appearance-none bg-white border border-neutral-200 text-neutral-700 font-bold text-sm py-2.5 pl-4 pr-10 rounded-xl outline-none cursor-pointer hover:border-neutral-300 transition-colors focus:ring-4 focus:ring-neutral-100"
             >
               <option value="newest">Más Recientes</option>
               <option value="price_asc">Menor Precio</option>
               <option value="price_desc">Mayor Precio</option>
             </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--tc-muted)] pointer-events-none" />
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
           </div>
         </div>
 
-        {/* PRODUCT GRID */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5">
+        {/* GRILLA DE PRODUCTOS */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-20 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
           {filteredProducts.length === 0 ? (
-            <div className="col-span-full py-24 text-center">
-              <div className="w-20 h-20 rounded-2xl bg-[var(--tc-subtle)] flex items-center justify-center mx-auto mb-5">
-                <ShoppingCart className="w-9 h-9 text-[var(--tc-muted)]" />
-              </div>
-              <h3 className="text-xl font-black text-[var(--tc-text)]">No hay productos para mostrar.</h3>
-              <p className="text-[var(--tc-muted)] mt-2 font-medium text-sm">
-                Intentá con otra búsqueda o categoría.
-              </p>
+            <div className="col-span-full py-20 text-center">
+              <ShoppingCart className="w-16 h-16 text-neutral-200 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-neutral-900">No hay productos para mostrar.</h3>
+              <p className="text-neutral-500 mt-2">Intentá con otra búsqueda o categoría.</p>
             </div>
           ) : (
-            filteredProducts.map((product, idx) => {
-              const gradient = PRODUCT_GRADIENTS[idx % PRODUCT_GRADIENTS.length];
-              return (
-                <div
-                  key={product.id}
-                  className={`tc-product-card rounded-2xl border border-[var(--tc-border)] overflow-hidden flex flex-col bg-[var(--tc-surface)] ${!product.in_stock ? 'opacity-70' : 'cursor-pointer'}`}
-                  onClick={() => product.in_stock && setSelectedProduct(product)}
-                >
-                  {/* Image area */}
-                  <div className="aspect-square relative overflow-hidden">
-                    {!product.in_stock && (
-                      <div className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-[2px] bg-black/40">
-                        <span className="bg-neutral-900 text-white font-black text-[10px] tracking-widest uppercase px-3 py-1 rounded-full shadow">
-                          Agotado
-                        </span>
-                      </div>
-                    )}
-
-                    {product.compare_at_price && product.compare_at_price > product.price && (
-                      <span
-                        className="absolute top-2 left-2 z-10 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md shadow-sm"
-                        style={{ backgroundColor: themeColor }}
-                      >
-                        {Math.round(
-                          ((product.compare_at_price - product.price) /
-                            product.compare_at_price) *
-                            100
-                        )}
-                        % OFF
+            filteredProducts.map((product, idx) => (
+              <div
+                key={product.id}
+                className={`bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group ${!product.in_stock ? 'opacity-75' : 'cursor-pointer'}`}
+                onClick={() => product.in_stock && setSelectedProduct(product)}
+              >
+                <div className="aspect-square bg-white w-full relative overflow-hidden flex items-center justify-center p-4">
+                  {!product.in_stock && (
+                    <div className="absolute inset-0 bg-white/60 z-20 flex items-center justify-center backdrop-blur-[2px]">
+                      <span className="bg-neutral-900 text-white font-black text-xs tracking-widest uppercase px-4 py-1.5 rounded-full shadow-lg">
+                        Agotado
                       </span>
-                    )}
-
-                    {product.is_featured && (
-                      <span className="absolute top-2 right-2 z-10 bg-amber-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md shadow-sm">
-                        ★ Dest.
-                      </span>
-                    )}
-
-                    {product.image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={product.image_url}
-                        alt={product.name}
-                        className="w-full h-full object-contain p-3 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div
-                        className="w-full h-full flex items-center justify-center"
-                        style={{ background: gradient }}
-                      >
-                        <span className="text-4xl sm:text-5xl font-black italic text-white/25 select-none">
-                          {product.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Hover overlay */}
-                    {product.in_stock && (
-                      <div className="tc-product-overlay rounded-2xl">
-                        <span className="bg-white text-neutral-900 text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full shadow-md">
-                          Ver detalle
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Card info */}
-                  <div className="p-3 flex flex-col flex-grow border-t border-[var(--tc-border)]">
-                    <h3 className="text-xs sm:text-sm font-bold text-[var(--tc-text)] line-clamp-2 leading-snug min-h-[36px]">
-                      {product.name}
-                    </h3>
-
-                    <div className="mt-2 mb-3 flex flex-col">
-                      <p className="text-base sm:text-lg font-black" style={{ color: themeColor }}>
-                        ${product.price.toLocaleString('es-AR')}
-                      </p>
-                      {product.compare_at_price && product.compare_at_price > product.price ? (
-                        <p className="text-[11px] text-[var(--tc-muted)] line-through font-semibold">
-                          ${product.compare_at_price.toLocaleString('es-AR')}
-                        </p>
-                      ) : (
-                        <div className="h-4" />
-                      )}
                     </div>
-
-                    <button
-                      disabled={!product.in_stock}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addToCart(product);
-                      }}
-                      className={`tc-btn-add mt-auto w-full text-center text-white text-[11px] sm:text-xs font-black py-2.5 rounded-xl ${!product.in_stock ? 'bg-[var(--tc-subtle)] !text-[var(--tc-muted)] cursor-not-allowed' : ''}`}
-                      style={product.in_stock ? { backgroundColor: themeColor } : {}}
+                  )}
+                  {product.compare_at_price && product.compare_at_price > product.price && (
+                    <span
+                      className="absolute top-3 left-3 z-10 text-white text-[10px] font-black uppercase px-2 py-1 rounded-md shadow-sm"
+                      style={{ backgroundColor: themeColor }}
                     >
-                      {product.in_stock ? '+ Agregar' : 'Sin Stock'}
-                    </button>
-                  </div>
+                      {Math.round(((product.compare_at_price - product.price) / product.compare_at_price) * 100)}% OFF
+                    </span>
+                  )}
+                  {product.is_featured && (
+                    <span
+                      className="absolute top-3 right-3 z-10 text-white text-[10px] font-black uppercase px-2 py-1 rounded-md shadow-sm"
+                      style={{ backgroundColor: themeColor }}
+                    >
+                      ★
+                    </span>
+                  )}
+                  {product.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={product.image_url}
+                      alt={product.name}
+                      className="w-full h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div
+                      className="w-full h-full rounded-xl flex items-center justify-center"
+                      style={{ background: PRODUCT_GRADIENTS[idx % PRODUCT_GRADIENTS.length] }}
+                    >
+                      <span className="text-4xl font-black italic text-white/30 select-none">
+                        {product.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              );
-            })
+
+                <div className="p-4 text-center flex flex-col flex-grow bg-neutral-50/50 border-t border-neutral-50">
+                  <h3 className="text-sm font-bold text-neutral-800 line-clamp-2 min-h-[40px] leading-tight">
+                    {product.name}
+                  </h3>
+
+                  <div className="mt-2 mb-4 flex flex-col items-center justify-center">
+                    <p className="text-lg font-black text-neutral-900">
+                      ${product.price.toLocaleString('es-AR')}
+                    </p>
+                    {product.compare_at_price && product.compare_at_price > product.price ? (
+                      <p className="text-xs text-neutral-400 line-through font-bold mt-0.5">
+                        ${product.compare_at_price.toLocaleString('es-AR')}
+                      </p>
+                    ) : (
+                      <div className="h-4" />
+                    )}
+                  </div>
+
+                  <button
+                    disabled={!product.in_stock}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(product);
+                    }}
+                    className={`mt-auto w-full text-center text-white text-xs font-black py-3 rounded-xl transition-all active:scale-95 ${!product.in_stock ? 'bg-neutral-200 !text-neutral-400 cursor-not-allowed' : 'hover:opacity-90 shadow-md'}`}
+                    style={product.in_stock ? { backgroundColor: themeColor } : {}}
+                  >
+                    {product.in_stock ? 'Agregar al carrito' : 'Sin Stock'}
+                  </button>
+                </div>
+              </div>
+            ))
           )}
         </div>
       </div>
 
-      {/* FOOTER — banda oscura constante */}
-      <footer style={{ background: BAND }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="md:col-span-2">
-            <div className="flex items-center gap-3 mb-4">
-              {logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={logoUrl}
-                  alt="Logo"
-                  className="h-10 w-auto object-contain opacity-80"
-                />
-              ) : (
-                <>
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-lg flex-shrink-0"
-                    style={{ backgroundColor: themeColor }}
-                  >
-                    {siteName.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="text-xl font-black text-white tracking-tight">{siteName}</span>
-                </>
-              )}
+      {/* FOOTER */}
+      <footer className="bg-white border-t border-neutral-200 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="col-span-1 md:col-span-2">
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt="Logo" className="h-10 w-auto object-contain mb-4 grayscale opacity-80" />
+            ) : (
+              <h2 className="text-2xl font-black uppercase tracking-tight text-neutral-800 mb-4">{siteName}</h2>
+            )}
+            <p className="text-neutral-500 text-sm leading-relaxed max-w-sm">{storeDescription}</p>
+            <div className="flex gap-4 mt-6">
+              <a href="#" className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-600 hover:bg-neutral-200 transition-colors" aria-label="Instagram">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg>
+              </a>
+              <a href="#" className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-600 hover:bg-neutral-200 transition-colors" aria-label="Facebook">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg>
+              </a>
             </div>
-            <p className="text-neutral-500 text-sm leading-relaxed max-w-sm font-medium">
-              {storeDescription}
-            </p>
           </div>
 
           <div>
-            <h4 className="font-black text-white mb-4 uppercase text-[11px] tracking-[0.12em]">
-              Contacto
-            </h4>
-            <ul className="space-y-2.5 text-sm text-neutral-500 font-medium">
+            <h4 className="font-black text-neutral-900 mb-4 uppercase text-sm tracking-wide">Navegación</h4>
+            <ul className="space-y-3 text-sm text-neutral-500 font-medium">
+              <li><a href="#catalogo" className="hover:text-neutral-900 transition-colors">Inicio</a></li>
+              <li><a href="#catalogo" className="hover:text-neutral-900 transition-colors">Todos los productos</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-black text-neutral-900 mb-4 uppercase text-sm tracking-wide">Contacto</h4>
+            <ul className="space-y-3 text-sm text-neutral-500 font-medium">
               {whatsappNumbers.map((w) => (
-                <li key={w.id} className="flex items-center gap-2">
-                  <span
-                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: themeColor }}
-                  />
-                  {w.label}: {w.phone || '—'}
-                </li>
+                <li key={w.id}>{w.label}: {w.phone || '—'}</li>
               ))}
+              <li>Lunes a Viernes de 9 a 18hs.</li>
             </ul>
           </div>
         </div>
 
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-neutral-600 text-xs font-bold">
+        <div className="border-t border-neutral-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-neutral-400 text-xs font-bold">
               © {new Date().getFullYear()} {siteName}. Todos los derechos reservados.
             </p>
-            {showBranding && (
-              <a
-                href="https://sitiolisto.com.ar"
-                className="text-xs font-bold hover:opacity-80 transition-opacity"
-                style={{ color: themeColor }}
-              >
+            {showBranding ? (
+              <a href="https://sitiolisto.com.ar" className="text-neutral-400 text-xs font-bold hover:text-neutral-700 transition-colors">
                 Creado con SitioListo
               </a>
+            ) : (
+              <p className="text-neutral-400 text-xs font-bold">Checkout rápido vía WhatsApp.</p>
             )}
           </div>
         </div>
@@ -807,91 +575,44 @@ export default function TiendaCatalogo({
       {/* MODAL DETALLE PRODUCTO */}
       {selectedProduct && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6">
-          <div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-            onClick={() => setSelectedProduct(null)}
-          />
+          <div className="absolute inset-0 bg-neutral-900/60 backdrop-blur-sm" onClick={() => setSelectedProduct(null)} />
 
-          <div className="relative w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] bg-[var(--tc-surface)]">
+          <div className="relative bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
             <button
               onClick={() => setSelectedProduct(null)}
-              className="absolute top-4 right-4 z-10 backdrop-blur p-2 rounded-full text-[var(--tc-muted)] hover:text-[var(--tc-text)] transition-colors shadow-md bg-[var(--tc-subtle)]"
+              className="absolute top-4 right-4 z-10 bg-white/80 backdrop-blur p-2 rounded-full text-neutral-500 hover:text-neutral-900 transition-colors shadow-sm"
             >
               <X className="h-5 w-5" />
             </button>
 
-            {/* Image panel */}
-            <div className="w-full md:w-1/2 flex items-center justify-center min-h-[260px] sm:min-h-[340px] p-8 bg-[var(--tc-subtle)]">
+            <div className="w-full md:w-1/2 bg-white p-6 sm:p-10 flex items-center justify-center min-h-[300px]">
               {selectedProduct.image_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={selectedProduct.image_url}
-                  alt={selectedProduct.name}
-                  className="w-full h-full object-contain max-h-64 sm:max-h-80"
-                />
+                <img src={selectedProduct.image_url} alt={selectedProduct.name} className="w-full h-full object-contain mix-blend-multiply max-h-80" />
               ) : (
-                <div
-                  className="w-full h-48 sm:h-64 rounded-2xl flex items-center justify-center"
-                  style={{ background: PRODUCT_GRADIENTS[0] }}
-                >
-                  <span className="text-6xl font-black italic text-white/25 select-none">
-                    {selectedProduct.name.charAt(0).toUpperCase()}
-                  </span>
+                <div className="w-full h-64 rounded-2xl flex items-center justify-center" style={{ background: PRODUCT_GRADIENTS[0] }}>
+                  <span className="text-6xl font-black italic text-white/30 select-none">{selectedProduct.name.charAt(0).toUpperCase()}</span>
                 </div>
               )}
             </div>
 
-            {/* Details panel */}
-            <div className="w-full md:w-1/2 p-6 sm:p-8 flex flex-col overflow-y-auto">
-              {selectedProduct.is_featured && (
-                <span className="inline-flex self-start items-center gap-1.5 bg-amber-50 text-amber-600 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full mb-3 border border-amber-100">
-                  ★ Destacado
-                </span>
-              )}
+            <div className="tc-scroll-hidden w-full md:w-1/2 p-6 sm:p-10 flex flex-col overflow-y-auto bg-neutral-50/50">
+              <h2 className="text-2xl sm:text-3xl font-black text-neutral-900 leading-tight mb-2">{selectedProduct.name}</h2>
 
-              <h2
-                className="text-2xl sm:text-3xl font-black text-[var(--tc-text)] leading-tight mb-3"
-                style={headingFont}
-              >
-                {selectedProduct.name}
-              </h2>
-
-              <div className="flex items-end gap-3 mb-5">
-                <p className="text-3xl sm:text-4xl font-black" style={{ color: themeColor }}>
-                  ${selectedProduct.price.toLocaleString('es-AR')}
-                </p>
-                {selectedProduct.compare_at_price &&
-                  selectedProduct.compare_at_price > selectedProduct.price && (
-                    <div className="flex flex-col items-start pb-1">
-                      <span
-                        className="text-[10px] font-black uppercase tracking-wider text-white px-2 py-0.5 rounded-md mb-1"
-                        style={{ backgroundColor: themeColor }}
-                      >
-                        {Math.round(
-                          ((selectedProduct.compare_at_price - selectedProduct.price) /
-                            selectedProduct.compare_at_price) *
-                            100
-                        )}
-                        % OFF
-                      </span>
-                      <p className="text-base text-[var(--tc-muted)] line-through font-bold">
-                        ${selectedProduct.compare_at_price.toLocaleString('es-AR')}
-                      </p>
-                    </div>
-                  )}
+              <div className="flex items-end gap-3 mb-6">
+                <p className="text-4xl font-black text-neutral-900">${selectedProduct.price.toLocaleString('es-AR')}</p>
+                {selectedProduct.compare_at_price && selectedProduct.compare_at_price > selectedProduct.price && (
+                  <p className="text-lg text-neutral-400 line-through font-bold mb-1">${selectedProduct.compare_at_price.toLocaleString('es-AR')}</p>
+                )}
               </div>
 
-              <div className="flex-grow">
-                <p className="text-[var(--tc-text2)] whitespace-pre-wrap font-medium leading-relaxed text-sm">
-                  {selectedProduct.description || 'Este producto no tiene descripción adicional.'}
-                </p>
+              <div className="text-neutral-600 mb-8 whitespace-pre-wrap flex-grow font-medium leading-relaxed text-sm">
+                {selectedProduct.description || 'Este producto no tiene descripción adicional.'}
               </div>
 
-              <div className="mt-6 pt-5 border-t border-[var(--tc-border)]">
+              <div className="mt-auto pt-6 border-t border-neutral-200">
                 {!selectedProduct.in_stock ? (
-                  <div className="w-full bg-[var(--tc-subtle)] text-[var(--tc-muted)] font-black py-4 rounded-xl text-center text-sm">
-                    Sin Stock
-                  </div>
+                  <div className="w-full bg-neutral-100 text-neutral-400 font-black py-4 rounded-xl text-center">Sin Stock</div>
                 ) : (
                   <button
                     onClick={() => {
@@ -899,7 +620,7 @@ export default function TiendaCatalogo({
                       setSelectedProduct(null);
                       setIsCartOpen(true);
                     }}
-                    className="tc-btn-add w-full text-white font-black py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm"
+                    className="w-full text-white font-black py-4 rounded-xl transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 hover:opacity-90"
                     style={{ backgroundColor: themeColor }}
                   >
                     <ShoppingCart className="h-5 w-5" />
@@ -912,105 +633,50 @@ export default function TiendaCatalogo({
         </div>
       )}
 
-      {/* CART DRAWER */}
-      <div
-        className={`fixed inset-0 z-[70] transition-opacity duration-300 ${isCartOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-      >
-        <div
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-          onClick={() => setIsCartOpen(false)}
-        />
+      {/* CARRITO DRAWER */}
+      <div className={`fixed inset-0 z-[70] transition-opacity duration-300 ${isCartOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className="absolute inset-0 bg-neutral-900/60 backdrop-blur-sm" onClick={() => setIsCartOpen(false)} />
 
-        <div
-          className={`absolute right-0 top-0 h-full w-full max-w-md shadow-2xl flex flex-col transform transition-transform duration-300 bg-[var(--tc-surface)] ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}
-        >
-          {/* Drawer header */}
-          <div className="p-5 border-b border-[var(--tc-border)] flex items-center justify-between" style={{ background: surface }}>
-            <div>
-              <h3 className="text-lg font-black text-[var(--tc-text)]">
-                {checkoutStep === 'cart'
-                  ? 'Tu Pedido'
-                  : checkoutStep === 'form'
-                    ? 'Datos del Pedido'
-                    : '¡Listo!'}
-              </h3>
-              {checkoutStep === 'cart' && cartItemsCount > 0 && (
-                <p className="text-xs text-[var(--tc-muted)] font-semibold mt-0.5">
-                  {cartItemsCount} {cartItemsCount === 1 ? 'producto' : 'productos'}
-                </p>
-              )}
-            </div>
-            <button
-              onClick={() => setIsCartOpen(false)}
-              className="text-[var(--tc-muted)] hover:text-[var(--tc-text)] p-2 bg-[var(--tc-subtle)] hover:bg-[var(--tc-subtle-h)] rounded-full transition-colors"
-            >
-              <X className="h-4 w-4" />
+        <div className={`absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col transform transition-transform duration-300 ease-out ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+          <div className="p-6 border-b border-neutral-100 flex items-center justify-between bg-white">
+            <h3 className="text-xl font-black text-neutral-900">
+              {checkoutStep === 'cart' ? 'Tu Pedido' : checkoutStep === 'form' ? 'Datos del Pedido' : '¡Listo!'}
+            </h3>
+            <button onClick={() => setIsCartOpen(false)} className="text-neutral-400 hover:text-neutral-900 transition-colors p-1 bg-neutral-100 rounded-full">
+              <X className="h-5 w-5" />
             </button>
           </div>
 
-          {/* Drawer body */}
-          <div className="flex-grow overflow-y-auto" style={{ background: pageBg }}>
+          <div className="tc-scroll-hidden flex-grow overflow-y-auto bg-neutral-50/30">
             {checkoutStep === 'cart' && (
-              <div className="p-5 space-y-3">
+              <div className="p-6 space-y-4">
                 {cartItemsCount === 0 ? (
-                  <div className="flex flex-col items-center justify-center pt-20 text-[var(--tc-muted)] gap-3">
-                    <div className="w-16 h-16 rounded-2xl bg-[var(--tc-subtle)] flex items-center justify-center">
-                      <ShoppingCart className="h-8 w-8 opacity-40" />
-                    </div>
-                    <p className="font-bold text-sm">Tu carrito está vacío.</p>
-                    <p className="text-xs text-[var(--tc-muted)] font-medium">
-                      ¡Agregá productos para comenzar!
-                    </p>
+                  <div className="flex flex-col items-center justify-center pt-20 text-neutral-400">
+                    <ShoppingCart className="h-16 w-16 mb-4 opacity-50" />
+                    <p className="font-bold">Tu carrito está vacío.</p>
                   </div>
                 ) : (
                   Object.values(cart).map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-3 p-3 border border-[var(--tc-border)] rounded-2xl shadow-sm bg-[var(--tc-surface)]"
-                    >
+                    <div key={item.id} className="flex items-center gap-4 p-3 border border-neutral-100 rounded-2xl bg-white shadow-sm">
                       {item.image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={item.image_url}
-                          alt={item.name}
-                          className="w-14 h-14 object-contain rounded-xl bg-[var(--tc-subtle)] p-1 flex-shrink-0"
-                        />
+                        <img src={item.image_url} alt={item.name} className="w-16 h-16 object-contain rounded-xl bg-neutral-50 p-1" />
                       ) : (
-                        <div
-                          className="w-14 h-14 rounded-xl flex-shrink-0"
-                          style={{ background: PRODUCT_GRADIENTS[0] }}
-                        />
+                        <div className="w-16 h-16 rounded-xl flex-shrink-0" style={{ background: PRODUCT_GRADIENTS[0] }} />
                       )}
                       <div className="flex-grow min-w-0">
-                        <p className="font-bold text-[var(--tc-text)] text-xs leading-tight line-clamp-2">
-                          {item.name}
-                        </p>
-                        <p className="font-black text-sm mt-0.5" style={{ color: themeColor }}>
+                        <p className="font-bold text-neutral-900 text-sm truncate">{item.name}</p>
+                        <p className="font-black text-sm" style={{ color: themeColor }}>
                           ${(item.price * item.quantity).toLocaleString('es-AR')}
                         </p>
-                        <div className="flex items-center gap-2 mt-1.5">
-                          <button
-                            onClick={() => updateQuantity(item.id, -1)}
-                            className="w-6 h-6 flex items-center justify-center rounded-lg bg-[var(--tc-subtle)] hover:bg-[var(--tc-subtle-h)] font-black text-[var(--tc-text2)] text-sm transition-colors"
-                          >
-                            −
-                          </button>
-                          <span className="text-xs font-black w-4 text-center text-[var(--tc-text2)]">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => updateQuantity(item.id, 1)}
-                            className="w-6 h-6 flex items-center justify-center rounded-lg bg-[var(--tc-subtle)] hover:bg-[var(--tc-subtle-h)] font-black text-[var(--tc-text2)] text-sm transition-colors"
-                          >
-                            +
-                          </button>
+                        <div className="flex items-center gap-3 mt-2">
+                          <button onClick={() => updateQuantity(item.id, -1)} className="w-7 h-7 flex items-center justify-center rounded-lg bg-neutral-100 hover:bg-neutral-200 font-black text-neutral-600 transition-colors">−</button>
+                          <span className="text-sm font-black w-4 text-center">{item.quantity}</span>
+                          <button onClick={() => updateQuantity(item.id, 1)} className="w-7 h-7 flex items-center justify-center rounded-lg bg-neutral-100 hover:bg-neutral-200 font-black text-neutral-600 transition-colors">+</button>
                         </div>
                       </div>
-                      <button
-                        onClick={() => removeFromCart(item.id)}
-                        className="text-[var(--tc-muted)] hover:text-red-400 p-1.5 rounded-lg hover:bg-red-50 transition-colors flex-shrink-0"
-                      >
-                        <Trash2 className="h-4 w-4" />
+                      <button onClick={() => removeFromCart(item.id)} className="text-neutral-300 hover:text-red-500 p-2 transition-colors">
+                        <Trash2 className="h-5 w-5" />
                       </button>
                     </div>
                   ))
@@ -1019,124 +685,61 @@ export default function TiendaCatalogo({
             )}
 
             {checkoutStep === 'form' && (
-              <form id="checkout-form" onSubmit={handleConfirmOrder} className="p-5 space-y-4">
+              <form id="checkout-form" onSubmit={handleConfirmOrder} className="p-6 space-y-5">
                 <div>
-                  <label className="block text-[10px] font-black text-[var(--tc-muted)] uppercase tracking-wider mb-1.5">
-                    Tu Nombre
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={customerData.name}
-                    onChange={(e) => setCustomerData({ ...customerData, name: e.target.value })}
-                    className="w-full p-3.5 border border-[var(--tc-border)] rounded-xl text-[var(--tc-text)] outline-none focus:ring-2 focus:ring-[var(--tc-border)] text-sm transition-all bg-[var(--tc-surface)]"
-                    placeholder="Ej: Juan Pérez"
-                  />
+                  <label className="block text-xs font-black text-neutral-500 uppercase mb-2">Tu Nombre</label>
+                  <input type="text" required value={customerData.name} onChange={(e) => setCustomerData({ ...customerData, name: e.target.value })} className="w-full p-3.5 border border-neutral-200 rounded-xl text-neutral-900 outline-none transition-all focus:border-neutral-400 focus:ring-4 focus:ring-neutral-100" placeholder="Ej: Juan Pérez" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-[var(--tc-muted)] uppercase tracking-wider mb-1.5">
-                    Tu Teléfono
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={customerData.phone}
-                    onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })}
-                    className="w-full p-3.5 border border-[var(--tc-border)] rounded-xl text-[var(--tc-text)] outline-none focus:ring-2 focus:ring-[var(--tc-border)] text-sm transition-all bg-[var(--tc-surface)]"
-                    placeholder="Ej: 11-2345-6789"
-                  />
+                  <label className="block text-xs font-black text-neutral-500 uppercase mb-2">Tu Teléfono</label>
+                  <input type="tel" required value={customerData.phone} onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })} className="w-full p-3.5 border border-neutral-200 rounded-xl text-neutral-900 outline-none transition-all focus:border-neutral-400 focus:ring-4 focus:ring-neutral-100" placeholder="Ej: 11-2345-6789" />
                 </div>
                 {whatsappNumbers.length > 1 && (
                   <div>
-                    <label className="block text-[10px] font-black text-[var(--tc-muted)] uppercase tracking-wider mb-1.5">
-                      Enviar pedido a:
-                    </label>
-                    <select
-                      value={customerData.selectedSeller}
-                      onChange={(e) =>
-                        setCustomerData({ ...customerData, selectedSeller: e.target.value })
-                      }
-                      className="w-full p-3.5 border border-[var(--tc-border)] rounded-xl text-[var(--tc-text)] outline-none font-bold text-sm bg-[var(--tc-surface)]"
-                    >
+                    <label className="block text-xs font-black text-neutral-500 uppercase mb-2">Enviar pedido a:</label>
+                    <select value={customerData.selectedSeller} onChange={(e) => setCustomerData({ ...customerData, selectedSeller: e.target.value })} className="w-full p-3.5 border border-neutral-200 rounded-xl text-neutral-900 bg-white outline-none font-bold">
                       {whatsappNumbers.map((opt) => (
-                        <option key={opt.id} value={opt.phone}>
-                          {opt.label}
-                        </option>
+                        <option key={opt.id} value={opt.phone}>{opt.label}</option>
                       ))}
                     </select>
                   </div>
                 )}
                 <div>
-                  <label className="block text-[10px] font-black text-[var(--tc-muted)] uppercase tracking-wider mb-1.5">
-                    Observaciones
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={customerData.notes}
-                    onChange={(e) => setCustomerData({ ...customerData, notes: e.target.value })}
-                    className="w-full p-3.5 border border-[var(--tc-border)] rounded-xl text-[var(--tc-text)] outline-none focus:ring-2 focus:ring-[var(--tc-border)] text-sm transition-all resize-none bg-[var(--tc-surface)]"
-                    placeholder="Aclaraciones sobre el pedido..."
-                  />
+                  <label className="block text-xs font-black text-neutral-500 uppercase mb-2">Observaciones</label>
+                  <textarea rows={3} value={customerData.notes} onChange={(e) => setCustomerData({ ...customerData, notes: e.target.value })} className="w-full p-3.5 border border-neutral-200 rounded-xl text-neutral-900 outline-none transition-all focus:border-neutral-400 focus:ring-4 focus:ring-neutral-100" placeholder="Aclaraciones sobre el pedido..." />
                 </div>
               </form>
             )}
 
             {checkoutStep === 'success' && (
-              <div className="p-8 flex flex-col items-center justify-center h-full text-center gap-4">
-                <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center">
-                  <CheckCircle2 className="h-12 w-12 text-green-500" />
-                </div>
-                <h3 className="text-xl font-black text-[var(--tc-text)]">¡Pedido enviado!</h3>
-                <p className="text-[var(--tc-muted)] font-medium text-sm max-w-xs">
-                  Abrimos WhatsApp con el resumen de tu pedido. Confirmá el envío del mensaje para
-                  que recibamos tu compra.
+              <div className="p-8 flex flex-col items-center justify-center h-full text-center space-y-4">
+                <CheckCircle2 className="h-20 w-20 text-green-500" />
+                <h3 className="text-2xl font-black text-neutral-900">¡Pedido enviado!</h3>
+                <p className="text-neutral-500 font-medium">
+                  Abrimos WhatsApp con el resumen de tu pedido. Confirmá el envío del mensaje para que recibamos tu compra.
                 </p>
-                <button
-                  onClick={() => {
-                    setIsCartOpen(false);
-                    setCheckoutStep('cart');
-                  }}
-                  className="mt-4 font-black text-sm hover:opacity-70 transition-opacity"
-                  style={{ color: themeColor }}
-                >
-                  ← Volver a la tienda
+                <button onClick={() => { setIsCartOpen(false); setCheckoutStep('cart'); }} className="mt-6 font-bold hover:opacity-80 transition-opacity" style={{ color: themeColor }}>
+                  Volver a la tienda
                 </button>
               </div>
             )}
           </div>
 
-          {/* Drawer footer */}
           {checkoutStep !== 'success' && cartItemsCount > 0 && (
-            <div className="p-5 border-t border-[var(--tc-border)]" style={{ background: surface }}>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[var(--tc-text2)] font-bold text-sm">Total a pagar:</span>
-                <span className="text-2xl font-black" style={{ color: themeColor }}>
-                  ${cartTotal.toLocaleString('es-AR')}
-                </span>
+            <div className="p-6 border-t border-neutral-100 bg-white shadow-[0_-10px_30px_rgba(0,0,0,0.03)]">
+              <div className="flex items-center justify-between mb-5">
+                <span className="text-neutral-500 font-bold">Total a pagar:</span>
+                <span className="text-3xl font-black text-neutral-900">${cartTotal.toLocaleString('es-AR')}</span>
               </div>
 
               {checkoutStep === 'cart' ? (
-                <button
-                  onClick={() => setCheckoutStep('form')}
-                  className="tc-btn-add w-full text-white font-black py-4 rounded-xl shadow-lg text-sm"
-                  style={{ backgroundColor: themeColor }}
-                >
-                  Continuar Compra →
+                <button onClick={() => setCheckoutStep('form')} className="w-full text-white font-black py-4 rounded-xl transition-all active:scale-95 shadow-lg hover:opacity-90" style={{ backgroundColor: themeColor }}>
+                  Continuar Compra
                 </button>
               ) : (
                 <div className="flex gap-3">
-                  <button
-                    onClick={() => setCheckoutStep('cart')}
-                    className="px-4 py-4 font-black text-[var(--tc-text2)] bg-[var(--tc-subtle)] hover:bg-[var(--tc-subtle-h)] rounded-xl transition-colors text-sm"
-                  >
-                    ← Atrás
-                  </button>
-                  <button
-                    type="submit"
-                    form="checkout-form"
-                    className="tc-btn-add flex-grow text-white font-black py-4 rounded-xl shadow-lg text-sm"
-                    style={{ backgroundColor: themeColor }}
-                  >
+                  <button onClick={() => setCheckoutStep('cart')} className="px-5 py-4 font-black text-neutral-500 hover:text-neutral-900 bg-neutral-100 hover:bg-neutral-200 rounded-xl transition-colors">Atrás</button>
+                  <button type="submit" form="checkout-form" className="flex-grow text-white font-black py-4 rounded-xl transition-all active:scale-95 shadow-lg hover:opacity-90" style={{ backgroundColor: themeColor }}>
                     Confirmar por WhatsApp
                   </button>
                 </div>
