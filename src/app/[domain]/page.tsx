@@ -15,6 +15,16 @@ import {
 } from './_components/fetchers';
 import { getTheme, TEMPLATE_DEFAULT_THEME } from '@/lib/themes';
 
+// Los colores de marca se interpolan en <style> de las plantillas. Forzamos
+// formato hex acá (último chokepoint) para neutralizar cualquier valor malicioso
+// que haya quedado guardado en pages.content (defensa en profundidad sobre la
+// validación de la API).
+function safeHexColor(value: unknown, fallback: string): string {
+  return typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value)
+    ? value
+    : fallback;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -73,12 +83,12 @@ export default async function TenantHome({
   const { content: home } = getHomeContent(site, pages);
 
   const siteName = home?.name || 'Mi Nuevo Sitio';
-  const primaryColor = home?.primaryColor || '#6366f1';
+  const primaryColor = safeHexColor(home?.primaryColor, '#6366f1');
 
   const props = {
     siteName,
     primaryColor,
-    secondaryColor: home?.secondaryColor || '#f59e0b',
+    secondaryColor: safeHexColor(home?.secondaryColor, '#f59e0b'),
     logoUrl: home?.logoUrl || '',
     phone: home?.phone || '',
     address: home?.address || '',

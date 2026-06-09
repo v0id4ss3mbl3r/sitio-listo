@@ -47,10 +47,26 @@ const pageSlugSchema = z
     'Slug inválido (usá letras, números y guiones)'
   );
 
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+
+// El content del home se interpola en `<style>` de las plantillas
+// (primaryColor/secondaryColor). Validamos que, si vienen, sean hex válidos
+// para prevenir inyección de CSS / XSS almacenado servido a los visitantes.
+const pageContentSchema = z
+  .record(z.string(), z.unknown())
+  .refine(
+    (c) =>
+      (['primaryColor', 'secondaryColor'] as const).every((k) => {
+        const v = (c as Record<string, unknown>)[k];
+        return v === undefined || (typeof v === 'string' && HEX_COLOR.test(v));
+      }),
+    { message: 'Color de marca inválido (usá formato #RRGGBB)' }
+  );
+
 export const createPageSchema = z.object({
   slug: pageSlugSchema,
   title: z.string().min(1).max(120),
-  content: z.record(z.string(), z.unknown()).optional().default({}),
+  content: pageContentSchema.optional().default({}),
   is_home: z.boolean().optional().default(false),
   sort_order: z.number().int().min(0).max(9999).optional().default(0),
   is_published: z.boolean().optional().default(true),
@@ -59,7 +75,7 @@ export const createPageSchema = z.object({
 export const updatePageSchema = z.object({
   slug: pageSlugSchema.optional(),
   title: z.string().min(1).max(120).optional(),
-  content: z.record(z.string(), z.unknown()).optional(),
+  content: pageContentSchema.optional(),
   sort_order: z.number().int().min(0).max(9999).optional(),
   is_published: z.boolean().optional(),
 });

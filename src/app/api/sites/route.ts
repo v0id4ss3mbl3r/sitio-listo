@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { canCustomizeTheme, canUseTemplate } from '@/lib/constants';
 import { isAdmin } from '@/lib/auth/getAdminUser';
 import { captureError } from '@/lib/logger';
@@ -122,6 +123,12 @@ export async function POST(req: Request) {
       .eq('user_id', user.id)
       .maybeSingle();
 
+    // Las escrituras a `sites` van con service-role: no hay policy de INSERT
+    // para el dueño (a propósito — evita que se cree un sitio is_active sin
+    // pagar). La ruta ya validó auth + plan + plantilla + subdominio, y todo
+    // se scopea al user.id de la sesión, así que es seguro.
+    const serviceDb = createAdminClient();
+
     let result;
     if (userSite) {
       // Custom domain status: si cambió el dominio, vuelve a 'pending'.
@@ -139,7 +146,7 @@ export async function POST(req: Request) {
         customDomainStatus = 'pending';
       }
 
-      result = await supabase
+      result = await serviceDb
         .from('sites')
         .update({
           subdomain,
@@ -154,7 +161,7 @@ export async function POST(req: Request) {
         .select()
         .single();
     } else {
-      result = await supabase
+      result = await serviceDb
         .from('sites')
         .insert({
           user_id: user.id,

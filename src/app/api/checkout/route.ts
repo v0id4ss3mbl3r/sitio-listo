@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { MercadoPagoConfig, PreApproval } from 'mercadopago';
 
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { PLANS, PlanType } from '@/lib/constants';
 import { captureError } from '@/lib/logger';
 import { checkoutSchema, parseJson } from '@/lib/schemas';
@@ -75,7 +76,11 @@ export async function POST(req: Request) {
 
     const result = await preApproval.create({ body });
 
-    await supabase.from('subscriptions').insert({
+    // Insert con service-role: `subscriptions` no tiene policy de INSERT para
+    // el dueño (a propósito — evita que se auto-otorgue un plan). El user_id
+    // lo fija el server con la sesión validada, así que es seguro.
+    const admin = createAdminClient();
+    const { error: subError } = await admin.from('subscriptions').insert({
       user_id: user.id,
       mp_preapproval_id: result.id,
       plan_type: planSlug,
@@ -83,6 +88,13 @@ export async function POST(req: Request) {
       amount: plan.price,
       trial_end_date: trialEndDate?.toISOString() ?? null,
     });
+    if (subError) {
+      captureError(subError, { source: 'checkout-sub-insert' });
+      return NextResponse.json(
+        { error: 'No se pudo registrar la suscripción' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ url: result.init_point });
   } catch (error) {
