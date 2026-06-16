@@ -198,3 +198,36 @@ export function fetchCatalogCached(siteId: string, domain: string) {
     { tags: [siteCacheTag(domain)], revalidate: CACHE_REVALIDATE_SECONDS }
   )();
 }
+
+// ── Contenido genérico (site_items) ───────────────────────────
+export type SiteItem = {
+  id: string;
+  kind: string;
+  title: string;
+  subtitle: string | null;
+  description: string | null;
+  price: number | null;
+  image_url: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  meta: Record<string, any>;
+  sort_order: number;
+};
+
+export function fetchSiteItemsCached(siteId: string, domain: string) {
+  return unstable_cache(
+    async (): Promise<SiteItem[]> => {
+      const supabase = createPublicClient();
+      const { data } = await supabase
+        .from('site_items')
+        .select('id, kind, title, subtitle, description, price, image_url, meta, sort_order')
+        .eq('site_id', siteId)
+        .eq('is_active', true)
+        .order('kind', { ascending: true })
+        .order('sort_order', { ascending: true });
+
+      return (data as SiteItem[]) ?? [];
+    },
+    ['site-items-by-site', siteId],
+    { tags: [siteCacheTag(domain)], revalidate: CACHE_REVALIDATE_SECONDS }
+  )();
+}

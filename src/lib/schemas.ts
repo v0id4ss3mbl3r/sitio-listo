@@ -173,6 +173,37 @@ export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;
 export type UpdateStoreSettingsInput = z.infer<typeof updateStoreSettingsSchema>;
 
+// ─── contenido genérico (site_items) ──────────────────────────
+const siteItemKindSchema = z.enum(['gallery', 'service', 'plan', 'schedule', 'feature']);
+
+export const createSiteItemSchema = z.object({
+  kind: siteItemKindSchema,
+  title: z.string().min(1).max(120),
+  subtitle: z.string().max(160).nullable().optional(),
+  description: z.string().max(2000).nullable().optional(),
+  price: z.number().nonnegative().max(1_000_000_000).nullable().optional(),
+  image_url: httpsUrlSchema.nullable().optional(),
+  // meta: campos flexibles por kind (duration, day, time, instructor, period,
+  // features[]). Se renderiza como texto (escapado por React), no en <style>.
+  meta: z.record(z.string(), z.unknown()).optional().default({}),
+  sort_order: z.number().int().min(0).max(9999).optional().default(0),
+  is_active: z.boolean().optional().default(true),
+});
+
+export const updateSiteItemSchema = z.object({
+  title: z.string().min(1).max(120).optional(),
+  subtitle: z.string().max(160).nullable().optional(),
+  description: z.string().max(2000).nullable().optional(),
+  price: z.number().nonnegative().max(1_000_000_000).nullable().optional(),
+  image_url: httpsUrlSchema.nullable().optional(),
+  meta: z.record(z.string(), z.unknown()).optional(),
+  sort_order: z.number().int().min(0).max(9999).optional(),
+  is_active: z.boolean().optional(),
+});
+
+export type CreateSiteItemInput = z.infer<typeof createSiteItemSchema>;
+export type UpdateSiteItemInput = z.infer<typeof updateSiteItemSchema>;
+
 // ─── admin: usuarios ──────────────────────────────────────────
 export const blockUserSchema = z.object({
   // ISO timestamp futuro. Para "permanente" usar una fecha lejana (ej. 9999-01-01).

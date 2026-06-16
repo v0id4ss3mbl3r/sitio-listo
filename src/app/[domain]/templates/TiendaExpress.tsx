@@ -3,6 +3,7 @@
 import React from 'react';
 
 import { getTheme, type Theme } from '@/lib/themes';
+import { buildWhatsappUrl } from '@/lib/whatsapp';
 
 interface TemplateProps {
   siteName?: string;
@@ -267,7 +268,7 @@ export default function TiendaExpress({
                 Ver productos →
               </a>
               {phone && (
-                <a href={`https://wa.me/${phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" style={{
+                <a href={buildWhatsappUrl(phone)} target="_blank" rel="noreferrer" style={{
                   padding: '12px 24px', borderRadius: t.radiusSm,
                   border: '2px solid #25d366', color: '#25d366',
                   fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.06em',
@@ -458,7 +459,7 @@ export default function TiendaExpress({
           </p>
 
           {phone && (
-            <a href={`https://wa.me/${phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" style={{
+            <a href={buildWhatsappUrl(phone)} target="_blank" rel="noreferrer" style={{
               display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
               padding: '18px 40px', borderRadius: t.radiusMd,
               background: '#25d366', color: 'white',

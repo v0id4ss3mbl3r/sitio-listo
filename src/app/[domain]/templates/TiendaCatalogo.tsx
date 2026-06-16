@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 
 import { type Theme } from '@/lib/themes';
+import { buildOrderMessage, buildWhatsappUrl } from '@/lib/whatsapp';
 
 type Category = {
   id: string;
@@ -67,31 +68,6 @@ const PRODUCT_GRADIENTS = [
   'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
   'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
 ];
-
-function buildWhatsappMessage(opts: {
-  customerName: string;
-  customerPhone: string;
-  notes: string;
-  items: CartItem[];
-  total: number;
-}) {
-  const lines: string[] = [];
-  lines.push('*NUEVO PEDIDO* 🛒');
-  lines.push('');
-  lines.push(`*Cliente:* ${opts.customerName}`);
-  lines.push(`*Teléfono:* ${opts.customerPhone}`);
-  if (opts.notes) lines.push(`*Observaciones:* ${opts.notes}`);
-  lines.push('');
-  lines.push('*Detalle:*');
-  opts.items.forEach((item, i) => {
-    lines.push(
-      `${i + 1}. ${item.name} x ${item.quantity} — $${(item.price * item.quantity).toLocaleString('es-AR')}`
-    );
-  });
-  lines.push('');
-  lines.push(`*TOTAL: $${opts.total.toLocaleString('es-AR')}*`);
-  return lines.join('\n');
-}
 
 export default function TiendaCatalogo({
   siteName,
@@ -187,7 +163,7 @@ export default function TiendaCatalogo({
 
   const handleConfirmOrder = (e: React.FormEvent) => {
     e.preventDefault();
-    const message = buildWhatsappMessage({
+    const message = buildOrderMessage({
       customerName: customerData.name,
       customerPhone: customerData.phone,
       notes: customerData.notes,
@@ -199,8 +175,7 @@ export default function TiendaCatalogo({
       alert('No hay un número de WhatsApp configurado para recibir el pedido.');
       return;
     }
-    const url = `https://wa.me/${seller}?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+    window.open(buildWhatsappUrl(seller, message), '_blank', 'noopener,noreferrer');
     setCart({});
     setCheckoutStep('success');
   };

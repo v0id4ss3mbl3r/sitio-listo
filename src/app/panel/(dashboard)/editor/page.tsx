@@ -5,16 +5,19 @@ import { createClient } from '@/lib/supabase/browser';
 import { Save, ExternalLink, CheckCircle, AlertCircle } from 'lucide-react';
 import {
   PLAN_CATEGORY_LIMITS,
+  PLAN_ITEM_LIMITS,
   PLAN_PAGE_LIMITS,
   PLAN_PRODUCT_LIMITS,
   PlanType,
   TEMPLATES,
+  TEMPLATE_COLLECTIONS,
   TemplateId,
   canCustomizeTheme,
   hasCatalogFeature,
 } from '@/lib/constants';
 import { THEME_LIST } from '@/lib/themes';
 import { CatalogManager } from './_components/CatalogManager';
+import { CollectionManager } from './_components/CollectionManager';
 import { PagesManager } from './_components/PagesManager';
 
 interface Subscription {
@@ -28,7 +31,7 @@ interface Subscription {
   created_at: string;
 }
 
-type TabType = 'appearance' | 'content' | 'pages' | 'catalog' | 'domain';
+type TabType = 'appearance' | 'content' | 'coleccion' | 'pages' | 'catalog' | 'domain';
 
 export default function EditorPage() {
   const supabase = createClient();
@@ -402,7 +405,7 @@ export default function EditorPage() {
         overflowX: 'auto',
         scrollbarWidth: 'none'
       }}>
-        {((['appearance', 'content', 'pages', templateId === 'tienda-catalogo' ? 'catalog' : null, 'domain'].filter(Boolean)) as TabType[]).map(tab => (
+        {((['appearance', 'content', TEMPLATE_COLLECTIONS[templateId] ? 'coleccion' : null, 'pages', templateId === 'tienda-catalogo' ? 'catalog' : null, 'domain'].filter(Boolean)) as TabType[]).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -420,7 +423,8 @@ export default function EditorPage() {
             }}
           >
             {tab === 'appearance' && 'Apariencia'}
-            {tab === 'content' && 'Contenido'}
+            {tab === 'content' && 'Textos'}
+            {tab === 'coleccion' && 'Contenido'}
             {tab === 'pages' && 'Páginas'}
             {tab === 'catalog' && 'Catálogo'}
             {tab === 'domain' && 'Dominio'}
@@ -726,6 +730,14 @@ export default function EditorPage() {
           <PagesManager
             userPlan={userPlan}
             limit={PLAN_PAGE_LIMITS[userPlan as PlanType] ?? 1}
+          />
+        )}
+
+        {/* TAB: CONTENIDO (site_items, según la plantilla) */}
+        {activeTab === 'coleccion' && TEMPLATE_COLLECTIONS[templateId] && (
+          <CollectionManager
+            kinds={TEMPLATE_COLLECTIONS[templateId]}
+            itemLimit={PLAN_ITEM_LIMITS[userPlan as PlanType] ?? 0}
           />
         )}
 

@@ -114,6 +114,45 @@ export const PLAN_CATEGORY_LIMITS: Record<PlanType, number> = {
   personalizado: Infinity,
 };
 
+// ── Contenido genérico (site_items) ──────────────────────────
+// Una tabla flexible alimenta varias plantillas; cada "kind" es una colección.
+export type SiteItemKind = 'gallery' | 'service' | 'plan' | 'schedule' | 'feature';
+
+export const SITE_ITEM_KINDS: SiteItemKind[] = [
+  'gallery',
+  'service',
+  'plan',
+  'schedule',
+  'feature',
+];
+
+// Etiquetas legibles por kind (para el editor).
+export const SITE_ITEM_KIND_LABELS: Record<SiteItemKind, string> = {
+  gallery: 'Galería',
+  service: 'Servicios',
+  plan: 'Planes',
+  schedule: 'Horarios / Clases',
+  feature: 'Destacados',
+};
+
+// Qué colecciones usa cada plantilla → decide qué muestra el editor y qué
+// valida la API. Las plantillas sin entrada acá no gestionan site_items.
+export const TEMPLATE_COLLECTIONS: Record<string, SiteItemKind[]> = {
+  'fotografia-estudio': ['gallery', 'service'],
+  'belleza-estetica': ['service', 'gallery'],
+  'gimnasio-fitness': ['plan', 'schedule'],
+  'comercio-local': ['feature'],
+};
+
+// Límite total de items de contenido por sitio, por plan (estas plantillas son Pro+).
+export const PLAN_ITEM_LIMITS: Record<PlanType, number> = {
+  test: 30,
+  basic: 0,
+  pro: 60,
+  extremo: Infinity,
+  personalizado: Infinity,
+};
+
 // Features del catálogo gateadas por plan. true = el plan tiene acceso.
 // Usar en UI y endpoints para mostrar/permitir.
 export type CatalogFeature =
