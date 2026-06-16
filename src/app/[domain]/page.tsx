@@ -6,10 +6,12 @@ import LandingPro from './templates/LandingPro';
 import ServiciosPro from './templates/ServiciosPro';
 import TiendaExpress from './templates/TiendaExpress';
 import TiendaCatalogo from './templates/TiendaCatalogo';
+import FotografiaEstudio from './templates/FotografiaEstudio';
 import {
   fetchActiveSubCached,
   fetchCatalogCached,
   fetchSiteCached,
+  fetchSiteItemsCached,
   fetchSitePagesCached,
   getHomeContent,
 } from './_components/fetchers';
@@ -127,6 +129,11 @@ export default async function TenantHome({
   }
   if (template_id === 'tienda-express') {
     return <TiendaExpress {...props} theme={theme} />;
+  }
+
+  if (template_id === 'fotografia-estudio') {
+    const items = await fetchSiteItemsCached(site.id, domain);
+    return <FotografiaEstudio {...props} theme={theme} items={items} />;
   }
 
   if (template_id === 'tienda-catalogo') {

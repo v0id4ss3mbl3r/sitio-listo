@@ -252,6 +252,10 @@ export const TEMPLATE_CATEGORIES = [
   { slug: 'ecommerce', name: 'Tiendas', icon: '🛍️' },
   { slug: 'landing', name: 'Landing Pages', icon: '🚀' },
   { slug: 'services', name: 'Servicios', icon: '🔧' },
+  { slug: 'fotografia', name: 'Fotografía', icon: '📷' },
+  { slug: 'belleza', name: 'Belleza & Estética', icon: '💅' },
+  { slug: 'fitness', name: 'Gimnasios', icon: '🏋️' },
+  { slug: 'comercio', name: 'Comercios', icon: '🏪' },
 ] as const;
 
 export const TEMPLATES = [
@@ -296,6 +300,13 @@ export const TEMPLATES = [
     type: 'ecommerce',
     plan: 'pro',
     component: 'TiendaCatalogo',
+  },
+  {
+    id: 'fotografia-estudio',
+    name: 'Estudio de Fotografía',
+    type: 'fotografia',
+    plan: 'pro',
+    component: 'FotografiaEstudio',
   },
 ] as const;
 

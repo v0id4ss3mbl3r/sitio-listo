@@ -279,6 +279,10 @@ export const TEMPLATE_DEFAULT_THEME: Record<string, ThemeId> = {
   'tienda-express': 'vivo',
   'tienda-catalogo': 'vivo',
   'sabor-urbano': 'glow',
+  'fotografia-estudio': 'glow',
+  'belleza-estetica': 'vivo',
+  'gimnasio-fitness': 'glow',
+  'comercio-local': 'oficina',
 };
 
 /** Resuelve un id (posiblemente inválido/ausente) a un Theme concreto. */
