@@ -61,6 +61,13 @@ const pageContentSchema = z
         return v === undefined || (typeof v === 'string' && HEX_COLOR.test(v));
       }),
     { message: 'Color de marca inválido (usá formato #RRGGBB)' }
+  )
+  .refine(
+    (c) => {
+      const v = (c as Record<string, unknown>).logoUrl;
+      return v === undefined || v === '' || (typeof v === 'string' && /^https?:\/\//.test(v));
+    },
+    { message: 'La URL del logo debe empezar con http(s)://' }
   );
 
 export const createPageSchema = z.object({

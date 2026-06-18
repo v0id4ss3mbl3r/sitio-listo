@@ -1,12 +1,31 @@
-import { TEMPLATE_CATEGORIES } from '@/lib/constants';
+import { TEMPLATES, TEMPLATE_CATEGORIES } from '@/lib/constants';
 
-const templatePreviews = [
-  { name: 'Sabor Urbano', category: 'restaurant', icon: '🍽️', color: '#FF6B35', plan: 'Básico' },
-  { name: 'Portfolio Minimal', category: 'portfolio', icon: '🎨', color: '#8B5CF6', plan: 'Básico' },
-  { name: 'Tienda Express', category: 'ecommerce', icon: '🛍️', color: '#06B6D4', plan: 'Pro' },
-  { name: 'Lanzamiento Pro', category: 'landing', icon: '🚀', color: '#10B981', plan: 'Básico' },
-  { name: 'Servicios Plus', category: 'services', icon: '🔧', color: '#F59E0B', plan: 'Pro' },
-];
+// Color de acento por categoría (solo presentación de la vitrina).
+const CATEGORY_COLOR: Record<string, string> = {
+  restaurant: '#FF6B35',
+  portfolio: '#8B5CF6',
+  ecommerce: '#06B6D4',
+  landing: '#10B981',
+  services: '#F59E0B',
+  fotografia: '#E11D48',
+  belleza: '#EC4899',
+  fitness: '#6366F1',
+  comercio: '#0EA5E9',
+};
+
+const PLAN_LABEL: Record<string, string> = { basic: 'Básico', pro: 'Pro', extremo: 'Extremo' };
+
+// La vitrina se deriva de TEMPLATES → se mantiene sola al sumar plantillas.
+const previews = TEMPLATES.map((tpl) => {
+  const cat = TEMPLATE_CATEGORIES.find((c) => c.slug === tpl.type);
+  return {
+    name: tpl.name,
+    category: tpl.type as string,
+    icon: cat?.icon ?? '✨',
+    color: CATEGORY_COLOR[tpl.type] ?? '#6366f1',
+    plan: PLAN_LABEL[tpl.plan] ?? tpl.plan,
+  };
+});
 
 export default function TemplateGallery() {
   return (
@@ -41,9 +60,8 @@ export default function TemplateGallery() {
 
       {/* Template Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
-        {templatePreviews.map((tpl) => (
+        {previews.map((tpl) => (
           <div key={tpl.name} className="glass-card" style={{ overflow: 'hidden' }}>
-            {/* Fake preview area */}
             <div style={{
               height: '180px', background: `linear-gradient(135deg, ${tpl.color}10, ${tpl.color}25)`,
               display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
@@ -61,7 +79,7 @@ export default function TemplateGallery() {
             </div>
             <div style={{ padding: '1.25rem' }}>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-primary)' }}>{tpl.name}</h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem', textTransform: 'capitalize' }}>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
                 {TEMPLATE_CATEGORIES.find((c) => c.slug === tpl.category)?.name || tpl.category}
               </p>
               <a
@@ -69,7 +87,6 @@ export default function TemplateGallery() {
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginTop: '1rem',
                   fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-primary-light)', textDecoration: 'none',
-                  transition: 'gap 0.2s ease',
                 }}
               >
                 Usar plantilla

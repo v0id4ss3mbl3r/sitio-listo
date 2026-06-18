@@ -308,6 +308,20 @@ export const TEMPLATES = [
     plan: 'pro',
     component: 'FotografiaEstudio',
   },
+  {
+    id: 'gimnasio-fitness',
+    name: 'Gimnasio / Fitness',
+    type: 'fitness',
+    plan: 'pro',
+    component: 'GimnasioFitness',
+  },
+  {
+    id: 'comercio-local',
+    name: 'Comercio Local',
+    type: 'comercio',
+    plan: 'pro',
+    component: 'ComercioLocal',
+  },
 ] as const;
 
 export type TemplateId = typeof TEMPLATES[number]['id'];

@@ -7,6 +7,8 @@ import ServiciosPro from './templates/ServiciosPro';
 import TiendaExpress from './templates/TiendaExpress';
 import TiendaCatalogo from './templates/TiendaCatalogo';
 import FotografiaEstudio from './templates/FotografiaEstudio';
+import GimnasioFitness from './templates/GimnasioFitness';
+import ComercioLocal from './templates/ComercioLocal';
 import {
   fetchActiveSubCached,
   fetchCatalogCached,
@@ -134,6 +136,23 @@ export default async function TenantHome({
   if (template_id === 'fotografia-estudio') {
     const items = await fetchSiteItemsCached(site.id, domain);
     return <FotografiaEstudio {...props} theme={theme} items={items} />;
+  }
+
+  if (template_id === 'gimnasio-fitness') {
+    const items = await fetchSiteItemsCached(site.id, domain);
+    return <GimnasioFitness {...props} theme={theme} items={items} />;
+  }
+
+  if (template_id === 'comercio-local') {
+    const items = await fetchSiteItemsCached(site.id, domain);
+    return (
+      <ComercioLocal
+        {...props}
+        openingHours={home?.content?.openingHours}
+        theme={theme}
+        items={items}
+      />
+    );
   }
 
   if (template_id === 'tienda-catalogo') {
