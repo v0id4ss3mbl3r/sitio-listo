@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { MercadoPagoConfig, PreApproval } from 'mercadopago';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { captureError } from '@/lib/logger';
 
-export async function POST(req: Request) {
+export async function POST() {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -35,21 +37,27 @@ export async function POST(req: Request) {
       body: { status: 'cancelled' },
     });
 
-    // Actualizar estado localmente
-    await supabase
+    // Escrituras con service-role: subscriptions/sites no tienen policy de
+    // UPDATE para el dueño (a propósito — billing). El scope (id / user.id) lo
+    // fija el server con la sesión validada.
+    const admin = createAdminClient();
+
+    const { error: subError } = await admin
       .from('subscriptions')
       .update({ status: 'cancelled' })
       .eq('id', subscription.id);
+    if (subError) throw subError;
 
-    // Desactivar el sitio
-    await supabase
+    // Desactivar el sitio.
+    const { error: siteError } = await admin
       .from('sites')
       .update({ is_active: false })
       .eq('user_id', user.id);
+    if (siteError) throw siteError;
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Cancel Subscription Error:', error);
+    captureError(error, { source: 'checkout-cancel' });
     return NextResponse.json({ error: 'Error al cancelar la suscripción' }, { status: 500 });
   }
 }
