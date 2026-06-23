@@ -9,6 +9,7 @@ import TiendaCatalogo from './templates/TiendaCatalogo';
 import FotografiaEstudio from './templates/FotografiaEstudio';
 import GimnasioFitness from './templates/GimnasioFitness';
 import ComercioLocal from './templates/ComercioLocal';
+import BellezaEstetica from './templates/BellezaEstetica';
 import {
   fetchActiveSubCached,
   fetchCatalogCached,
@@ -141,6 +142,11 @@ export default async function TenantHome({
   if (template_id === 'gimnasio-fitness') {
     const items = await fetchSiteItemsCached(site.id, domain);
     return <GimnasioFitness {...props} theme={theme} items={items} />;
+  }
+
+  if (template_id === 'belleza-estetica') {
+    const items = await fetchSiteItemsCached(site.id, domain);
+    return <BellezaEstetica {...props} theme={theme} items={items} />;
   }
 
   if (template_id === 'comercio-local') {

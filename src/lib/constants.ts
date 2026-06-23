@@ -322,6 +322,13 @@ export const TEMPLATES = [
     plan: 'pro',
     component: 'ComercioLocal',
   },
+  {
+    id: 'belleza-estetica',
+    name: 'Belleza & Estética',
+    type: 'belleza',
+    plan: 'pro',
+    component: 'BellezaEstetica',
+  },
 ] as const;
 
 export type TemplateId = typeof TEMPLATES[number]['id'];

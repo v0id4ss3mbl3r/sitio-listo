@@ -280,7 +280,7 @@ export const TEMPLATE_DEFAULT_THEME: Record<string, ThemeId> = {
   'tienda-catalogo': 'vivo',
   'sabor-urbano': 'glow',
   'fotografia-estudio': 'glow',
-  'belleza-estetica': 'vivo',
+  'belleza-estetica': 'oficina',
   'gimnasio-fitness': 'glow',
   'comercio-local': 'oficina',
 };
