@@ -59,16 +59,6 @@ export type TiendaCatalogoProps = {
 
 type CartItem = Product & { quantity: number };
 
-// Placeholders suaves para productos sin imagen.
-const PRODUCT_GRADIENTS = [
-  'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-  'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-  'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-  'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-  'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
-];
-
 export default function TiendaCatalogo({
   siteName,
   logoUrl,
@@ -265,7 +255,7 @@ export default function TiendaCatalogo({
               </span>
               {cartItemsCount > 0 && (
                 <span
-                  className="absolute -top-1 -right-1 text-white text-[10px] font-black h-5 w-5 flex items-center justify-center rounded-full shadow-md"
+                  className="absolute -top-1 -right-1 text-white text-[10px] font-black h-5 w-5 flex items-center justify-center rounded-full shadow-md animate-bounce"
                   style={{ backgroundColor: themeColor }}
                 >
                   {cartItemsCount}
@@ -406,7 +396,7 @@ export default function TiendaCatalogo({
               <p className="text-neutral-500 mt-2">Intentá con otra búsqueda o categoría.</p>
             </div>
           ) : (
-            filteredProducts.map((product, idx) => (
+            filteredProducts.map((product) => (
               <div
                 key={product.id}
                 className={`bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group ${!product.in_stock ? 'opacity-75' : 'cursor-pointer'}`}
@@ -428,14 +418,6 @@ export default function TiendaCatalogo({
                       {Math.round(((product.compare_at_price - product.price) / product.compare_at_price) * 100)}% OFF
                     </span>
                   )}
-                  {product.is_featured && (
-                    <span
-                      className="absolute top-3 right-3 z-10 text-white text-[10px] font-black uppercase px-2 py-1 rounded-md shadow-sm"
-                      style={{ backgroundColor: themeColor }}
-                    >
-                      ★
-                    </span>
-                  )}
                   {product.image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -444,13 +426,8 @@ export default function TiendaCatalogo({
                       className="w-full h-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
-                    <div
-                      className="w-full h-full rounded-xl flex items-center justify-center"
-                      style={{ background: PRODUCT_GRADIENTS[idx % PRODUCT_GRADIENTS.length] }}
-                    >
-                      <span className="text-4xl font-black italic text-white/30 select-none">
-                        {product.name.charAt(0).toUpperCase()}
-                      </span>
+                    <div className="text-neutral-300 text-xs font-bold bg-neutral-50 w-full h-full flex items-center justify-center rounded-xl">
+                      Sin imagen
                     </div>
                   )}
                 </div>
@@ -565,8 +542,8 @@ export default function TiendaCatalogo({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={selectedProduct.image_url} alt={selectedProduct.name} className="w-full h-full object-contain mix-blend-multiply max-h-80" />
               ) : (
-                <div className="w-full h-64 rounded-2xl flex items-center justify-center" style={{ background: PRODUCT_GRADIENTS[0] }}>
-                  <span className="text-6xl font-black italic text-white/30 select-none">{selectedProduct.name.charAt(0).toUpperCase()}</span>
+                <div className="text-neutral-400 font-bold bg-neutral-50 w-full h-64 flex items-center justify-center rounded-2xl">
+                  Sin imagen
                 </div>
               )}
             </div>
@@ -637,7 +614,7 @@ export default function TiendaCatalogo({
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={item.image_url} alt={item.name} className="w-16 h-16 object-contain rounded-xl bg-neutral-50 p-1" />
                       ) : (
-                        <div className="w-16 h-16 rounded-xl flex-shrink-0" style={{ background: PRODUCT_GRADIENTS[0] }} />
+                        <div className="w-16 h-16 bg-neutral-100 rounded-xl flex items-center justify-center text-[10px] text-neutral-400 font-bold flex-shrink-0">Sin foto</div>
                       )}
                       <div className="flex-grow min-w-0">
                         <p className="font-bold text-neutral-900 text-sm truncate">{item.name}</p>
