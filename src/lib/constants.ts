@@ -172,6 +172,11 @@ export const TEMPLATE_COLLECTIONS: Record<string, SiteItemKind[]> = {
   'odontologia': ['service', 'team', 'testimonial'],
   'spa': ['service', 'gallery', 'plan'],
   'veterinaria': ['service', 'team', 'faq'],
+  // Lote 3 — profesionales + automotor
+  'estudio-juridico': ['service', 'team', 'faq'],
+  'estudio-contable': ['service', 'plan', 'faq'],
+  'arquitectura': ['gallery', 'service', 'team'],
+  'taller-mecanico': ['service', 'feature', 'faq'],
 };
 
 // Límite total de items de contenido por sitio, por plan (estas plantillas son Pro+).
@@ -425,6 +430,34 @@ export const TEMPLATES = [
     type: 'salud',
     plan: 'pro',
     component: 'Veterinaria',
+  },
+  {
+    id: 'estudio-juridico',
+    name: 'Estudio Jurídico',
+    type: 'profesional',
+    plan: 'pro',
+    component: 'EstudioJuridico',
+  },
+  {
+    id: 'estudio-contable',
+    name: 'Estudio Contable',
+    type: 'profesional',
+    plan: 'pro',
+    component: 'EstudioContable',
+  },
+  {
+    id: 'arquitectura',
+    name: 'Arquitectura',
+    type: 'profesional',
+    plan: 'pro',
+    component: 'Arquitectura',
+  },
+  {
+    id: 'taller-mecanico',
+    name: 'Taller Mecánico',
+    type: 'automotor',
+    plan: 'pro',
+    component: 'TallerMecanico',
   },
 ] as const;
 

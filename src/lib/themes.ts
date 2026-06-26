@@ -293,6 +293,11 @@ export const TEMPLATE_DEFAULT_THEME: Record<string, ThemeId> = {
   'odontologia': 'vivo',
   'spa': 'oficina',
   'veterinaria': 'vivo',
+  // Lote 3
+  'estudio-juridico': 'oficina',
+  'estudio-contable': 'glow',
+  'arquitectura': 'oficina',
+  'taller-mecanico': 'glow',
 };
 
 /** Resuelve un id (posiblemente inválido/ausente) a un Theme concreto. */

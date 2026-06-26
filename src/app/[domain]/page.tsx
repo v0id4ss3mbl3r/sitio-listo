@@ -18,6 +18,10 @@ import ConsultorioMedico from './templates/ConsultorioMedico';
 import Odontologia from './templates/Odontologia';
 import Spa from './templates/Spa';
 import Veterinaria from './templates/Veterinaria';
+import EstudioJuridico from './templates/EstudioJuridico';
+import EstudioContable from './templates/EstudioContable';
+import Arquitectura from './templates/Arquitectura';
+import TallerMecanico from './templates/TallerMecanico';
 import {
   fetchActiveSubCached,
   fetchCatalogCached,
@@ -195,6 +199,26 @@ export default async function TenantHome({
   if (template_id === 'veterinaria') {
     const items = await fetchSiteItemsCached(site.id, domain);
     return <Veterinaria {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
+  }
+
+  if (template_id === 'estudio-juridico') {
+    const items = await fetchSiteItemsCached(site.id, domain);
+    return <EstudioJuridico {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
+  }
+
+  if (template_id === 'estudio-contable') {
+    const items = await fetchSiteItemsCached(site.id, domain);
+    return <EstudioContable {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
+  }
+
+  if (template_id === 'arquitectura') {
+    const items = await fetchSiteItemsCached(site.id, domain);
+    return <Arquitectura {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
+  }
+
+  if (template_id === 'taller-mecanico') {
+    const items = await fetchSiteItemsCached(site.id, domain);
+    return <TallerMecanico {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
   }
 
   if (template_id === 'comercio-local') {
