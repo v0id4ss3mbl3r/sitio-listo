@@ -65,6 +65,40 @@ const KIND_FIELDS: Record<SiteItemKind, FieldDef[]> = {
     { key: 'image_url', label: 'Imagen (opcional)', type: 'url', placeholder: 'https://…' },
     { key: 'price', label: 'Precio (opcional)', type: 'number' },
   ],
+  menu: [
+    { key: 'title', label: 'Nombre', type: 'text' },
+    { key: 'price', label: 'Precio', type: 'number' },
+    { key: 'category', label: 'Sección (ej: Cafés, Postres)', type: 'text', meta: true },
+    { key: 'description', label: 'Descripción', type: 'textarea' },
+    { key: 'image_url', label: 'Foto (opcional)', type: 'url', placeholder: 'https://…' },
+  ],
+  property: [
+    { key: 'title', label: 'Título', type: 'text' },
+    { key: 'price', label: 'Precio', type: 'number' },
+    { key: 'operation', label: 'Operación (ej: Venta, Alquiler)', type: 'text', meta: true },
+    { key: 'location', label: 'Ubicación / Zona', type: 'text', meta: true },
+    { key: 'bedrooms', label: 'Ambientes / Dormitorios', type: 'text', meta: true },
+    { key: 'area', label: 'Superficie (ej: 60 m²)', type: 'text', meta: true },
+    { key: 'description', label: 'Descripción', type: 'textarea' },
+    { key: 'image_url', label: 'Foto', type: 'url', placeholder: 'https://…' },
+  ],
+  team: [
+    { key: 'title', label: 'Nombre', type: 'text' },
+    { key: 'subtitle', label: 'Rol / Especialidad', type: 'text' },
+    { key: 'image_url', label: 'Foto', type: 'url', placeholder: 'https://…' },
+    { key: 'description', label: 'Bio (opcional)', type: 'textarea' },
+  ],
+  testimonial: [
+    { key: 'title', label: 'Nombre del cliente', type: 'text' },
+    { key: 'subtitle', label: 'Rol / Empresa (opcional)', type: 'text' },
+    { key: 'description', label: 'Testimonio', type: 'textarea' },
+    { key: 'rating', label: 'Estrellas (1 a 5)', type: 'text', meta: true },
+    { key: 'image_url', label: 'Foto (opcional)', type: 'url', placeholder: 'https://…' },
+  ],
+  faq: [
+    { key: 'title', label: 'Pregunta', type: 'text' },
+    { key: 'description', label: 'Respuesta', type: 'textarea' },
+  ],
 };
 
 function emptyDraft(kind: SiteItemKind): Draft {

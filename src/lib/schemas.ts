@@ -181,7 +181,18 @@ export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;
 export type UpdateStoreSettingsInput = z.infer<typeof updateStoreSettingsSchema>;
 
 // ─── contenido genérico (site_items) ──────────────────────────
-const siteItemKindSchema = z.enum(['gallery', 'service', 'plan', 'schedule', 'feature']);
+const siteItemKindSchema = z.enum([
+  'gallery',
+  'service',
+  'plan',
+  'schedule',
+  'feature',
+  'menu',
+  'property',
+  'team',
+  'testimonial',
+  'faq',
+]);
 
 export const createSiteItemSchema = z.object({
   kind: siteItemKindSchema,
@@ -248,7 +259,30 @@ export const adminUpdateSubscriptionSchema = z.object({
 export const adminUpdateTemplateSchema = z.object({
   name: z.string().min(1).max(120).optional(),
   description: z.string().max(1000).nullable().optional(),
-  category: z.enum(['restaurant', 'portfolio', 'ecommerce', 'landing', 'services']).optional(),
+  category: z
+    .enum([
+      'restaurant',
+      'portfolio',
+      'ecommerce',
+      'landing',
+      'services',
+      'fotografia',
+      'belleza',
+      'fitness',
+      'comercio',
+      'gastronomia',
+      'salud',
+      'profesional',
+      'automotor',
+      'tecnologia',
+      'educacion',
+      'inmobiliaria',
+      'hoteleria',
+      'turismo',
+      'eventos',
+      'ong',
+    ])
+    .optional(),
   plan_required: z.enum(['basic', 'pro', 'extremo']).optional(),
   min_plan: z.enum(['basic', 'pro', 'extremo']).nullable().optional(),
   thumbnail_url: z.string().url().nullable().optional(),

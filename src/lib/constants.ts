@@ -116,7 +116,17 @@ export const PLAN_CATEGORY_LIMITS: Record<PlanType, number> = {
 
 // ── Contenido genérico (site_items) ──────────────────────────
 // Una tabla flexible alimenta varias plantillas; cada "kind" es una colección.
-export type SiteItemKind = 'gallery' | 'service' | 'plan' | 'schedule' | 'feature';
+export type SiteItemKind =
+  | 'gallery'
+  | 'service'
+  | 'plan'
+  | 'schedule'
+  | 'feature'
+  | 'menu'
+  | 'property'
+  | 'team'
+  | 'testimonial'
+  | 'faq';
 
 export const SITE_ITEM_KINDS: SiteItemKind[] = [
   'gallery',
@@ -124,6 +134,11 @@ export const SITE_ITEM_KINDS: SiteItemKind[] = [
   'plan',
   'schedule',
   'feature',
+  'menu',
+  'property',
+  'team',
+  'testimonial',
+  'faq',
 ];
 
 // Etiquetas legibles por kind (para el editor).
@@ -133,6 +148,11 @@ export const SITE_ITEM_KIND_LABELS: Record<SiteItemKind, string> = {
   plan: 'Planes',
   schedule: 'Horarios / Clases',
   feature: 'Destacados',
+  menu: 'Menú / Carta',
+  property: 'Propiedades',
+  team: 'Equipo',
+  testimonial: 'Testimonios',
+  faq: 'Preguntas frecuentes',
 };
 
 // Qué colecciones usa cada plantilla → decide qué muestra el editor y qué
@@ -256,6 +276,17 @@ export const TEMPLATE_CATEGORIES = [
   { slug: 'belleza', name: 'Belleza & Estética', icon: '💅' },
   { slug: 'fitness', name: 'Gimnasios', icon: '🏋️' },
   { slug: 'comercio', name: 'Comercios', icon: '🏪' },
+  { slug: 'gastronomia', name: 'Gastronomía', icon: '☕' },
+  { slug: 'salud', name: 'Salud', icon: '🩺' },
+  { slug: 'profesional', name: 'Profesionales', icon: '💼' },
+  { slug: 'automotor', name: 'Automotor', icon: '🚗' },
+  { slug: 'tecnologia', name: 'Tecnología', icon: '💻' },
+  { slug: 'educacion', name: 'Educación', icon: '🎓' },
+  { slug: 'inmobiliaria', name: 'Inmobiliarias', icon: '🏠' },
+  { slug: 'hoteleria', name: 'Hotelería', icon: '🏨' },
+  { slug: 'turismo', name: 'Turismo', icon: '✈️' },
+  { slug: 'eventos', name: 'Eventos', icon: '🎉' },
+  { slug: 'ong', name: 'ONG', icon: '🤝' },
 ] as const;
 
 export const TEMPLATES = [
