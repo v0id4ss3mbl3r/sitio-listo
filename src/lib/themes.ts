@@ -283,6 +283,11 @@ export const TEMPLATE_DEFAULT_THEME: Record<string, ThemeId> = {
   'belleza-estetica': 'oficina',
   'gimnasio-fitness': 'glow',
   'comercio-local': 'oficina',
+  // Lote 1
+  'cafeteria': 'oficina',
+  'bar-cerveceria': 'glow',
+  'pasteleria': 'vivo',
+  'barberia': 'glow',
 };
 
 /** Resuelve un id (posiblemente inválido/ausente) a un Theme concreto. */

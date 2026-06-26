@@ -10,6 +10,10 @@ import FotografiaEstudio from './templates/FotografiaEstudio';
 import GimnasioFitness from './templates/GimnasioFitness';
 import ComercioLocal from './templates/ComercioLocal';
 import BellezaEstetica from './templates/BellezaEstetica';
+import Cafeteria from './templates/Cafeteria';
+import BarCerveceria from './templates/BarCerveceria';
+import Pasteleria from './templates/Pasteleria';
+import Barberia from './templates/Barberia';
 import {
   fetchActiveSubCached,
   fetchCatalogCached,
@@ -147,6 +151,26 @@ export default async function TenantHome({
   if (template_id === 'belleza-estetica') {
     const items = await fetchSiteItemsCached(site.id, domain);
     return <BellezaEstetica {...props} theme={theme} items={items} />;
+  }
+
+  if (template_id === 'cafeteria') {
+    const items = await fetchSiteItemsCached(site.id, domain);
+    return <Cafeteria {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
+  }
+
+  if (template_id === 'bar-cerveceria') {
+    const items = await fetchSiteItemsCached(site.id, domain);
+    return <BarCerveceria {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
+  }
+
+  if (template_id === 'pasteleria') {
+    const items = await fetchSiteItemsCached(site.id, domain);
+    return <Pasteleria {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
+  }
+
+  if (template_id === 'barberia') {
+    const items = await fetchSiteItemsCached(site.id, domain);
+    return <Barberia {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
   }
 
   if (template_id === 'comercio-local') {

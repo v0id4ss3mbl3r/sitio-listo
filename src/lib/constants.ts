@@ -162,6 +162,11 @@ export const TEMPLATE_COLLECTIONS: Record<string, SiteItemKind[]> = {
   'belleza-estetica': ['service', 'gallery'],
   'gimnasio-fitness': ['plan', 'schedule'],
   'comercio-local': ['feature'],
+  // Lote 1 — gastronomía + barbería
+  'cafeteria': ['menu', 'gallery'],
+  'bar-cerveceria': ['menu', 'gallery'],
+  'pasteleria': ['menu', 'gallery'],
+  'barberia': ['service', 'gallery', 'team'],
 };
 
 // Límite total de items de contenido por sitio, por plan (estas plantillas son Pro+).
@@ -359,6 +364,34 @@ export const TEMPLATES = [
     type: 'belleza',
     plan: 'pro',
     component: 'BellezaEstetica',
+  },
+  {
+    id: 'cafeteria',
+    name: 'Cafetería',
+    type: 'gastronomia',
+    plan: 'pro',
+    component: 'Cafeteria',
+  },
+  {
+    id: 'bar-cerveceria',
+    name: 'Bar / Cervecería',
+    type: 'gastronomia',
+    plan: 'pro',
+    component: 'BarCerveceria',
+  },
+  {
+    id: 'pasteleria',
+    name: 'Pastelería',
+    type: 'gastronomia',
+    plan: 'pro',
+    component: 'Pasteleria',
+  },
+  {
+    id: 'barberia',
+    name: 'Barbería',
+    type: 'belleza',
+    plan: 'pro',
+    component: 'Barberia',
   },
 ] as const;
 
