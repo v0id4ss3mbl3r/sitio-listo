@@ -182,6 +182,11 @@ export const TEMPLATE_COLLECTIONS: Record<string, SiteItemKind[]> = {
   'academia': ['service', 'team', 'faq'],
   'inmobiliaria': ['property', 'service', 'faq'],
   'hotel-cabanas': ['property', 'gallery', 'feature'],
+  // Lote 5 — turismo, comercio, eventos, ong
+  'agencia-viajes': ['service', 'gallery', 'testimonial'],
+  'floreria': ['menu', 'gallery'],
+  'eventos-dj': ['service', 'gallery', 'testimonial'],
+  'ong-fundacion': ['feature', 'team', 'faq'],
 };
 
 // Límite total de items de contenido por sitio, por plan (estas plantillas son Pro+).
@@ -491,6 +496,34 @@ export const TEMPLATES = [
     type: 'hoteleria',
     plan: 'pro',
     component: 'HotelCabanas',
+  },
+  {
+    id: 'agencia-viajes',
+    name: 'Agencia de Viajes',
+    type: 'turismo',
+    plan: 'pro',
+    component: 'AgenciaViajes',
+  },
+  {
+    id: 'floreria',
+    name: 'Florería',
+    type: 'comercio',
+    plan: 'pro',
+    component: 'Floreria',
+  },
+  {
+    id: 'eventos-dj',
+    name: 'Eventos / DJ',
+    type: 'eventos',
+    plan: 'pro',
+    component: 'EventosDj',
+  },
+  {
+    id: 'ong-fundacion',
+    name: 'ONG / Fundación',
+    type: 'ong',
+    plan: 'pro',
+    component: 'OngFundacion',
   },
 ] as const;
 

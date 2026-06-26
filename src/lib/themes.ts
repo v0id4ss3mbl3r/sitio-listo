@@ -303,6 +303,11 @@ export const TEMPLATE_DEFAULT_THEME: Record<string, ThemeId> = {
   'academia': 'vivo',
   'inmobiliaria': 'oficina',
   'hotel-cabanas': 'oficina',
+  // Lote 5
+  'agencia-viajes': 'vivo',
+  'floreria': 'vivo',
+  'eventos-dj': 'glow',
+  'ong-fundacion': 'oficina',
 };
 
 /** Resuelve un id (posiblemente inválido/ausente) a un Theme concreto. */
