@@ -177,6 +177,11 @@ export const TEMPLATE_COLLECTIONS: Record<string, SiteItemKind[]> = {
   'estudio-contable': ['service', 'plan', 'faq'],
   'arquitectura': ['gallery', 'service', 'team'],
   'taller-mecanico': ['service', 'feature', 'faq'],
+  // Lote 4 — tecnología, educación, inmobiliaria, hotelería
+  'tecnologia-reparaciones': ['service', 'feature', 'faq'],
+  'academia': ['service', 'team', 'faq'],
+  'inmobiliaria': ['property', 'service', 'faq'],
+  'hotel-cabanas': ['property', 'gallery', 'feature'],
 };
 
 // Límite total de items de contenido por sitio, por plan (estas plantillas son Pro+).
@@ -458,6 +463,34 @@ export const TEMPLATES = [
     type: 'automotor',
     plan: 'pro',
     component: 'TallerMecanico',
+  },
+  {
+    id: 'tecnologia-reparaciones',
+    name: 'Tecnología / Reparaciones',
+    type: 'tecnologia',
+    plan: 'pro',
+    component: 'TecnologiaReparaciones',
+  },
+  {
+    id: 'academia',
+    name: 'Academia / Cursos',
+    type: 'educacion',
+    plan: 'pro',
+    component: 'Academia',
+  },
+  {
+    id: 'inmobiliaria',
+    name: 'Inmobiliaria',
+    type: 'inmobiliaria',
+    plan: 'pro',
+    component: 'Inmobiliaria',
+  },
+  {
+    id: 'hotel-cabanas',
+    name: 'Hotel / Cabañas',
+    type: 'hoteleria',
+    plan: 'pro',
+    component: 'HotelCabanas',
   },
 ] as const;
 

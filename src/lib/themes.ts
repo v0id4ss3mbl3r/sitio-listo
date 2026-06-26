@@ -298,6 +298,11 @@ export const TEMPLATE_DEFAULT_THEME: Record<string, ThemeId> = {
   'estudio-contable': 'glow',
   'arquitectura': 'oficina',
   'taller-mecanico': 'glow',
+  // Lote 4
+  'tecnologia-reparaciones': 'glow',
+  'academia': 'vivo',
+  'inmobiliaria': 'oficina',
+  'hotel-cabanas': 'oficina',
 };
 
 /** Resuelve un id (posiblemente inválido/ausente) a un Theme concreto. */
