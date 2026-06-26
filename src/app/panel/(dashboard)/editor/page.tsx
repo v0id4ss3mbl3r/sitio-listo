@@ -697,7 +697,7 @@ export default function EditorPage() {
                 </>
               )}
 
-              {(templateId === 'restaurant-01' || templateId === 'sabor-urbano' || templateId === 'comercio-local' || templateId === 'cafeteria' || templateId === 'bar-cerveceria' || templateId === 'pasteleria' || templateId === 'barberia') && (
+              {(templateId === 'restaurant-01' || templateId === 'sabor-urbano' || templateId === 'comercio-local' || templateId === 'cafeteria' || templateId === 'bar-cerveceria' || templateId === 'pasteleria' || templateId === 'barberia' || templateId === 'consultorio-medico' || templateId === 'odontologia' || templateId === 'spa' || templateId === 'veterinaria') && (
                 <>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Horario de Apertura</label>

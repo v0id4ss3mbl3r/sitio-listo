@@ -288,6 +288,11 @@ export const TEMPLATE_DEFAULT_THEME: Record<string, ThemeId> = {
   'bar-cerveceria': 'glow',
   'pasteleria': 'vivo',
   'barberia': 'glow',
+  // Lote 2
+  'consultorio-medico': 'oficina',
+  'odontologia': 'vivo',
+  'spa': 'oficina',
+  'veterinaria': 'vivo',
 };
 
 /** Resuelve un id (posiblemente inválido/ausente) a un Theme concreto. */
