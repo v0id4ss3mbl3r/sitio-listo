@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/browser';
-import { Save, ExternalLink, CheckCircle, AlertCircle } from 'lucide-react';
+import { Save, ExternalLink, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import {
+  DOMAIN_APEX_IP,
+  DOMAIN_CNAME_TARGET,
   PLAN_CATEGORY_LIMITS,
   PLAN_ITEM_LIMITS,
   PLAN_PAGE_LIMITS,
@@ -46,6 +48,10 @@ export default function EditorPage() {
   const [subdomain, setSubdomain] = useState('');
   const [customDomain, setCustomDomain] = useState('');
   const [customDomainStatus, setCustomDomainStatus] = useState<'pending' | 'verified' | 'failed' | null>(null);
+  const [verifyingDomain, setVerifyingDomain] = useState(false);
+  // Lo que el DNS respondió en la última verificación: se lo mostramos al
+  // cliente cuando no coincide, para que vea su propio error de configuración.
+  const [dnsRecords, setDnsRecords] = useState<string[] | null>(null);
   const [templateId, setTemplateId] = useState('sabor-urbano');
   const [themeId, setThemeId] = useState(''); // '' = default de la plantilla
   const [canThemeOverride, setCanThemeOverride] = useState(false);
@@ -165,6 +171,42 @@ export default function EditorPage() {
 
     return () => clearTimeout(timer);
   }, [subdomain]);
+
+  const handleVerifyDomain = async () => {
+    setVerifyingDomain(true);
+    setDnsRecords(null);
+    try {
+      const res = await fetch('/api/sites/verify-domain', { method: 'POST' });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setNotification({ type: 'error', message: data.error || 'No pudimos verificar el dominio' });
+        return;
+      }
+
+      setCustomDomainStatus(data.status);
+      setDnsRecords(data.records ?? []);
+
+      if (data.status === 'verified') {
+        setNotification({ type: 'success', message: '¡Dominio verificado! Ya apunta a tu sitio.' });
+        setTimeout(() => setNotification(null), 4000);
+      } else if (data.status === 'pending') {
+        setNotification({
+          type: 'error',
+          message: 'Todavía no resuelve. Un cambio de DNS puede tardar hasta 48hs.',
+        });
+      } else {
+        setNotification({
+          type: 'error',
+          message: 'Tu dominio resuelve, pero apunta a otro lado. Revisá el registro.',
+        });
+      }
+    } catch {
+      setNotification({ type: 'error', message: 'Error de conexión al verificar el dominio' });
+    } finally {
+      setVerifyingDomain(false);
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -873,10 +915,48 @@ export default function EditorPage() {
                 <div style={{ marginTop: '1.5rem', padding: '1.25rem', borderRadius: '12px', background: 'var(--bg-dark)', border: '1px solid var(--border-subtle)' }}>
                   <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Configuración DNS</h4>
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                    Apuntá un Registro <strong>CNAME</strong> de tu dominio a: <code style={{ color: 'var(--color-primary-light)', background: 'rgba(99, 102, 241, 0.1)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>cname.vercel-dns.com</code>
+                    Apuntá un Registro <strong>CNAME</strong> de tu dominio a: <code style={{ color: 'var(--color-primary-light)', background: 'rgba(99, 102, 241, 0.1)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>{DOMAIN_CNAME_TARGET}</code>
                   </p>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6, marginTop: '0.5rem' }}>
+                    Si es tu dominio raíz (sin <code style={{ color: 'var(--text-secondary)', background: 'rgba(255, 255, 255, 0.05)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>www</code>), tu proveedor no va a dejarte cargar un CNAME. En ese caso usá un Registro <strong>A</strong> apuntando a: <code style={{ color: 'var(--color-primary-light)', background: 'rgba(99, 102, 241, 0.1)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>{DOMAIN_APEX_IP}</code>
+                  </p>
+
+                  {customDomainStatus && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={handleVerifyDomain}
+                        disabled={verifyingDomain}
+                        style={{
+                          marginTop: '1rem',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.6rem 1.1rem',
+                          borderRadius: '8px',
+                          background: 'var(--bg-dark-secondary)',
+                          border: '1px solid var(--border-subtle)',
+                          color: 'var(--text-primary)',
+                          fontSize: '0.85rem',
+                          fontWeight: 600,
+                          cursor: verifyingDomain ? 'not-allowed' : 'pointer',
+                          opacity: verifyingDomain ? 0.6 : 1,
+                        }}
+                      >
+                        <RefreshCw size={14} />
+                        {verifyingDomain ? 'Verificando...' : 'Verificar ahora'}
+                      </button>
+
+                      {dnsRecords !== null && dnsRecords.length > 0 && customDomainStatus !== 'verified' && (
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.6, marginTop: '0.75rem' }}>
+                          Tu dominio hoy responde: <code style={{ color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)', padding: '0.2rem 0.4rem', borderRadius: '4px' }}>{dnsRecords.join(', ')}</code>
+                        </p>
+                      )}
+                    </>
+                  )}
+
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.6, marginTop: '0.75rem' }}>
-                    Una vez configurado el DNS, contactanos para verificar el dominio. La propagación puede demorar hasta 48 horas.
+                    Guardá los cambios antes de verificar. La propagación de un cambio de DNS puede demorar hasta 48 horas.
                   </p>
                 </div>
                 {(userPlan === 'free' || userPlan === 'basic') && (

@@ -291,6 +291,23 @@ export const RESERVED_DOMAIN_SUFFIXES: readonly string[] = [
   'sitiolisto.com.ar',
 ];
 
+// ── Verificación DNS de dominios propios ─────────────────────
+// A dónde tiene que apuntar el dominio del cliente para que lo sirvamos.
+// Un subdominio (www.tienda.com) usa CNAME; un dominio raíz (tienda.com) no
+// puede llevar CNAME por especificación, así que esos usan un registro A.
+// Ambos valores son los que publica Vercel para dominios externos.
+export const DOMAIN_CNAME_TARGET = 'cname.vercel-dns.com';
+export const DOMAIN_APEX_IP = '76.76.21.21';
+
+// Planes que incluyen conectar un dominio propio.
+const CUSTOM_DOMAIN_PLANS = ['test', 'pro', 'extremo', 'personalizado'];
+
+// ¿El plan permite conectar un dominio propio? Fuente única para el gate del
+// editor y el de la API de verificación.
+export function canUseCustomDomain(planSlug: string): boolean {
+  return CUSTOM_DOMAIN_PLANS.includes(planSlug);
+}
+
 export const TEMPLATE_CATEGORIES = [
   { slug: 'restaurant', name: 'Restaurantes', icon: '🍽️' },
   { slug: 'portfolio', name: 'Portfolios', icon: '🎨' },

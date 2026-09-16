@@ -40,31 +40,20 @@ Cosas que quedaron documentadas pero sin implementar. Cuando arranques alguna, d
 
 ---
 
-## CI con GitHub Actions
-
-**Qué es.** Un workflow YAML en `.github/workflows/ci.yml` que GitHub corre automáticamente cada vez que hacés push o PR. Ejecuta `npm install`, `npx tsc --noEmit`, `npm run lint`, `npm test`. Si algo falla, el PR queda bloqueado.
-
-**Por qué importa incluso con VPS.**
-- Si deployás con `git pull` en el server, el CI te avisa que el push está roto antes de pullear.
-- Si en algún momento sumás colaboradores, evita que mergeen código que rompe tests.
-- Cero costo: 2000 min/mes gratis en repos privados; vas a usar ~30 min/mes.
-
-**Cuándo hacerlo.** Cualquier momento. Es un solo archivo de 30 líneas y queda funcionando.
-
----
-
 ## Refactor del admin para no usar service_role
 
-Relacionado con RLS arriba. Hoy [src/app/api/admin/*](src/app/api/admin) y [src/app/panel/(dashboard)/admin/*](src/app/panel/(dashboard)/admin) importan `createAdminClient()` que usa `SUPABASE_SERVICE_ROLE_KEY` (bypass total). Una vez creadas las policies del paso "RLS para el panel admin", hay que refactorear esos archivos para usar el cliente normal.
+**Estado real (verificado 2026-09-16):** las rutas de `/api/admin/*` y las páginas de
+`/panel/admin/*` **ya no usan** `createAdminClient()`. Los únicos tres archivos que
+todavía lo importan son de pago/escritura, donde el service-role es deliberado y está
+documentado en el código:
 
-Lista exacta de archivos a refactorear:
-- `src/app/api/admin/sitios/[id]/route.ts`
-- `src/app/api/admin/plantillas/[id]/route.ts`
-- `src/app/panel/(dashboard)/admin/page.tsx`
-- `src/app/panel/(dashboard)/admin/usuarios/page.tsx`
-- `src/app/panel/(dashboard)/admin/sitios/page.tsx`
-- `src/app/panel/(dashboard)/admin/suscripciones/page.tsx`
-- `src/app/panel/(dashboard)/admin/plantillas/page.tsx`
+- `src/app/api/checkout/route.ts`
+- `src/app/api/checkout/cancel/route.ts`
+- `src/app/api/sites/route.ts` — no hay policy de INSERT/UPDATE para el dueño (migration
+  0016, evita activar un sitio sin pagar), así que la escritura tiene que ir por acá.
+
+O sea: este ítem está esencialmente cerrado. Lo que queda es decidir si se dejan así
+(recomendado) o se crean policies específicas para esos tres casos.
 
 ---
 
@@ -72,6 +61,10 @@ Lista exacta de archivos a refactorear:
 
 (Estos vienen del informe en `~/.claude/plans/podr-as-darle-un-an-lisis-recursive-ripple.md`, anexos A1–A7.)
 
-- **A1 "Pro (SIN SUSCRIPCIÓN)"**: el bug donde [cuenta/page.tsx](src/app/panel/(dashboard)/cuenta/page.tsx) muestra suscripciones pending como activas. Fix: agregar `.eq('status', 'authorized')` a la query.
-- **A4 Plantillas reorganizadas por tier**: ADMIN-PANEL-GUIDE define un catálogo más amplio (5 Premium + 5 Exclusivas) y propone mover `tienda-express` a tier basic. Hoy hay solo 5 plantillas y `tienda-express` está como pro.
-- **Verificación DNS automática del custom_domain**: hoy el badge "pending/verified/failed" se actualiza solo manualmente. Falta un endpoint que haga `dns.resolveCname()` y compare contra el target real.
+- ~~**A1 "Pro (SIN SUSCRIPCIÓN)"**~~ — ya no aplica (verificado 2026-09-16). [cuenta/page.tsx](src/app/panel/(dashboard)/cuenta/page.tsx) chequea `status === 'authorized'` en los cuatro lugares donde muestra el plan.
+- **A4 Plantillas reorganizadas por tier** (pendiente, y ahora más grande): el catálogo
+  cerró en **30 plantillas**, pero la distribución quedó desbalanceada — 26 están en
+  `plan: 'pro'` y solo 4 en `basic` (`sabor-urbano`, `portfolio-minimal`, `landing-pro`,
+  `servicios-pro`). Es una decisión de producto: hay que repartirlas de nuevo antes de
+  salir a producción. Los tiers viven en `TEMPLATES` en [constants.ts](src/lib/constants.ts).
+- ~~**Verificación DNS automática del custom_domain**~~ — hecho. `POST /api/sites/verify-domain` resuelve CNAME y registro A, compara contra `DOMAIN_CNAME_TARGET` / `DOMAIN_APEX_IP` y actualiza el badge; el editor tiene botón "Verificar ahora". Queda confirmar que `DOMAIN_APEX_IP` coincide con lo que muestra el panel de Vercel para este proyecto.
