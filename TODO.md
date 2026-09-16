@@ -4,25 +4,42 @@ Cosas que quedaron documentadas pero sin implementar. Cuando arranques alguna, d
 
 ---
 
-## Observabilidad (Sentry)
+## Observabilidad — avisos por Telegram (hecho)
 
-**Qué es.** Servicio externo (gratis hasta 5K eventos/mes en tu volumen alcanza de sobra) que captura todos los errores de la app — los de tu API, los del navegador del usuario, los de Server Components. Cada uno aparece en un dashboard con:
-- Stack trace completo (línea exacta donde rompió).
-- Qué usuario lo gatilló (email, plan).
-- Qué request lo causó (URL, headers, body).
-- Frecuencia y tendencia ("este error empezó hace 2h, ya afectó a 14 usuarios").
-- Alerta por email/Slack cuando aparece un error nuevo.
+Los errores ahora avisan por Telegram, sin librerías: la Bot API es un POST con
+JSON y `fetch` ya viene en el runtime.
 
-**Por qué importa.** Hoy no te enterás de nada. Si un usuario hace checkout a las 3am y MercadoPago devuelve un error nuevo, el checkout falla silenciosamente; vos lo descubrís días después cuando se queja.
+**Para activarlo** hay que setear dos variables (en `.env.local` y en Vercel):
 
-**Estado actual.** El código ya está cableado. En vez de `console.error` uso `captureError(err, context)` (definido en [src/lib/logger.ts](src/lib/logger.ts)). Hoy escribe JSON al stdout, mañana le enchufás Sentry.
+- `TELEGRAM_BOT_TOKEN` — lo da @BotFather con `/newbot`
+- `TELEGRAM_CHAT_ID` — el chat destino; se saca de
+  `https://api.telegram.org/bot<TOKEN>/getUpdates` después de escribirle al bot
 
-**Pasos para activarlo** (15 minutos):
-1. Crear cuenta gratis en `sentry.io` → New Project → "Next.js".
-2. Te dan un DSN (un string tipo `https://xxx@sentry.io/yyy`).
-3. `npm install @sentry/nextjs`.
-4. `npx @sentry/wizard@latest -i nextjs` — el wizard crea automáticamente `sentry.client.config.ts` y `sentry.server.config.ts` con el DSN. Decile que sí a todo.
-5. Editar [src/lib/logger.ts:24](src/lib/logger.ts#L24): reemplazar el `console.error(JSON.stringify(...))` por `Sentry.captureException(err, { extra: context })`. Idem `captureMessage`.
+Sin esas variables los avisos quedan apagados y todo sigue igual (los errores
+van al log estructurado, como antes).
+
+**Cómo está armado.** Todo pasa por `captureError()` en
+[src/lib/logger.ts](src/lib/logger.ts), que era ya el embudo único:
+
+- [src/lib/alertThrottle.ts](src/lib/alertThrottle.ts) — el freno. Agrupa por
+  firma normalizada (ids, números, URLs y emails se reemplazan, así el "mismo"
+  error no avisa dos veces) y aplica dos topes: no repetir una firma antes de 5
+  minutos, y máximo 10 avisos por minuto en total. Lo que se traga se cuenta y
+  se informa en el aviso siguiente ("+37 iguales desde el último aviso").
+- [src/lib/telegram.ts](src/lib/telegram.ts) — el envío. Texto plano a propósito
+  (los stack traces romperían el parseo de Markdown), con timeout, y no tira
+  nunca: un problema al avisar no puede tumbar el request.
+- El envío va dentro de `after()` de Next, así que sale **después** de
+  responderle al usuario y no le suma latencia.
+
+**Límite conocido.** El estado del freno vive en memoria del proceso. En Vercel
+cada instancia tiene el suyo, así que el conteo es por instancia. Mata el caso
+que importa (la misma instancia recibiendo el mismo error en loop), pero no
+deduplica entre instancias.
+
+**Si alguna vez hace falta más** (historial buscable, agrupación entre
+instancias, tendencias), Sentry se enchufa en el mismo `captureError` y puede
+convivir con los avisos de Telegram.
 
 ---
 
