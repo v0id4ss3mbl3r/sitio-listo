@@ -4,9 +4,14 @@ import { useState, useEffect } from 'react';
 import { PLANS, PlanType } from '@/lib/constants';
 import { createClient } from '@/lib/supabase/browser';
 
+type Subscription = {
+  plan_type: PlanType;
+  status: string;
+};
+
 export default function CuentaPage() {
   const [loading, setLoading] = useState<string | null>(null);
-  const [currentSubscription, setCurrentSubscription] = useState<any>(null);
+  const [currentSubscription, setCurrentSubscription] = useState<Subscription | null>(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const supabase = createClient();
@@ -43,11 +48,11 @@ export default function CuentaPage() {
       const data = await response.json();
 
       if (data.url) {
-        window.location.href = data.url;
+        window.location.assign(data.url);
       } else {
         setNotification({ type: 'error', message: data.error || 'Ocurrió un error al generar el checkout' });
       }
-    } catch (error) {
+    } catch {
       setNotification({ type: 'error', message: 'Error de conexión' });
     } finally {
       setLoading(null);
@@ -67,7 +72,7 @@ export default function CuentaPage() {
         setNotification({ type: 'success', message: 'Suscripción cancelada correctamente.' });
         setTimeout(() => window.location.reload(), 2000);
       }
-    } catch (err) {
+    } catch {
       setNotification({ type: 'error', message: 'Error al cancelar' });
     }
     setLoading(null);

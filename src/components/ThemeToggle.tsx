@@ -4,13 +4,17 @@ import * as React from 'react';
 import { useTheme } from 'next-themes';
 import { Moon, Sun } from 'lucide-react';
 
+const subscribeNoop = () => () => {};
+
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
+  // El tema real solo se conoce en el cliente: en el server devolvemos `false`
+  // para renderizar el placeholder y evitar el mismatch de hidratación.
+  const mounted = React.useSyncExternalStore(
+    subscribeNoop,
+    () => true,
+    () => false
+  );
 
   if (!mounted) {
     return <div style={{ width: 36, height: 36 }} />; // Placeholder for layout shift

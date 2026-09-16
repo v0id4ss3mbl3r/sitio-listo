@@ -5,9 +5,27 @@ import { LogOut, Home, Palette, CreditCard, Menu, X, ChevronLeft, Shield } from 
 import { ThemeToggle } from '@/components/ThemeToggle';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import { NotificationsBell } from '../_components/NotificationsBell';
+
+const MOBILE_QUERY = '(max-width: 767px)';
+
+function subscribeToMobile(onChange: () => void) {
+  const mq = window.matchMedia(MOBILE_QUERY);
+  mq.addEventListener('change', onChange);
+  return () => mq.removeEventListener('change', onChange);
+}
+
+// useSyncExternalStore en vez de un useEffect con setState: el server devuelve
+// `false` (desktop) y el cliente lee el media query sin render en cascada.
+function useIsMobile() {
+  return useSyncExternalStore(
+    subscribeToMobile,
+    () => window.matchMedia(MOBILE_QUERY).matches,
+    () => false
+  );
+}
 
 export default function PanelLayout({
   children,
@@ -16,8 +34,13 @@ export default function PanelLayout({
 }) {
   const supabase = createClient();
   const pathname = usePathname();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
+  // Dos estados separados para que colapsar el sidebar en desktop no se pierda
+  // al pasar por mobile (y viceversa). El visible se deriva del breakpoint.
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
+  const isSidebarOpen = isMobile ? mobileSidebarOpen : desktopSidebarOpen;
+  const setIsSidebarOpen = isMobile ? setMobileSidebarOpen : setDesktopSidebarOpen;
   const [scrolled, setScrolled] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -28,23 +51,6 @@ export default function PanelLayout({
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      if (mobile) setIsSidebarOpen(false);
-      else setIsSidebarOpen(true);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  useEffect(() => {
-    if (isMobile) setIsSidebarOpen(false);
-  }, [pathname, isMobile]);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -58,7 +64,13 @@ export default function PanelLayout({
       setIsAdmin(profile?.role === 'admin');
     };
     checkAdminStatus();
-  }, []);
+  }, [supabase]);
+
+  // Navegar es un evento, no una sincronización: cerramos el sidebar en el
+  // click en vez de reaccionar al cambio de pathname desde un effect.
+  const closeSidebarOnMobile = () => {
+    if (isMobile) setMobileSidebarOpen(false);
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -119,7 +131,7 @@ export default function PanelLayout({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2.5rem', padding: '0 0.5rem', minWidth: '220px' }}>
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
+          <Link href="/" onClick={closeSidebarOnMobile} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
             <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 700, color: 'white' }}>
               S
             </div>
@@ -146,7 +158,7 @@ export default function PanelLayout({
           </button>
         </div>
 
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, minWidth: '220px' }}>
+        <nav onClick={closeSidebarOnMobile} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, minWidth: '220px' }}>
           <Link href="/" style={getLinkStyle('/')}>
             <Home size={18} />
             Dashboard

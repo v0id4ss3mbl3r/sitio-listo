@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/browser';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -10,7 +11,6 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.replace(/[0-9]/g, ''); // No números
@@ -121,7 +121,7 @@ export default function RegisterPage() {
 
         <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
           ¿Ya tenés cuenta?{' '}
-          <a href="/login" style={{ color: 'var(--color-primary-light)', textDecoration: 'none', fontWeight: 600 }}>Iniciá sesión</a>
+          <Link href="/login" style={{ color: 'var(--color-primary-light)', textDecoration: 'none', fontWeight: 600 }}>Iniciá sesión</Link>
         </p>
       </div>
     </div>

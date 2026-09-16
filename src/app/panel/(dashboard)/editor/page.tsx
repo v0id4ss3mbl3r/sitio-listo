@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/browser';
 import { Save, ExternalLink, CheckCircle, AlertCircle } from 'lucide-react';
 import {
@@ -11,7 +12,6 @@ import {
   PlanType,
   TEMPLATES,
   TEMPLATE_COLLECTIONS,
-  TemplateId,
   canCustomizeTheme,
   hasCatalogFeature,
 } from '@/lib/constants';
@@ -69,7 +69,10 @@ export default function EditorPage() {
   const [whatsapp, setWhatsapp] = useState('');
 
   // Validation State
-  const [subdomainStatus, setSubdomainStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+  const [subdomainCheck, setSubdomainCheck] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+  // Sin subdominio no hay nada que chequear: se deriva en vez de resetear el
+  // estado desde el effect (evita el render en cascada).
+  const subdomainStatus = subdomain ? subdomainCheck : 'idle';
 
   // ID de la fila pages.is_home — necesario para hacer PUT al guardar el contenido.
   const [homePageId, setHomePageId] = useState<string | null>(null);
@@ -115,7 +118,7 @@ export default function EditorPage() {
         setCustomDomainStatus(siteData.site.custom_domain_status ?? null);
         setTemplateId(siteData.site.template_id || 'sabor-urbano');
         setThemeId(siteData.site.theme_id || '');
-        setSubdomainStatus('available');
+        setSubdomainCheck('available');
       }
 
       // Contenido del sitio vive en pages.is_home.content (fuente única).
@@ -147,19 +150,16 @@ export default function EditorPage() {
 
   // Debounce para checkear subdominio
   useEffect(() => {
-    if (!subdomain) {
-      setSubdomainStatus('idle');
-      return;
-    }
+    if (!subdomain) return;
 
     const timer = setTimeout(async () => {
-      setSubdomainStatus('checking');
+      setSubdomainCheck('checking');
       try {
         const res = await fetch(`/api/sites/check?subdomain=${subdomain}`);
         const data = await res.json();
-        setSubdomainStatus(data.available ? 'available' : 'taken');
-      } catch (err) {
-        setSubdomainStatus('idle');
+        setSubdomainCheck(data.available ? 'available' : 'taken');
+      } catch {
+        setSubdomainCheck('idle');
       }
     }, 500);
 
@@ -307,13 +307,13 @@ export default function EditorPage() {
           <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '2rem' }}>
             Para crear y editar tu sitio web necesitás suscribirte a uno de nuestros planes. El plan Básico incluye 14 días de prueba gratis.
           </p>
-          <a
+          <Link
             href="/cuenta"
             className="btn-primary"
             style={{ display: 'inline-block', padding: '0.875rem 2rem', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '700' }}
           >
             Ver planes →
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -648,7 +648,7 @@ export default function EditorPage() {
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Texto "Sobre Nosotros"</label>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.6rem', color: 'var(--text-secondary)' }}>Texto &quot;Sobre Nosotros&quot;</label>
                 <textarea
                   value={aboutText}
                   onChange={(e) => setAboutText(e.target.value)}
