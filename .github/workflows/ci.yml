@@ -1,0 +1,52 @@
+name: CI
+
+# Corre los mismos cuatro comandos de control que correríamos a mano, en cada
+# push a main y en cada pull request. Si algo se rompe, GitHub lo marca en rojo
+# al lado del commit y manda un mail.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: # permite dispararlo a mano desde la pestaña Actions
+
+jobs:
+  check:
+    name: Tipos, lint, tests y build
+    runs-on: ubuntu-latest
+
+    # El build prerenderiza páginas del panel que instancian el cliente de
+    # Supabase, así que necesita que las variables existan aunque sean falsas.
+    # Son valores dummy a propósito: acá no se toca la base real.
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://dummy.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-anon-key
+      SUPABASE_SERVICE_ROLE_KEY: dummy-service-role-key
+      MP_ACCESS_TOKEN: dummy-mp-token
+      NEXT_PUBLIC_APP_URL: https://app.sitiolisto.com.ar
+
+    steps:
+      - name: Bajar el código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      # `npm ci` en vez de `npm install`: instala exactamente las versiones del
+      # package-lock.json, sin actualizar nada por su cuenta.
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Chequear tipos de TypeScript
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm test
+
+      - name: Build de producción
+        run: npm run build
