@@ -16,7 +16,7 @@ export const PLANS = {
     description: 'Todo lo que necesitás para estar online desde hoy',
     features: [
       '1 sitio con página principal',
-      'Todas las plantillas',
+      'Plantillas básicas de landing page',
       'Subdominio .sitiolisto.com.ar',
       'SSL incluido',
       'Soporte por email',
@@ -31,11 +31,11 @@ export const PLANS = {
     priceDisplay: '$39.999',
     description: 'Para negocios que quieren su dominio propio y más control',
     features: [
+      'Todo lo del plan Básico, más:',
       '1 sitio con hasta 5 secciones',
-      'Todas las plantillas',
+      'Hasta 25 plantillas',
       'Dominio personalizado incluido',
       'Sin marca "Creado con SitioListo"',
-      'SSL incluido',
       'Soporte prioritario',
     ],
     highlighted: true,
@@ -47,12 +47,11 @@ export const PLANS = {
     priceDisplay: '$79.999',
     description: 'Para franquicias y grandes negocios con múltiples presencias',
     features: [
-      'Hasta 4 sitios independientes',
+      'Todo lo del plan Pro, más:',
+      'Hasta 2 sitios independientes',
       'Hasta 15 secciones por sitio',
-      'Todas las plantillas',
+      'Hasta 50 plantillas',
       'Dominios personalizados',
-      'Sin marca "Creado con SitioListo"',
-      'SSL incluido',
       'Soporte dedicado 24/7',
     ],
     highlighted: false,
@@ -91,7 +90,7 @@ export const PLAN_SITE_LIMITS: Record<PlanType, number> = {
   test: 1,
   basic: 1,
   pro: 1,
-  extremo: 4,
+  extremo: 2,
   personalizado: Infinity,
 };
 
@@ -189,10 +188,13 @@ export const TEMPLATE_COLLECTIONS: Record<string, SiteItemKind[]> = {
   'ong-fundacion': ['feature', 'team', 'faq'],
 };
 
-// Límite total de items de contenido por sitio, por plan (estas plantillas son Pro+).
+// Límite total de items de contenido por sitio, por plan.
+// Basic tiene un cupo chico: sus plantillas son landings de una sección con
+// una sola lista corta (destacados, galería, servicios). Sin cupo no podrían
+// renderizar nada.
 export const PLAN_ITEM_LIMITS: Record<PlanType, number> = {
   test: 30,
-  basic: 0,
+  basic: 15,
   pro: 60,
   extremo: Infinity,
   personalizado: Infinity,
@@ -371,35 +373,35 @@ export const TEMPLATES = [
     id: 'tienda-catalogo',
     name: 'Tienda Catálogo',
     type: 'ecommerce',
-    plan: 'pro',
+    plan: 'extremo',
     component: 'TiendaCatalogo',
   },
   {
     id: 'fotografia-estudio',
     name: 'Estudio de Fotografía',
     type: 'fotografia',
-    plan: 'pro',
+    plan: 'basic',
     component: 'FotografiaEstudio',
   },
   {
     id: 'gimnasio-fitness',
     name: 'Gimnasio / Fitness',
     type: 'fitness',
-    plan: 'pro',
+    plan: 'basic',
     component: 'GimnasioFitness',
   },
   {
     id: 'comercio-local',
     name: 'Comercio Local',
     type: 'comercio',
-    plan: 'pro',
+    plan: 'basic',
     component: 'ComercioLocal',
   },
   {
     id: 'belleza-estetica',
     name: 'Belleza & Estética',
     type: 'belleza',
-    plan: 'pro',
+    plan: 'basic',
     component: 'BellezaEstetica',
   },
   {
@@ -476,7 +478,7 @@ export const TEMPLATES = [
     id: 'arquitectura',
     name: 'Arquitectura',
     type: 'profesional',
-    plan: 'pro',
+    plan: 'extremo',
     component: 'Arquitectura',
   },
   {
@@ -504,21 +506,21 @@ export const TEMPLATES = [
     id: 'inmobiliaria',
     name: 'Inmobiliaria',
     type: 'inmobiliaria',
-    plan: 'pro',
+    plan: 'extremo',
     component: 'Inmobiliaria',
   },
   {
     id: 'hotel-cabanas',
     name: 'Hotel / Cabañas',
     type: 'hoteleria',
-    plan: 'pro',
+    plan: 'extremo',
     component: 'HotelCabanas',
   },
   {
     id: 'agencia-viajes',
     name: 'Agencia de Viajes',
     type: 'turismo',
-    plan: 'pro',
+    plan: 'extremo',
     component: 'AgenciaViajes',
   },
   {
@@ -546,23 +548,26 @@ export const TEMPLATES = [
 
 export type TemplateId = typeof TEMPLATES[number]['id'];
 
-// Devuelve true si un plan puede usar una plantilla dada. Reglas:
-// - 'free' (sin suscripción authorized) → ninguna.
-// - 'basic'/'test' → solo plantillas con plan: 'basic'.
-// - 'pro'/'extremo'/'personalizado' → todas.
+// Qué planes alcanzan cada tier de plantilla. El acceso es acumulativo: un
+// plan ve las de su tier y las de los de abajo.
+//
+//   basic   →  8 plantillas   (landings de una sección)
+//   pro     → 25 = 8 + 17     (los rubros con contenido administrable)
+//   extremo → 30 = 25 + 5     (negocio grande + la tienda completa)
+const TEMPLATE_TIER_ACCESS: Record<'basic' | 'pro' | 'extremo', readonly string[]> = {
+  basic: ['basic', 'test', 'pro', 'extremo', 'personalizado'],
+  pro: ['pro', 'extremo', 'personalizado'],
+  extremo: ['extremo', 'personalizado'],
+};
+
+// Devuelve true si un plan puede usar una plantilla dada.
+// 'free' (sin suscripción authorized) no puede usar ninguna.
 export function canUseTemplate(planSlug: string, templateId: string): boolean {
   const template = TEMPLATES.find(t => t.id === templateId);
   if (!template) return false;
 
   if (planSlug === 'free' || !planSlug) return false;
 
-  if (template.plan === 'basic') {
-    return ['basic', 'test', 'pro', 'extremo', 'personalizado'].includes(planSlug);
-  }
-
-  if (template.plan === 'pro') {
-    return ['pro', 'extremo', 'personalizado'].includes(planSlug);
-  }
-
-  return false;
+  const allowed = TEMPLATE_TIER_ACCESS[template.plan];
+  return allowed ? allowed.includes(planSlug) : false;
 }

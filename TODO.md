@@ -79,9 +79,12 @@ O sea: este ítem está esencialmente cerrado. Lo que queda es decidir si se dej
 (Estos vienen del informe en `~/.claude/plans/podr-as-darle-un-an-lisis-recursive-ripple.md`, anexos A1–A7.)
 
 - ~~**A1 "Pro (SIN SUSCRIPCIÓN)"**~~ — ya no aplica (verificado 2026-09-16). [cuenta/page.tsx](src/app/panel/(dashboard)/cuenta/page.tsx) chequea `status === 'authorized'` en los cuatro lugares donde muestra el plan.
-- **A4 Plantillas reorganizadas por tier** (pendiente, y ahora más grande): el catálogo
-  cerró en **30 plantillas**, pero la distribución quedó desbalanceada — 26 están en
-  `plan: 'pro'` y solo 4 en `basic` (`sabor-urbano`, `portfolio-minimal`, `landing-pro`,
-  `servicios-pro`). Es una decisión de producto: hay que repartirlas de nuevo antes de
-  salir a producción. Los tiers viven en `TEMPLATES` en [constants.ts](src/lib/constants.ts).
+- ~~**A4 Plantillas reorganizadas por tier**~~ — hecho. Las 30 quedaron repartidas
+  en tres tiers acumulativos: Basic 8 (landings de una sección), Pro 25 (+17 rubros
+  con contenido administrable), Extremo 30 (+5 de negocio grande y la tienda
+  completa). `canUseTemplate` usa `TEMPLATE_TIER_ACCESS` como fuente única y el
+  editor dejó de duplicar la regla. El copy de los tres planes se corrigió y hay
+  tests que lo atan al reparto real.
+  **Pendiente asociado:** el copy de Extremo dice "hasta 50 plantillas" y hoy
+  existen 30 — hay que llegar a 50 o bajar el número.
 - ~~**Verificación DNS automática del custom_domain**~~ — hecho. `POST /api/sites/verify-domain` resuelve CNAME y registro A, compara contra `DOMAIN_CNAME_TARGET` / `DOMAIN_APEX_IP` y actualiza el badge; el editor tiene botón "Verificar ahora". Queda confirmar que `DOMAIN_APEX_IP` coincide con lo que muestra el panel de Vercel para este proyecto.

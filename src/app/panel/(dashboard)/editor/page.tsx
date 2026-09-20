@@ -15,6 +15,7 @@ import {
   TEMPLATES,
   TEMPLATE_COLLECTIONS,
   canCustomizeTheme,
+  canUseTemplate,
   hasCatalogFeature,
 } from '@/lib/constants';
 import { THEME_LIST } from '@/lib/themes';
@@ -627,9 +628,7 @@ export default function EditorPage() {
               <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>Seleccionar Plantilla</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
                 {TEMPLATES.map(tpl => {
-                  const isLocked =
-                    userPlan === 'free' ||
-                    (tpl.plan === 'pro' && userPlan !== 'pro' && userPlan !== 'extremo');
+                  const isLocked = !canUseTemplate(userPlan, tpl.id);
                   const isSelected = templateId === tpl.id;
                   return (
                     <div 
@@ -648,7 +647,7 @@ export default function EditorPage() {
                         boxShadow: isSelected ? '0 10px 25px -5px rgba(99, 102, 241, 0.2)' : 'none'
                       }}
                     >
-                      {isLocked && <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: 'white', fontSize: '0.65rem', fontWeight: 800, padding: '0.25rem 0.6rem', borderRadius: '20px', letterSpacing: '0.05em' }}>PRO</div>}
+                      {isLocked && <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: 'white', fontSize: '0.65rem', fontWeight: 800, padding: '0.25rem 0.6rem', borderRadius: '20px', letterSpacing: '0.05em' }}>{tpl.plan === 'extremo' ? 'EXTREMO' : 'PRO'}</div>}
                       <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.4rem' }}>{tpl.name}</h3>
                       <span style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--text-muted)' }}>{tpl.type}</span>
                     </div>
