@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Check, Loader2 } from 'lucide-react';
 
 import { Toast, type ToastData } from '@/components/Toast';
+import ThemeCustomizer, { type Opcion, type OpcionColor, type Override } from './ThemeCustomizer';
 
 interface ThemeCard {
   id: string;
@@ -20,9 +21,17 @@ interface ThemeCard {
 export default function ThemeSelector({
   current,
   themes,
+  overrides,
+  colors,
+  fonts,
+  borders,
 }: {
   current: string;
   themes: ThemeCard[];
+  overrides: Record<string, Override | undefined>;
+  colors: OpcionColor[];
+  fonts: Opcion[];
+  borders: Opcion[];
 }) {
   const router = useRouter();
   const [selected, setSelected] = useState(current);
@@ -147,6 +156,18 @@ export default function ThemeSelector({
           );
         })}
       </div>
+
+      {/* El personalizador va del tema ACTIVO: es el único cuyo resultado se
+          ve al instante, porque el panel se pinta con el tema global. */}
+      <ThemeCustomizer
+        key={selected}
+        themeId={selected}
+        label={themes.find((t) => t.id === selected)?.label ?? selected}
+        override={overrides[selected] ?? {}}
+        colors={colors}
+        fonts={fonts}
+        borders={borders}
+      />
 
       <Toast toast={toast} onClose={() => setToast(null)} />
 

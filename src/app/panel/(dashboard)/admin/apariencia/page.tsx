@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 
 import { getAdminUser } from '@/lib/auth/getAdminUser';
-import { fetchAppThemeCached } from '@/lib/appSettings';
-import { THEME_LIST } from '@/lib/themes';
+import { fetchAppAppearanceCached } from '@/lib/appSettings';
+import { BORDER_WIDTHS, BRAND_COLORS, BRAND_FONTS, THEME_LIST } from '@/lib/themes';
 import ThemeSelector from './components/ThemeSelector';
 
 export const dynamic = 'force-dynamic';
@@ -11,7 +11,7 @@ export default async function AparienciaPage() {
   const admin = await getAdminUser();
   if (!admin) redirect('/');
 
-  const current = await fetchAppThemeCached();
+  const { themeId: current, overrides } = await fetchAppAppearanceCached();
 
   // Pasamos solo lo serializable que el selector necesita.
   const themes = THEME_LIST.map((t) => ({
@@ -35,7 +35,14 @@ export default async function AparienciaPage() {
         El cambio se ve al instante. No afecta a los sitios de los clientes (eso se
         configura por sitio más adelante).
       </p>
-      <ThemeSelector current={current} themes={themes} />
+      <ThemeSelector
+        current={current}
+        themes={themes}
+        overrides={overrides}
+        colors={BRAND_COLORS.map((c) => ({ id: c.id, label: c.label, hex: c.hex }))}
+        fonts={BRAND_FONTS.map((f) => ({ id: f.id, label: f.label }))}
+        borders={BORDER_WIDTHS.map((b) => ({ id: b.id, label: b.label }))}
+      />
     </div>
   );
 }

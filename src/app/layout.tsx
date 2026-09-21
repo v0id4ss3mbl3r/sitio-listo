@@ -9,8 +9,8 @@ import {
   Work_Sans,
 } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { fetchAppThemeCached } from "@/lib/appSettings";
-import { getTheme, themeRootCss } from "@/lib/themes";
+import { fetchAppThemeResolved } from "@/lib/appSettings";
+import { themeRootCss } from "@/lib/themes";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -96,7 +96,7 @@ export default async function RootLayout({
 }>) {
   // Tema global del producto (elegido por admin en /admin/apariencia).
   // oficina (default) → themeRootCss devuelve '' y no inyecta nada.
-  const theme = getTheme(await fetchAppThemeCached());
+  const theme = await fetchAppThemeResolved();
   const themeCss = themeRootCss(theme);
 
   // `surface` y `useGradients` viven en el contrato desde el principio y las

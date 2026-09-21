@@ -466,6 +466,141 @@ const ESTUDIO: Theme = {
 };
 
 /* ─────────────────────────────────────────────────────────────────────────
+ * Personalización por skin
+ *
+ * El admin puede retocar un preset desde /admin/apariencia. Lo que elige se
+ * guarda como override en app_settings.theme_overrides y se aplica ENCIMA del
+ * preset del código, que nunca se pisa: borrar el override devuelve el tema
+ * original tal cual.
+ *
+ * Las opciones son listas cerradas a propósito. Un selector de color libre
+ * deja escribir amarillo sobre blanco; estas paletas no pueden.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+export const BRAND_COLORS = [
+  { id: 'azul', label: 'Azul', hex: '#2340E8' },
+  { id: 'tinta', label: 'Tinta', hex: '#14161D' },
+  { id: 'coral', label: 'Coral', hex: '#FF5A3C' },
+  { id: 'amarillo', label: 'Amarillo', hex: '#FFCC00' },
+  { id: 'verde', label: 'Verde', hex: '#1E9E6A' },
+  { id: 'terracota', label: 'Terracota', hex: '#B4462A' },
+  { id: 'violeta', label: 'Violeta', hex: '#6D4AFF' },
+  { id: 'fucsia', label: 'Fucsia', hex: '#DB2777' },
+] as const;
+
+export type BrandColorId = typeof BRAND_COLORS[number]['id'];
+
+// Solo familias que layout.tsx ya carga: next/font resuelve en build, así que
+// no se puede ofrecer "cualquier fuente de Google". Sumar una es agregarla al
+// layout y a esta lista.
+export const BRAND_FONTS = [
+  { id: 'bricolage', label: 'Bricolage Grotesque', stack: 'var(--font-bricolage), system-ui, sans-serif' },
+  { id: 'work-sans', label: 'Work Sans', stack: 'var(--font-work-sans), system-ui, sans-serif' },
+  { id: 'serif', label: 'Source Serif', stack: 'var(--font-serif), Georgia, serif' },
+  { id: 'inter', label: 'Inter', stack: 'var(--font-inter), system-ui, sans-serif' },
+  { id: 'geist', label: 'Geist', stack: 'var(--font-geist-sans), system-ui, sans-serif' },
+  { id: 'jetbrains', label: 'JetBrains Mono', stack: 'var(--font-jetbrains), ui-monospace, monospace' },
+] as const;
+
+export type BrandFontId = typeof BRAND_FONTS[number]['id'];
+
+export const BORDER_WIDTHS = [
+  { id: 'none', label: 'Sin borde', value: '0px' },
+  { id: 'thin', label: 'Fino', value: '1px' },
+  { id: 'thick', label: 'Grueso', value: '2px' },
+] as const;
+
+export type BorderWidthId = typeof BORDER_WIDTHS[number]['id'];
+
+export type ThemeOverride = {
+  primary?: BrandColorId;
+  secondary?: BrandColorId;
+  fontHeading?: BrandFontId;
+  fontBody?: BrandFontId;
+  borderWidth?: BorderWidthId;
+  /** Halos de fondo. Los lee la landing y las 24 plantillas de clientes. */
+  surface?: SurfaceStyle;
+  /** Degradé en el headline y en los acentos. */
+  useGradients?: boolean;
+};
+
+export type ThemeOverrides = Partial<Record<ThemeId, ThemeOverride>>;
+
+const hexDe = (id: BrandColorId): string | undefined =>
+  BRAND_COLORS.find((c) => c.id === id)?.hex;
+
+const stackDe = (id: BrandFontId): string | undefined =>
+  BRAND_FONTS.find((f) => f.id === id)?.stack;
+
+const anchoDe = (id: BorderWidthId): string | undefined =>
+  BORDER_WIDTHS.find((b) => b.id === id)?.value;
+
+// Aclara u oscurece un hex. Sirve para que cambiar el primario arrastre sus
+// variantes: sin esto quedaban el light y el dark del color anterior.
+function shade(hex: string, amount: number): string {
+  const limpio = hex.replace('#', '');
+  const full = limpio.length === 3
+    ? limpio.split('').map((c) => c + c).join('')
+    : limpio;
+  const n = Number.parseInt(full, 16);
+  if (!Number.isFinite(n) || full.length !== 6) return hex;
+
+  const mezclar = (canal: number) =>
+    Math.round(amount > 0 ? canal + (255 - canal) * amount : canal * (1 + amount));
+
+  const r = mezclar((n >> 16) & 255);
+  const g = mezclar((n >> 8) & 255);
+  const b = mezclar(n & 255);
+  return `#${[r, g, b].map((v) => Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0')).join('')}`;
+}
+
+/**
+ * Devuelve el tema con el override aplicado. Sin override, el mismo objeto.
+ *
+ * Los valores derivados se recalculan a mano en vez de dejarlos viejos: si el
+ * acento del hero era el primario del preset, sigue siendo el primario nuevo;
+ * si era el secundario, sigue el secundario. Esa es la diferencia entre
+ * cambiar un color y romper el tema.
+ */
+export function applyThemeOverride(theme: Theme, override?: ThemeOverride): Theme {
+  if (!override || Object.keys(override).length === 0) return theme;
+
+  const t = { ...theme.tokens };
+
+  const nuevoPrimario = override.primary ? hexDe(override.primary) : undefined;
+  if (nuevoPrimario) {
+    const anterior = t.primary;
+    t.primary = nuevoPrimario;
+    t.primaryLight = shade(nuevoPrimario, 0.22);
+    t.primaryDark = shade(nuevoPrimario, -0.22);
+    if (t.gradientHero === anterior) t.gradientHero = nuevoPrimario;
+    if (t.heroAccent === anterior) t.heroAccent = nuevoPrimario;
+    if (t.heroSurface === anterior) t.heroSurface = nuevoPrimario;
+    if (t.accent === anterior) t.accent = nuevoPrimario;
+  }
+
+  const nuevoSecundario = override.secondary ? hexDe(override.secondary) : undefined;
+  if (nuevoSecundario) {
+    const anterior = t.secondary;
+    t.secondary = nuevoSecundario;
+    if (t.heroAccent === anterior) t.heroAccent = nuevoSecundario;
+    if (t.accent === anterior) t.accent = nuevoSecundario;
+  }
+
+  if (override.fontHeading) t.fontHeading = stackDe(override.fontHeading) ?? t.fontHeading;
+  if (override.fontBody) t.fontBody = stackDe(override.fontBody) ?? t.fontBody;
+  if (override.borderWidth) t.borderWidth = anchoDe(override.borderWidth) ?? t.borderWidth;
+  if (override.surface) {
+    t.surface = override.surface;
+    // Un tema plano no puede quedarse con un halo dibujado, ni al revés.
+    if (override.surface === 'flat') t.gradientGlow = 'transparent';
+  }
+  if (typeof override.useGradients === 'boolean') t.useGradients = override.useGradients;
+
+  return { ...theme, tokens: t };
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
  * Registro y helpers
  * ───────────────────────────────────────────────────────────────────────── */
 
@@ -627,7 +762,12 @@ export function themeToCssVars(theme: Theme): Record<string, string> {
  * cada preset ya declara su `mode`.
  */
 export function themeRootCss(theme: Theme): string {
-  if (theme.id === DEFAULT_THEME_ID) return '';
+  // El atajo solo vale para el preset por DEFECTO SIN TOCAR. Si el admin lo
+  // personalizó, `applyThemeOverride` devolvió un objeto nuevo y hay que
+  // inyectar sí o sí: si no, globals.css renderizaría el preset original y la
+  // personalización se perdería en silencio.
+  const sinPersonalizar = theme === THEMES[theme.id];
+  if (theme.id === DEFAULT_THEME_ID && sinPersonalizar) return '';
   const vars = themeToCssVars(theme);
   const decls = Object.entries(vars)
     .map(([k, v]) => `${k}:${v}`)

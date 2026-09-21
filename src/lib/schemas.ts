@@ -1,10 +1,13 @@
 import { z } from 'zod';
 
 import { PLANS } from '@/lib/constants';
-import { THEME_LIST } from '@/lib/themes';
+import { BORDER_WIDTHS, BRAND_COLORS, BRAND_FONTS, THEME_LIST } from '@/lib/themes';
 
 // Ids de tema válidos, derivados del registro de presets (single source).
 const THEME_IDS = THEME_LIST.map((t) => t.id);
+const BRAND_COLOR_IDS = BRAND_COLORS.map((c) => c.id);
+const BRAND_FONT_IDS = BRAND_FONTS.map((f) => f.id);
+const BORDER_WIDTH_IDS = BORDER_WIDTHS.map((b) => b.id);
 
 // Schemas de zod para parsear el shape de los bodies de la API.
 // La validación de reglas de negocio (subdominios reservados, dominios
@@ -293,9 +296,29 @@ export const adminUpdateTemplateSchema = z.object({
 });
 
 // ─── admin: apariencia (app_settings global) ──────────────────
-export const adminUpdateSettingsSchema = z.object({
-  theme_id: z.enum(THEME_IDS as [string, ...string[]]),
+// La personalización por skin valida contra las mismas listas cerradas que
+// muestra la UI: si un id no está en BRAND_COLORS / BRAND_FONTS /
+// BORDER_WIDTHS, no entra. Nada de hex ni nombres de fuente libres.
+const themeOverrideSchema = z.object({
+  primary: z.enum(BRAND_COLOR_IDS as [string, ...string[]]).optional(),
+  secondary: z.enum(BRAND_COLOR_IDS as [string, ...string[]]).optional(),
+  fontHeading: z.enum(BRAND_FONT_IDS as [string, ...string[]]).optional(),
+  fontBody: z.enum(BRAND_FONT_IDS as [string, ...string[]]).optional(),
+  borderWidth: z.enum(BORDER_WIDTH_IDS as [string, ...string[]]).optional(),
+  surface: z.enum(['glow', 'flat']).optional(),
+  useGradients: z.boolean().optional(),
 });
+
+export const adminUpdateSettingsSchema = z.object({
+  theme_id: z.enum(THEME_IDS as [string, ...string[]]).optional(),
+  // Objeto completo por tema. Mandar {} para un tema lo devuelve al preset.
+  theme_overrides: z
+    .record(z.enum(THEME_IDS as [string, ...string[]]), themeOverrideSchema)
+    .optional(),
+}).refine(
+  (v) => v.theme_id !== undefined || v.theme_overrides !== undefined,
+  { message: 'Nada para actualizar' }
+);
 
 // ─── admin: usuarios ──────────────────────────────────────────
 export const adminUpdateUserSchema = z.object({
