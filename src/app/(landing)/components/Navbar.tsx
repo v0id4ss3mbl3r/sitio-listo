@@ -22,6 +22,13 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Sin scroll el navbar flota SOBRE la banda del hero, que puede ser un
+  // bloque de color (Kiosco) o el fondo de página (el resto). Usar
+  // --text-secondary ahí dejaba los links ilegibles sobre el azul.
+  const sobreHero = !isScrolled;
+  const colorTexto = sobreHero ? 'var(--hero-text)' : 'var(--text-secondary)';
+  const colorTextoFuerte = sobreHero ? 'var(--hero-text)' : 'var(--text-primary)';
+
   return (
     <nav
       id="navbar"
@@ -66,14 +73,14 @@ export default function Navbar() {
             style={{
               width: '36px',
               height: '36px',
-              borderRadius: '10px',
-              background: 'var(--gradient-primary)',
+              borderRadius: 'var(--radius-sm)',
+              background: sobreHero ? 'var(--hero-accent)' : 'var(--color-primary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '1.1rem',
               fontWeight: 700,
-              color: 'white',
+              color: sobreHero ? 'var(--hero-accent-text)' : '#FFFFFF',
             }}
           >
             S
@@ -82,12 +89,13 @@ export default function Navbar() {
             style={{
               fontSize: '1.25rem',
               fontWeight: 700,
-              color: 'var(--text-primary)',
+              fontFamily: 'var(--font-heading)',
+              color: colorTextoFuerte,
               letterSpacing: '-0.02em',
             }}
           >
             Sitio
-            <span style={{ color: 'var(--color-primary-light)' }}>Listo</span>
+            <span style={{ opacity: 0.7 }}>Listo</span>
           </span>
         </Link>
 
@@ -104,19 +112,13 @@ export default function Navbar() {
             <a
               key={link.href}
               href={link.href}
+              className="nav-link"
               style={{
-                color: 'var(--text-secondary)',
+                color: colorTexto,
                 textDecoration: 'none',
                 fontSize: '0.9rem',
-                fontWeight: 500,
-                transition: 'color 0.2s ease',
+                fontWeight: 600,
               }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.color = 'var(--text-primary)')
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.color = 'var(--text-secondary)')
-              }
             >
               {link.label}
             </a>
@@ -131,27 +133,34 @@ export default function Navbar() {
           <ThemeToggle />
           <a
             href={`${process.env.NEXT_PUBLIC_APP_URL}/login`}
+            className="nav-link"
             style={{
-              color: 'var(--text-secondary)',
+              color: colorTexto,
               textDecoration: 'none',
               fontSize: '0.9rem',
-              fontWeight: 500,
-              padding: '0.5rem 1rem',
-              transition: 'color 0.2s ease',
+              fontWeight: 600,
+              padding: 'var(--space-2) var(--space-4)',
             }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.color = 'var(--text-primary)')
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.color = 'var(--text-secondary)')
-            }
           >
             Iniciar sesión
           </a>
           <a
             href="#precios"
-            className="btn-primary"
-            style={{ padding: '0.625rem 1.5rem', fontSize: '0.875rem' }}
+            className="hero-cta"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              height: '44px',
+              padding: '0 var(--space-6)',
+              boxSizing: 'border-box',
+              background: sobreHero ? 'var(--hero-accent)' : 'var(--color-primary)',
+              color: sobreHero ? 'var(--hero-accent-text)' : '#FFFFFF',
+              border: 'var(--border-width, 1px) solid var(--border-subtle)',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              textDecoration: 'none',
+            }}
           >
             Empezar gratis
           </a>
@@ -166,9 +175,9 @@ export default function Navbar() {
             display: 'none',
             background: 'none',
             border: 'none',
-            color: 'var(--text-primary)',
+            color: colorTextoFuerte,
             cursor: 'pointer',
-            padding: '0.5rem',
+            padding: 'var(--space-2)',
           }}
           aria-label="Abrir menú"
         >

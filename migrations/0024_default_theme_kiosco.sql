@@ -9,6 +9,13 @@
 -- mientras la fila diga 'oficina', la app sirve Oficina. Por eso hace falta
 -- actualizarla acá.
 --
+-- OJO (verificado en producción): el UPDATE filtra por theme_id = 'oficina'
+-- a propósito, para no pisar una elección deliberada del admin. Si la fila ya
+-- decía otra cosa — 'glow', por ejemplo — esta migración NO hace nada y el
+-- tema sigue como estaba. Eso no es un fallo: cambiarlo es un clic en
+-- /admin/apariencia, y una migración no debería sobreescribir una decisión
+-- que alguien tomó desde el panel.
+--
 -- Reversible: volver a poner 'oficina' (o cualquier otro preset) desde
 -- /admin/apariencia, sin migración.
 -- =============================================================

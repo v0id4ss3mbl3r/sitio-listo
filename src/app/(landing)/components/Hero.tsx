@@ -32,8 +32,8 @@ export default function Hero() {
           style={{
             display: 'inline-block',
             padding: 'var(--space-2) var(--space-3)',
-            background: 'var(--color-secondary)',
-            color: '#0A0A0A',
+            background: 'var(--hero-accent)',
+            color: 'var(--hero-accent-text)',
             borderRadius: 'var(--radius-sm)',
             fontSize: '13px',
             fontWeight: 700,
@@ -82,6 +82,7 @@ export default function Hero() {
           <a
             href={`${process.env.NEXT_PUBLIC_APP_URL}/registro`}
             id="cta-empezar"
+            className="hero-cta"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -89,8 +90,8 @@ export default function Hero() {
               height: '56px',
               padding: '0 var(--space-8)',
               boxSizing: 'border-box',
-              background: 'var(--color-secondary)',
-              color: '#0A0A0A',
+              background: 'var(--hero-accent)',
+              color: 'var(--hero-accent-text)',
               border: 'var(--border-width, 1px) solid var(--border-subtle)',
               borderRadius: 'var(--radius-md)',
               boxShadow: 'var(--shadow-card)',
@@ -118,6 +119,7 @@ export default function Hero() {
           <a
             href="#plantillas"
             id="cta-ver-plantillas"
+            className="hero-cta"
             style={{
               display: 'inline-flex',
               alignItems: 'center',

@@ -41,6 +41,8 @@
   --hero-surface: #2340E8;
   --hero-text: #FFFFFF;
   --hero-text-muted: rgba(255, 255, 255, 0.92);
+  --hero-accent: #FFCC00;
+  --hero-accent-text: #0A0A0A;
 
   /* Sin gradientes: el "gradiente" es un color sólido. */
   --gradient-primary: var(--color-primary);
@@ -115,6 +117,8 @@
   --hero-surface: #17234F;
   --hero-text: #FFFFFF;
   --hero-text-muted: rgba(255, 255, 255, 0.86);
+  --hero-accent: #FFCC00;
+  --hero-accent-text: #0A0A0A;
 
   --gradient-hero: #6D86FF;
   --gradient-glow: transparent;
@@ -622,4 +626,75 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* Landing — interacciones                                     */
+/* ─────────────────────────────────────────────────────────── */
+
+/* Links del navbar. El color lo pone el componente (cambia según esté sobre
+   la banda del hero o sobre fondo propio), así que el hover solo baja opacidad
+   — funciona igual sea claro sobre azul u oscuro sobre blanco. */
+.nav-link {
+  transition: opacity var(--transition-base);
+  border-radius: var(--radius-sm);
+}
+
+.nav-link:hover {
+  opacity: 0.68;
+}
+
+.nav-link:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-primary);
+}
+
+/* Botones del hero. En Kiosco la sombra es dura y desplazada, así que el
+   hover mete el botón DENTRO de su propia sombra en vez de levantarlo.
+   En los temas sin sombra queda como un empujón sutil de 2px. */
+.hero-cta {
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-base),
+    opacity var(--transition-base);
+}
+
+.hero-cta:hover {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.hero-cta:active {
+  transform: translate(4px, 4px);
+  box-shadow: none;
+}
+
+.hero-cta:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-primary);
+}
+
+/* Cards de la galería de plantillas. */
+.template-card {
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-base),
+    border-color var(--transition-base);
+}
+
+.template-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-elevated);
+  border-color: var(--border-hover);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-cta,
+  .hero-cta:hover,
+  .hero-cta:active,
+  .template-card,
+  .template-card:hover {
+    transform: none;
+    transition: none;
+  }
 }

@@ -73,6 +73,13 @@ export interface ThemeTokens {
   heroSurface: string;
   heroText: string;
   heroTextMuted: string;
+  /** Color del CTA principal y del badge SOBRE la banda del hero.
+   *  Kiosco apoya el hero en su color primario, así que ahí el CTA no puede
+   *  ser primario también: usa el secundario. En los temas cuyo hero va sobre
+   *  el fondo de página, el CTA sí es el primario. Sin este token el Hero
+   *  usaba --color-secondary para todos y mezclaba paletas. */
+  heroAccent: string;
+  heroAccentText: string;
 
   /* ── Tratamiento de superficie ──
    * `surface` y `useGradients` son los switches semánticos que distinguen
@@ -152,6 +159,8 @@ const OFICINA: Theme = {
     heroSurface: '#FAF8F2',
     heroText: '#2A2A24',
     heroTextMuted: '#5C5C52',
+    heroAccent: '#8B6F3F',
+    heroAccentText: '#FFFFFF',
     borderWidth: '1px',
 
     surface: 'flat',
@@ -205,6 +214,8 @@ const GLOW: Theme = {
     heroSurface: '#0F172A',
     heroText: '#F8FAFC',
     heroTextMuted: '#94A3B8',
+    heroAccent: '#6366f1',
+    heroAccentText: '#FFFFFF',
     borderWidth: '1px',
 
     surface: 'glow',
@@ -258,6 +269,8 @@ const VIVO: Theme = {
     heroSurface: '#FFFFFF',
     heroText: '#111827',
     heroTextMuted: '#4B5563',
+    heroAccent: '#db2777',
+    heroAccentText: '#FFFFFF',
     borderWidth: '1px',
 
     surface: 'glow',
@@ -313,6 +326,8 @@ const KIOSCO: Theme = {
     heroSurface: '#2340E8',
     heroText: '#FFFFFF',
     heroTextMuted: 'rgba(255, 255, 255, 0.92)',
+    heroAccent: '#FFCC00',
+    heroAccentText: '#0A0A0A',
     borderWidth: '2px',
 
     surface: 'flat',
@@ -369,6 +384,8 @@ const TALLER: Theme = {
     heroSurface: '#F2EEE5',
     heroText: '#1A1714',
     heroTextMuted: '#4A443B',
+    heroAccent: '#B4462A',
+    heroAccentText: '#FBF9F4',
     borderWidth: '1px',
 
     surface: 'flat',
@@ -423,6 +440,8 @@ const ESTUDIO: Theme = {
     heroSurface: '#0D0F0E',
     heroText: '#F3F5F2',
     heroTextMuted: '#99A39B',
+    heroAccent: '#7FD1A0',
+    heroAccentText: '#0B1410',
     borderWidth: '1px',
 
     surface: 'flat',
@@ -547,6 +566,8 @@ export function themeToCssVars(theme: Theme): Record<string, string> {
     '--hero-surface': t.heroSurface,
     '--hero-text': t.heroText,
     '--hero-text-muted': t.heroTextMuted,
+    '--hero-accent': t.heroAccent,
+    '--hero-accent-text': t.heroAccentText,
 
     '--gradient-primary': t.useGradients ? t.gradientHero : t.primary,
     '--gradient-hero': t.gradientHero,
