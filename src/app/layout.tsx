@@ -1,5 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter, JetBrains_Mono, Source_Serif_4 } from "next/font/google";
+import {
+  Bricolage_Grotesque,
+  Geist,
+  Geist_Mono,
+  Inter,
+  JetBrains_Mono,
+  Source_Serif_4,
+  Work_Sans,
+} from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { fetchAppThemeCached } from "@/lib/appSettings";
 import { getTheme, themeRootCss } from "@/lib/themes";
@@ -35,6 +43,22 @@ const sourceSerif = Source_Serif_4({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
   style: ["normal", "italic"],
+});
+
+// Fuentes del tema Kiosco (el por defecto). Son variables: se omite `weight`
+// a propósito, Next carga el archivo variable y sirve todo el rango.
+//
+// Los otros presets reusan fuentes ya cargadas acá (Taller → Source Serif,
+// Estudio → Geist) en vez de sumar familias nuevas: cada familia extra la
+// paga el visitante en cada carga, y esos temas son de respaldo.
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
+  subsets: ["latin"],
+});
+
+const workSans = Work_Sans({
+  variable: "--font-work-sans",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
@@ -78,7 +102,7 @@ export default async function RootLayout({
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${jetbrainsMono.variable} ${sourceSerif.variable}`}
+      className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${jetbrainsMono.variable} ${sourceSerif.variable} ${bricolage.variable} ${workSans.variable}`}
       data-app-theme={theme.id}
       suppressHydrationWarning
     >

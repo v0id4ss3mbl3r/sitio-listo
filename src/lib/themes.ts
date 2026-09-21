@@ -28,7 +28,13 @@ export type ColorMode = 'light' | 'dark';
 
 /** Identificadores estables de los presets. Si esto se persiste en DB
  *  (theme_id), mantener estos strings inmutables. */
-export type ThemeId = 'oficina' | 'glow' | 'vivo';
+export type ThemeId =
+  | 'oficina'
+  | 'glow'
+  | 'vivo'
+  | 'taller'
+  | 'kiosco'
+  | 'estudio';
 
 /**
  * Tokens de diseño de un tema. Todos los valores son strings/primitivos
@@ -56,6 +62,17 @@ export interface ThemeTokens {
   /* ── Bordes ── */
   borderSubtle: string;
   borderHover: string;
+  /** Ancho de borde de cards y botones. '1px' en casi todos; '2px' en Kiosco,
+   *  donde el borde grueso ES la identidad. */
+  borderWidth: string;
+
+  /* ── Banda del hero ──
+   * Kiosco apoya el hero sobre un bloque de color plano; el resto de los
+   * temas lo dejan sobre el fondo de la página. Sin estos tokens habría que
+   * elegir entre una estructura que sirve a Kiosco o una que sirve al resto. */
+  heroSurface: string;
+  heroText: string;
+  heroTextMuted: string;
 
   /* ── Tratamiento de superficie ──
    * `surface` y `useGradients` son los switches semánticos que distinguen
@@ -132,6 +149,10 @@ const OFICINA: Theme = {
 
     borderSubtle: 'rgba(42, 42, 36, 0.10)',
     borderHover: 'rgba(139, 111, 63, 0.30)',
+    heroSurface: '#FAF8F2',
+    heroText: '#2A2A24',
+    heroTextMuted: '#5C5C52',
+    borderWidth: '1px',
 
     surface: 'flat',
     useGradients: false,
@@ -181,6 +202,10 @@ const GLOW: Theme = {
 
     borderSubtle: 'rgba(99, 102, 241, 0.15)',
     borderHover: 'rgba(99, 102, 241, 0.40)',
+    heroSurface: '#0F172A',
+    heroText: '#F8FAFC',
+    heroTextMuted: '#94A3B8',
+    borderWidth: '1px',
 
     surface: 'glow',
     useGradients: true,
@@ -230,6 +255,10 @@ const VIVO: Theme = {
 
     borderSubtle: 'rgba(17, 24, 39, 0.08)',
     borderHover: 'rgba(219, 39, 119, 0.35)',
+    heroSurface: '#FFFFFF',
+    heroText: '#111827',
+    heroTextMuted: '#4B5563',
+    borderWidth: '1px',
 
     surface: 'glow',
     useGradients: true,
@@ -252,20 +281,190 @@ const VIVO: Theme = {
   },
 };
 
+/**
+ * KIOSCO — el look oficial de SitioListo desde 2026.
+ * Popular y de alto contraste: azul y amarillo planos, bordes de 2px y
+ * sombras duras SIN blur (el offset es la sombra). Un único radio en todos
+ * los componentes: esa uniformidad es parte de la identidad, no un descuido.
+ */
+const KIOSCO: Theme = {
+  id: 'kiosco',
+  label: 'Kiosco',
+  description: 'Popular y de alto contraste: azul y amarillo planos, bordes gruesos y sombras duras. El look oficial.',
+  mode: 'light',
+  tokens: {
+    primary: '#2340E8',
+    primaryLight: '#4C64F0',
+    primaryDark: '#1B33C7',
+    secondary: '#FFCC00',
+    accent: '#FFCC00',
+
+    bgBase: '#FFFFFF',
+    bgSubtle: '#F4F5FA',
+    bgCard: '#FFFFFF',
+    bgCardHover: '#F4F5FA',
+
+    textPrimary: '#0A0A0A',
+    textSecondary: '#444444',
+    textMuted: '#6B6B6B',
+
+    borderSubtle: '#0A0A0A',
+    borderHover: '#2340E8',
+    heroSurface: '#2340E8',
+    heroText: '#FFFFFF',
+    heroTextMuted: 'rgba(255, 255, 255, 0.92)',
+    borderWidth: '2px',
+
+    surface: 'flat',
+    useGradients: false,
+    gradientHero: '#2340E8',
+    gradientGlow: 'transparent',
+
+    // Sombra dura: desplazamiento sin blur. Es lo que da el aire de cartel
+    // impreso en vez de card de dashboard.
+    shadowCard: '4px 4px 0 #0A0A0A',
+    shadowElevated: '6px 6px 0 #0A0A0A',
+    shadowGlow: 'none',
+
+    radiusSm: '0.375rem',
+    radiusMd: '0.375rem',
+    radiusLg: '0.375rem',
+    radiusXl: '0.375rem',
+
+    fontHeading: 'var(--font-bricolage), system-ui, sans-serif',
+    fontBody: 'var(--font-work-sans), system-ui, sans-serif',
+    headingItalic: false,
+    headingWeight: 800,
+  },
+};
+
+/**
+ * TALLER — editorial argentino, de imprenta.
+ * Crema, tinta y terracota. CERO sombras: la jerarquía la hacen los hairlines
+ * y el aire. Reusa el serif que el layout ya carga.
+ */
+const TALLER: Theme = {
+  id: 'taller',
+  label: 'Taller',
+  description: 'Editorial y cálido: papel crema, tinta y terracota, títulos serif y cero sombras.',
+  mode: 'light',
+  tokens: {
+    primary: '#B4462A',
+    primaryLight: '#C9623F',
+    primaryDark: '#8E3520',
+    secondary: '#5C7060',
+    accent: '#B4462A',
+
+    bgBase: '#F2EEE5',
+    bgSubtle: '#EAE4D8',
+    bgCard: '#FBF9F4',
+    bgCardHover: '#FFFFFF',
+
+    textPrimary: '#1A1714',
+    textSecondary: '#4A443B',
+    textMuted: '#6B6255',
+
+    borderSubtle: '#D6CFC0',
+    borderHover: '#B4462A',
+    heroSurface: '#F2EEE5',
+    heroText: '#1A1714',
+    heroTextMuted: '#4A443B',
+    borderWidth: '1px',
+
+    surface: 'flat',
+    useGradients: false,
+    gradientHero: '#B4462A',
+    gradientGlow: 'transparent',
+
+    shadowCard: 'none',
+    shadowElevated: 'none',
+    shadowGlow: 'none',
+
+    radiusSm: '0.5rem',
+    radiusMd: '0.75rem',
+    radiusLg: '0.75rem',
+    radiusXl: '1rem',
+
+    fontHeading: 'var(--font-serif), Georgia, serif',
+    fontBody: 'var(--font-inter), system-ui, sans-serif',
+    headingItalic: false,
+    headingWeight: 600,
+  },
+};
+
+/**
+ * ESTUDIO — sobrio y técnico.
+ * Casi negro con un verde apagado, bordes de 1px y nada decorativo.
+ * Reusa las fuentes que el layout ya carga (Geist).
+ */
+const ESTUDIO: Theme = {
+  id: 'estudio',
+  label: 'Estudio',
+  description: 'Sobrio y técnico: casi negro con verde apagado, bordes finos y cero decoración.',
+  mode: 'dark',
+  tokens: {
+    primary: '#7FD1A0',
+    primaryLight: '#A6E3BF',
+    primaryDark: '#5FB183',
+    secondary: '#7FD1A0',
+    accent: '#7FD1A0',
+
+    bgBase: '#0D0F0E',
+    bgSubtle: '#141815',
+    bgCard: '#141815',
+    bgCardHover: '#1B201D',
+
+    textPrimary: '#F3F5F2',
+    textSecondary: '#99A39B',
+    textMuted: '#7D867F',
+
+    borderSubtle: 'rgba(255, 255, 255, 0.09)',
+    borderHover: 'rgba(127, 209, 160, 0.45)',
+    heroSurface: '#0D0F0E',
+    heroText: '#F3F5F2',
+    heroTextMuted: '#99A39B',
+    borderWidth: '1px',
+
+    surface: 'flat',
+    useGradients: false,
+    gradientHero: '#7FD1A0',
+    gradientGlow: 'transparent',
+
+    shadowCard: '0 1px 2px rgba(0, 0, 0, 0.4)',
+    shadowElevated: '0 8px 24px rgba(0, 0, 0, 0.5)',
+    shadowGlow: 'none',
+
+    radiusSm: '0.625rem',
+    radiusMd: '0.625rem',
+    radiusLg: '0.625rem',
+    radiusXl: '0.875rem',
+
+    fontHeading: 'var(--font-geist-sans), system-ui, sans-serif',
+    fontBody: 'var(--font-geist-sans), system-ui, sans-serif',
+    headingItalic: false,
+    headingWeight: 600,
+  },
+};
+
 /* ─────────────────────────────────────────────────────────────────────────
  * Registro y helpers
  * ───────────────────────────────────────────────────────────────────────── */
 
 export const THEMES: Record<ThemeId, Theme> = {
+  kiosco: KIOSCO,
+  taller: TALLER,
+  estudio: ESTUDIO,
   oficina: OFICINA,
   glow: GLOW,
   vivo: VIVO,
 };
 
-export const THEME_LIST: Theme[] = [OFICINA, GLOW, VIVO];
+// El orden es el que ve el admin en /admin/apariencia: primero el oficial,
+// después las alternativas.
+export const THEME_LIST: Theme[] = [KIOSCO, TALLER, ESTUDIO, OFICINA, GLOW, VIVO];
 
 /** Tema por defecto de las superficies propias (landing/admin). */
-export const DEFAULT_THEME_ID: ThemeId = 'oficina';
+export const DEFAULT_THEME_ID: ThemeId = 'kiosco';
 
 /**
  * Tema por defecto de cada plantilla de cliente (decisión de admin/diseño).
@@ -343,6 +542,11 @@ export function themeToCssVars(theme: Theme): Record<string, string> {
 
     '--border-subtle': t.borderSubtle,
     '--border-hover': t.borderHover,
+    '--border-width': t.borderWidth,
+
+    '--hero-surface': t.heroSurface,
+    '--hero-text': t.heroText,
+    '--hero-text-muted': t.heroTextMuted,
 
     '--gradient-primary': t.useGradients ? t.gradientHero : t.primary,
     '--gradient-hero': t.gradientHero,
@@ -368,10 +572,17 @@ export function themeToCssVars(theme: Theme): Record<string, string> {
  * propias (landing + panel), pensado para inyectarse en un <style> del layout
  * raíz DESPUÉS del import de globals.css (así gana por orden de cascada).
  *
- * El tema por defecto (oficina) devuelve '' a propósito: no inyecta nada y la
- * app queda EXACTAMENTE como hoy, conservando el toggle claro/oscuro de
- * globals.css (:root / .dark). Los demás temas sí pisan el set completo de
- * variables (incluido fondo), por eso se ven netamente distintos.
+ * El tema por defecto devuelve '' a propósito y NO inyecta nada: sus valores
+ * viven en globals.css (:root para claro, .dark para oscuro), así el toggle
+ * claro/oscuro sigue funcionando en la superficie que ve el visitante.
+ *
+ * CUIDADO: esto ata DEFAULT_THEME_ID a globals.css. Si cambiás el default,
+ * hay que mover también :root y .dark a los valores de ese tema, o la app
+ * renderiza el tema viejo mientras dice que usa el nuevo.
+ *
+ * Los demás temas pisan el set completo (incluido el fondo), por eso se ven
+ * netamente distintos — y por eso en ellos el toggle claro/oscuro no aplica:
+ * cada preset ya declara su `mode`.
  */
 export function themeRootCss(theme: Theme): string {
   if (theme.id === DEFAULT_THEME_ID) return '';

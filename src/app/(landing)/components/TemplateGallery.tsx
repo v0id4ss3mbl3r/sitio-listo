@@ -17,12 +17,10 @@ const PLAN_LABEL: Record<string, string> = { basic: 'Básico', pro: 'Pro', extre
 
 // La vitrina se deriva de TEMPLATES → se mantiene sola al sumar plantillas.
 const previews = TEMPLATES.map((tpl) => {
-  const cat = TEMPLATE_CATEGORIES.find((c) => c.slug === tpl.type);
   return {
     name: tpl.name,
     category: tpl.type as string,
-    icon: cat?.icon ?? '✨',
-    color: CATEGORY_COLOR[tpl.type] ?? '#6366f1',
+    color: CATEGORY_COLOR[tpl.type] ?? 'var(--color-primary)',
     plan: PLAN_LABEL[tpl.plan] ?? tpl.plan,
   };
 });
@@ -48,12 +46,13 @@ export default function TemplateGallery() {
           <span
             key={cat.slug}
             style={{
-              padding: '0.5rem 1.25rem', borderRadius: '9999px', fontSize: '0.85rem', fontWeight: 500,
-              background: 'rgba(99, 102, 241, 0.08)', border: '1px solid rgba(99, 102, 241, 0.15)',
-              color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.4rem',
+              padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-sm)',
+              fontSize: '0.85rem', fontWeight: 600,
+              background: 'var(--bg-card)', border: 'var(--border-width, 1px) solid var(--border-subtle)',
+              color: 'var(--text-secondary)',
             }}
           >
-            {cat.icon} {cat.name}
+            {cat.name}
           </span>
         ))}
       </div>
@@ -63,21 +62,27 @@ export default function TemplateGallery() {
         {previews.map((tpl) => (
           <div key={tpl.name} className="glass-card" style={{ overflow: 'hidden' }}>
             <div style={{
-              height: '180px', background: `linear-gradient(135deg, ${tpl.color}10, ${tpl.color}25)`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
+              height: '180px', background: `${tpl.color}1A`,
+              borderBottom: 'var(--border-width, 1px) solid var(--border-subtle)',
+              display: 'flex', alignItems: 'flex-end', padding: 'var(--space-4)', position: 'relative',
             }}>
-              <span style={{ fontSize: '3rem' }}>{tpl.icon}</span>
+              <span style={{
+                fontFamily: 'var(--font-heading)', fontSize: '1.6rem', fontWeight: 800,
+                lineHeight: 1.05, letterSpacing: '-0.03em', color: tpl.color,
+              }}>
+                {tpl.name}
+              </span>
               <div style={{
-                position: 'absolute', top: '0.75rem', right: '0.75rem',
-                padding: '0.25rem 0.75rem', borderRadius: '9999px', fontSize: '0.7rem', fontWeight: 600,
-                background: tpl.plan === 'Básico' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(99, 102, 241, 0.2)',
-                color: tpl.plan === 'Básico' ? '#10b981' : '#818cf8',
-                border: `1px solid ${tpl.plan === 'Básico' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(99, 102, 241, 0.3)'}`,
+                position: 'absolute', top: 'var(--space-3)', right: 'var(--space-3)',
+                padding: 'var(--space-1) var(--space-2)', borderRadius: 'var(--radius-sm)',
+                fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase',
+                background: 'var(--bg-card)', color: 'var(--text-secondary)',
+                border: 'var(--border-width, 1px) solid var(--border-subtle)',
               }}>
                 {tpl.plan}
               </div>
             </div>
-            <div style={{ padding: '1.25rem' }}>
+            <div style={{ padding: 'var(--space-4)' }}>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-primary)' }}>{tpl.name}</h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
                 {TEMPLATE_CATEGORIES.find((c) => c.slug === tpl.category)?.name || tpl.category}

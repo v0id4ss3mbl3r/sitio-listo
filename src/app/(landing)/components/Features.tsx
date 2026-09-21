@@ -3,7 +3,7 @@ const features = [
     icon: '📐',
     title: 'Plantillas profesionales',
     description: 'Elegí entre diseños modernos y optimizados para cada tipo de negocio.',
-    color: '#6366f1',
+    color: 'var(--color-primary)',
   },
   {
     icon: '🎨',

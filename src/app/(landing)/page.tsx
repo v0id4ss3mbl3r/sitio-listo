@@ -45,7 +45,7 @@ export default function LandingPage() {
             width: '600px',
             height: '400px',
             background:
-              'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.04) 0%, transparent 70%)',
+              'var(--gradient-glow)',
             pointerEvents: 'none',
           }}
         />

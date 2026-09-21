@@ -1,259 +1,182 @@
+import { TEMPLATES } from '@/lib/constants';
+
+// Las stats salen del código, no de un array a mano: decían "5+ plantillas"
+// cuando ya había 30.
+const STATS = [
+  { value: `${TEMPLATES.length}`, label: 'plantillas listas' },
+  { value: '99,9%', label: 'de uptime' },
+  { value: '3 min', label: 'y estás online' },
+];
+
 export default function Hero() {
   return (
     <section
       id="hero"
       style={{
-        position: 'relative',
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-        padding: '6rem 1.5rem 4rem',
+        background: 'var(--hero-surface)',
+        color: 'var(--hero-text)',
+        padding: 'var(--space-24) var(--space-16) var(--space-16)',
       }}
-      className="bg-grid"
     >
       <div
         style={{
-          position: 'relative',
-          zIndex: 1,
-          maxWidth: '900px',
-          textAlign: 'center',
+          maxWidth: '1200px',
+          margin: '0 auto',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-          gap: '2rem',
+          alignItems: 'flex-start',
+          gap: 'var(--space-6)',
         }}
       >
-        {/* Badge */}
-        <div
-          className="animate-fade-in-up"
+        <span
           style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.5rem 1.25rem',
-            background: 'rgba(99, 102, 241, 0.1)',
-            border: '1px solid rgba(99, 102, 241, 0.2)',
-            borderRadius: '9999px',
-            fontSize: '0.85rem',
-            color: 'var(--color-primary-light)',
-            fontWeight: 500,
+            display: 'inline-block',
+            padding: 'var(--space-2) var(--space-3)',
+            background: 'var(--color-secondary)',
+            color: '#0A0A0A',
+            borderRadius: 'var(--radius-sm)',
+            fontSize: '13px',
+            fontWeight: 700,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
           }}
         >
-          <span
-            style={{
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              background: 'var(--color-primary)',
-            }}
-          />
-          Lanzamiento 2026 — ¡Ya disponible!
-        </div>
+          Lanzamiento 2026
+        </span>
 
-        {/* Headline */}
         <h1
-          className="animate-fade-in-up-delay-1"
           style={{
-            fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
+            margin: 0,
+            maxWidth: '16ch',
+            fontFamily: 'var(--font-heading)',
+            fontSize: 'clamp(2.75rem, 7vw, 5.75rem)',
             fontWeight: 800,
-            lineHeight: 1.1,
-            letterSpacing: '-0.03em',
-            color: 'var(--text-primary)',
+            lineHeight: 0.98,
+            letterSpacing: '-0.035em',
           }}
         >
-          Tu sitio web,{' '}
-          <span className="gradient-text">listo en minutos</span>
+          Tu sitio web, listo en minutos
         </h1>
 
-        {/* Subtitle */}
         <p
-          className="animate-fade-in-up-delay-2"
           style={{
-            fontSize: 'clamp(1.1rem, 2vw, 1.3rem)',
-            color: 'var(--text-secondary)',
-            maxWidth: '600px',
-            lineHeight: 1.7,
+            margin: 0,
+            maxWidth: '38ch',
+            fontSize: 'clamp(1.05rem, 1.6vw, 1.2rem)',
+            lineHeight: 1.6,
+            color: 'var(--hero-text-muted)',
           }}
         >
-          Elegí tu plantilla, personalizala y publicala al instante.
-          Sin código, sin complicaciones. Tu negocio online en un clic.
+          Elegí tu plantilla, personalizala y publicala al instante. Sin código,
+          sin complicaciones.
         </p>
 
-        {/* CTA Buttons */}
         <div
-          className="animate-fade-in-up-delay-3"
           style={{
             display: 'flex',
-            gap: '1rem',
             flexWrap: 'wrap',
-            justifyContent: 'center',
+            gap: 'var(--space-4)',
+            marginTop: 'var(--space-2)',
           }}
         >
-          <a href={`${process.env.NEXT_PUBLIC_APP_URL}/registro`} className="btn-primary" id="cta-empezar">
+          <a
+            href={`${process.env.NEXT_PUBLIC_APP_URL}/registro`}
+            id="cta-empezar"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 'var(--space-2)',
+              height: '56px',
+              padding: '0 var(--space-8)',
+              boxSizing: 'border-box',
+              background: 'var(--color-secondary)',
+              color: '#0A0A0A',
+              border: 'var(--border-width, 1px) solid var(--border-subtle)',
+              borderRadius: 'var(--radius-md)',
+              boxShadow: 'var(--shadow-card)',
+              fontSize: '17px',
+              fontWeight: 700,
+              textDecoration: 'none',
+            }}
+          >
             Empezar ahora
             <svg
-              width="16"
-              height="16"
+              width="18"
+              height="18"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2.5"
+              strokeWidth="2.75"
               strokeLinecap="round"
               strokeLinejoin="round"
+              aria-hidden="true"
             >
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </a>
-          <a href="#plantillas" className="btn-outline" id="cta-ver-plantillas">
+
+          <a
+            href="#plantillas"
+            id="cta-ver-plantillas"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              height: '56px',
+              padding: '0 var(--space-6)',
+              boxSizing: 'border-box',
+              border: 'var(--border-width, 1px) solid var(--hero-text)',
+              color: 'var(--hero-text)',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '17px',
+              fontWeight: 600,
+              textDecoration: 'none',
+            }}
+          >
             Ver plantillas
           </a>
         </div>
 
-        {/* Stats */}
         <div
-          className="animate-fade-in-up-delay-3"
           style={{
-            display: 'flex',
-            gap: '3rem',
-            marginTop: '2rem',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
+            width: '100%',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: 'var(--space-4)',
+            marginTop: 'var(--space-8)',
           }}
         >
-          {[
-            { value: '5+', label: 'Plantillas' },
-            { value: '99.9%', label: 'Uptime' },
-            { value: '<3min', label: 'Tiempo de setup' },
-          ].map((stat) => (
-            <div key={stat.label} style={{ textAlign: 'center' }}>
+          {STATS.map((stat) => (
+            <div
+              key={stat.label}
+              style={{
+                padding: 'var(--space-4) var(--space-6)',
+                background: 'var(--bg-card)',
+                color: 'var(--text-primary)',
+                border: 'var(--border-width, 1px) solid var(--border-subtle)',
+                borderRadius: 'var(--radius-md)',
+                boxShadow: 'var(--shadow-card)',
+              }}
+            >
               <div
                 style={{
-                  fontSize: '1.75rem',
-                  fontWeight: 700,
-                  color: 'var(--text-primary)',
+                  fontFamily: 'var(--font-heading)',
+                  fontSize: '2.75rem',
+                  fontWeight: 800,
+                  lineHeight: 1,
+                  letterSpacing: '-0.03em',
                 }}
               >
                 {stat.value}
               </div>
               <div
                 style={{
-                  fontSize: '0.85rem',
-                  color: 'var(--text-muted)',
-                  marginTop: '0.25rem',
+                  marginTop: 'var(--space-1)',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: 'var(--text-secondary)',
                 }}
               >
                 {stat.label}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Floating Template Cards Preview */}
-        <div
-          className="animate-fade-in-up-delay-3"
-          style={{
-            marginTop: '3rem',
-            display: 'flex',
-            gap: '1.5rem',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            perspective: '1000px',
-          }}
-        >
-          {[
-            {
-              name: 'Restaurante',
-              color: '#FF6B35',
-              icon: '🍽️',
-              delay: '0s',
-            },
-            {
-              name: 'Portfolio',
-              color: '#8B5CF6',
-              icon: '🎨',
-              delay: '2s',
-            },
-            {
-              name: 'Tienda',
-              color: '#06B6D4',
-              icon: '🛍️',
-              delay: '4s',
-            },
-          ].map((card) => (
-            <div
-              key={card.name}
-              className="glass-card animate-float"
-              style={{
-                width: '200px',
-                height: '260px',
-                padding: '1.5rem',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '1rem',
-                animationDelay: card.delay,
-              }}
-            >
-              <div
-                style={{
-                  width: '60px',
-                  height: '60px',
-                  borderRadius: '16px',
-                  background: `linear-gradient(135deg, ${card.color}20, ${card.color}40)`,
-                  border: `1px solid ${card.color}30`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '1.75rem',
-                }}
-              >
-                {card.icon}
-              </div>
-              <span
-                style={{
-                  fontSize: '0.95rem',
-                  fontWeight: 600,
-                  color: 'var(--text-primary)',
-                }}
-              >
-                {card.name}
-              </span>
-              {/* Fake template preview lines */}
-              <div
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.4rem',
-                }}
-              >
-                <div
-                  style={{
-                    height: '6px',
-                    borderRadius: '3px',
-                    background: `${card.color}30`,
-                    width: '100%',
-                  }}
-                />
-                <div
-                  style={{
-                    height: '6px',
-                    borderRadius: '3px',
-                    background: `${card.color}20`,
-                    width: '75%',
-                  }}
-                />
-                <div
-                  style={{
-                    height: '6px',
-                    borderRadius: '3px',
-                    background: `${card.color}15`,
-                    width: '50%',
-                  }}
-                />
               </div>
             </div>
           ))}

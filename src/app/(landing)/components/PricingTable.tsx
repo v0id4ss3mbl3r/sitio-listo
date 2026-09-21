@@ -34,7 +34,7 @@ export default function PricingTable() {
               overflow: 'hidden',
               ...(plan.highlighted
                 ? {
-                    border: '1px solid rgba(99, 102, 241, 0.35)',
+                    border: 'var(--border-width, 1px) solid var(--color-primary)',
                     boxShadow: 'var(--shadow-elevated)',
                   }
                 : {}),
