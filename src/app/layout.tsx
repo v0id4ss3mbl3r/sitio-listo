@@ -99,11 +99,18 @@ export default async function RootLayout({
   const theme = getTheme(await fetchAppThemeCached());
   const themeCss = themeRootCss(theme);
 
+  // `surface` y `useGradients` viven en el contrato desde el principio y las
+  // plantillas de clientes ya los leen. Exponerlos como data-attributes deja
+  // que la landing y el panel también los honren, y que sean un interruptor
+  // más del skin en vez de una decisión escrita a mano en cada componente.
+
   return (
     <html
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${jetbrainsMono.variable} ${sourceSerif.variable} ${bricolage.variable} ${workSans.variable}`}
       data-app-theme={theme.id}
+      data-surface={theme.tokens.surface}
+      data-gradients={theme.tokens.useGradients ? 'on' : 'off'}
       suppressHydrationWarning
     >
       <body>

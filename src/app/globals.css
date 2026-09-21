@@ -161,7 +161,7 @@
   body {
     background: var(--bg-dark);
     color: var(--text-primary);
-    font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+    font-family: var(--font-body);
     font-size: 16px;
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
@@ -173,12 +173,13 @@
      que no tenga clase específica herede el estilo de lectura. */
   h1, h2, h3, h4 {
     font-family: var(--font-heading);
-    font-weight: 600;
+    /* Peso y estilo los decide el tema: Kiosco pide 800, Taller 600 y Oficina
+       además va en itálica. Antes estaban fijos acá y el tema no mandaba. */
+    font-weight: var(--heading-weight, 600);
+    font-style: var(--heading-style, normal);
     letter-spacing: -0.015em;
     line-height: 1.25;
   }
-
-  h1 { font-weight: 700; }
 
   p {
     line-height: 1.7;
@@ -197,12 +198,38 @@
 /* Utility Classes                                             */
 /* ─────────────────────────────────────────────────────────── */
 
+/* El destacado del headline. En los temas planos es color de marca; en los
+   que declaran useGradients (Glow, Vivo) se convierte en el degradé del tema.
+   El interruptor es data-gradients en <html>, no una decisión por componente. */
 .gradient-text {
-  /* El "destacado" del headline es color de marca, nunca un degradé.
-     La tipografía la decide el tema vía --font-heading. */
   color: var(--color-primary);
   background: none;
   -webkit-text-fill-color: currentColor;
+}
+
+[data-gradients='on'] .gradient-text {
+  background: var(--gradient-hero);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* El halo de fondo: solo en temas con surface: glow. En los planos el
+   pseudo-elemento ni se dibuja. */
+[data-surface='glow'] .bg-radial-glow::before,
+[data-surface='glow'] #hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-glow);
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-surface='glow'] #hero {
+  position: relative;
+  overflow: hidden;
 }
 
 .glass-card {

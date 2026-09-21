@@ -541,6 +541,18 @@ export function getTheme(id?: string | null): Theme {
  *
  * Devuelve un objeto apto para `style={...}` de React o para serializar.
  */
+// #RRGGBB → rgba(r, g, b, alpha). Sirve para derivar el anillo de foco del
+// color primario en vez de pedir otro token por preset.
+function withAlpha(hex: string, alpha: number): string {
+  const limpio = hex.replace('#', '');
+  const full = limpio.length === 3
+    ? limpio.split('').map((c) => c + c).join('')
+    : limpio;
+  const n = Number.parseInt(full, 16);
+  if (!Number.isFinite(n) || full.length !== 6) return hex;
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+}
+
 export function themeToCssVars(theme: Theme): Record<string, string> {
   const t = theme.tokens;
   return {
@@ -585,6 +597,15 @@ export function themeToCssVars(theme: Theme): Record<string, string> {
     '--background': t.bgBase,
     '--foreground': t.textPrimary,
     '--font-heading': t.fontHeading,
+    // Estos cuatro estaban en el contrato desde el principio y no se emitían:
+    // el tema declaraba una tipografía de cuerpo y un peso de título que no
+    // llegaban nunca al CSS.
+    '--font-body': t.fontBody,
+    '--heading-weight': String(t.headingWeight),
+    '--heading-style': t.headingItalic ? 'italic' : 'normal',
+    // El anillo de foco se derivaba de globals.css, así que TODOS los temas
+    // usaban el del tema por defecto. Ahora sale del primario de cada uno.
+    '--ring-primary': `0 0 0 3px ${withAlpha(t.primary, 0.35)}`,
   };
 }
 
