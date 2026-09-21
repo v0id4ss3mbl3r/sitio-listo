@@ -92,7 +92,7 @@ describe('templates — toda plantilla del código tiene que existir en la base'
   });
 
   it('ningún SQL siembra un slug que el código ya no conoce', () => {
-    const conocidos = new Set(TEMPLATES.map((t) => t.id));
+    const conocidos = new Set<string>(TEMPLATES.map((t) => t.id));
     // Los slugs viejos siguen citados en supabase-schema.sql y en el UPDATE
     // que los renombra, y eso es correcto: son historia, no estado deseado.
     const renombrados = new Set(['lanzamiento-pro', 'servicios-plus']);
