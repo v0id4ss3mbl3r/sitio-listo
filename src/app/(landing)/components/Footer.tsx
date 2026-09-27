@@ -1,19 +1,19 @@
 import Link from 'next/link';
 
+import { LEGAL_LINKS } from '@/lib/legal';
+
+// Solo links que van a algún lado. Antes había "Acerca de", "Blog" y
+// "Contacto" apuntando a '#': un footer lleno de links muertos es de las
+// cosas que más rápido delatan que un sitio no está terminado.
 const footerLinks = {
   Producto: [
     { label: 'Plantillas', href: '#plantillas' },
     { label: 'Precios', href: '#precios' },
     { label: 'Características', href: '#features' },
   ],
-  Empresa: [
-    { label: 'Acerca de', href: '#' },
-    { label: 'Blog', href: '#' },
-    { label: 'Contacto', href: '#' },
-  ],
-  Legal: [
-    { label: 'Términos', href: '#' },
-    { label: 'Privacidad', href: '#' },
+  Legal: LEGAL_LINKS,
+  Contacto: [
+    { label: 'contacto@sitiolisto.com.ar', href: 'mailto:contacto@sitiolisto.com.ar' },
   ],
 };
 
@@ -49,7 +49,7 @@ export default function Footer() {
               <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {links.map((link) => (
                   <li key={link.label}>
-                    <a href={link.href} style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.9rem', transition: 'color 0.2s ease' }}>
+                    <a href={link.href} className="nav-link" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.9rem' }}>
                       {link.label}
                     </a>
                   </li>
@@ -57,6 +57,39 @@ export default function Footer() {
               </ul>
             </div>
           ))}
+        </div>
+
+        {/* Botón de Arrepentimiento — obligatorio y visible en la home por
+            Resolución 424/2020 de la Secretaría de Comercio Interior. Va
+            destacado a propósito: la norma pide que se distinga, no que sea
+            un link más en una lista. */}
+        <div style={{ marginBottom: '2rem' }}>
+          <Link
+            href="/legal/arrepentimiento"
+            className="hero-cta"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 'var(--space-2)',
+              height: '48px',
+              padding: '0 var(--space-6)',
+              boxSizing: 'border-box',
+              background: 'var(--bg-card)',
+              color: 'var(--text-primary)',
+              border: 'var(--border-width, 1px) solid var(--border-subtle)',
+              borderRadius: 'var(--radius-md)',
+              boxShadow: 'var(--shadow-card)',
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              textDecoration: 'none',
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M9 14L4 9l5-5" />
+              <path d="M4 9h11a5 5 0 0 1 0 10h-1" />
+            </svg>
+            Botón de arrepentimiento
+          </Link>
         </div>
 
         {/* Bottom */}
