@@ -4,6 +4,7 @@ import { revalidateTag } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { canCustomizeTheme, canUseTemplate } from '@/lib/constants';
+import { checkLimit } from '@/lib/api/limit';
 import { isAdmin } from '@/lib/auth/getAdminUser';
 import { captureError } from '@/lib/logger';
 import { createSiteSchema, parseJson } from '@/lib/schemas';
@@ -18,6 +19,9 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
+
+    const frenado = checkLimit(req, 'guardarSitio', user.id);
+    if (frenado) return frenado;
 
     const parsed = await parseJson(req, createSiteSchema);
     if (!parsed.ok) return parsed.response;

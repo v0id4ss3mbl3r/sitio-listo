@@ -4,6 +4,7 @@ import { MercadoPagoConfig, PreApproval } from 'mercadopago';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { PLANS, PlanType } from '@/lib/constants';
+import { checkLimit } from '@/lib/api/limit';
 import { captureError } from '@/lib/logger';
 import { checkoutSchema, parseJson } from '@/lib/schemas';
 
@@ -18,6 +19,9 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
+
+    const frenado = checkLimit(req, 'checkout', user.id);
+    if (frenado) return frenado;
 
     const parsed = await parseJson(req, checkoutSchema);
     if (!parsed.ok) return parsed.response;

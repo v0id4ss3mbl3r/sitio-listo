@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server';
+import { checkLimit } from '@/lib/api/limit';
 
 import { createClient } from '@/lib/supabase/server';
 import { validateSubdomain } from '@/lib/validation';
 
 export async function GET(req: Request) {
+  // Va por IP y antes de cualquier consulta: es pública y se puede usar para
+  // sondear qué subdominios están tomados.
+  const frenado = checkLimit(req, 'subdomainCheck');
+  if (frenado) return frenado;
+
   try {
     const { searchParams } = new URL(req.url);
     const raw = searchParams.get('subdomain');

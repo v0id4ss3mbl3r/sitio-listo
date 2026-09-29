@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 
+import { checkLimit } from '@/lib/api/limit';
 import { isAdmin } from '@/lib/auth/getAdminUser';
 import {
   DOMAIN_APEX_IP,
@@ -24,7 +25,7 @@ export const runtime = 'nodejs';
  * Reemplaza el "contactanos para verificar el dominio": antes el estado se
  * cambiaba a mano en la base.
  */
-export async function POST() {
+export async function POST(req: Request) {
   try {
     const supabase = await createClient();
     const {
@@ -34,6 +35,9 @@ export async function POST() {
     if (!user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
+
+    const frenado = checkLimit(req, 'verifyDomain', user.id);
+    if (frenado) return frenado;
 
     const { data: site } = await supabase
       .from('sites')

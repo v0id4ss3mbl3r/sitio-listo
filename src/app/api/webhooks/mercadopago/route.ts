@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 import { createHmac, timingSafeEqual } from 'crypto';
@@ -6,6 +6,12 @@ import { createHmac, timingSafeEqual } from 'crypto';
 import { isProduction } from '@/lib/env';
 import { captureError } from '@/lib/logger';
 import { siteCacheTag } from '@/lib/supabase/public';
+import { isEmailConfigured, sendEmail } from '@/lib/email';
+import {
+  pagoRechazado,
+  suscripcionActivada,
+  suscripcionCancelada,
+} from '@/lib/emailTemplates';
 
 type SubStatus = 'pending' | 'authorized' | 'paused' | 'cancelled';
 
@@ -112,12 +118,23 @@ export async function POST(req: Request) {
         updatePayload.current_period_end = currentPeriodEnd;
       }
 
+      // El estado ANTERIOR, antes de pisarlo. MercadoPago reenvía la misma
+      // notificación varias veces y además notifica cosas que no cambian el
+      // estado: sin comparar, mandaríamos un mail en cada reintento.
+      const { data: subPrevia } = await supabaseAdmin
+        .from('subscriptions')
+        .select('status, plan_type')
+        .eq('mp_preapproval_id', preapprovalId)
+        .maybeSingle();
+
       const { error: subError } = await supabaseAdmin
         .from('subscriptions')
         .update(updatePayload)
         .eq('mp_preapproval_id', preapprovalId);
 
       if (subError) throw subError;
+
+      const cambioDeEstado = subPrevia?.status !== status;
 
       // ── Scope agregado: ¿el usuario tiene ALGUNA suscripción activa?
       //    "Activa" incluye: status='authorized', status='cancelled' con
@@ -158,6 +175,40 @@ export async function POST(req: Request) {
         for (const s of affectedSites ?? []) {
           if (s.subdomain) revalidateTag(siteCacheTag(s.subdomain), expireNow);
           if (s.custom_domain) revalidateTag(siteCacheTag(s.custom_domain), expireNow);
+        }
+
+        // ── Aviso al cliente ──
+        // Solo cuando el estado realmente cambió, y siempre DESPUÉS de
+        // responderle a MercadoPago: si el mail tarda o falla, MP no tiene
+        // por qué recibir un timeout y reintentar el webhook entero.
+        if (cambioDeEstado && isEmailConfigured()) {
+          const plan = subPrevia?.plan_type ?? 'contratado';
+          const primerSitio = affectedSites?.[0];
+
+          const { data: perfil } = await supabaseAdmin
+            .from('profiles')
+            .select('email, full_name')
+            .eq('id', userId)
+            .maybeSingle();
+
+          if (perfil?.email) {
+            const contenido =
+              status === 'authorized'
+                ? suscripcionActivada({
+                    nombre: perfil.full_name,
+                    plan,
+                    subdominio: userHasActiveSub ? primerSitio?.subdomain : null,
+                  })
+                : status === 'paused'
+                  ? pagoRechazado({ nombre: perfil.full_name, plan })
+                  : suscripcionCancelada({
+                      nombre: perfil.full_name,
+                      plan,
+                      hasta: currentPeriodEnd,
+                    });
+
+            after(() => sendEmail({ to: perfil.email, ...contenido }));
+          }
         }
       }
 
