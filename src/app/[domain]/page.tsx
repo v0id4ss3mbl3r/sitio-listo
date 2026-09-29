@@ -1,35 +1,5 @@
 import type { Metadata } from 'next';
 
-import SaborUrbano from './templates/SaborUrbano';
-import PortfolioMinimal from './templates/PortfolioMinimal';
-import LandingPro from './templates/LandingPro';
-import ServiciosPro from './templates/ServiciosPro';
-import TiendaExpress from './templates/TiendaExpress';
-import TiendaCatalogo from './templates/TiendaCatalogo';
-import FotografiaEstudio from './templates/FotografiaEstudio';
-import GimnasioFitness from './templates/GimnasioFitness';
-import ComercioLocal from './templates/ComercioLocal';
-import BellezaEstetica from './templates/BellezaEstetica';
-import Cafeteria from './templates/Cafeteria';
-import BarCerveceria from './templates/BarCerveceria';
-import Pasteleria from './templates/Pasteleria';
-import Barberia from './templates/Barberia';
-import ConsultorioMedico from './templates/ConsultorioMedico';
-import Odontologia from './templates/Odontologia';
-import Spa from './templates/Spa';
-import Veterinaria from './templates/Veterinaria';
-import EstudioJuridico from './templates/EstudioJuridico';
-import EstudioContable from './templates/EstudioContable';
-import Arquitectura from './templates/Arquitectura';
-import TallerMecanico from './templates/TallerMecanico';
-import TecnologiaReparaciones from './templates/TecnologiaReparaciones';
-import Academia from './templates/Academia';
-import Inmobiliaria from './templates/Inmobiliaria';
-import HotelCabanas from './templates/HotelCabanas';
-import AgenciaViajes from './templates/AgenciaViajes';
-import Floreria from './templates/Floreria';
-import EventosDj from './templates/EventosDj';
-import OngFundacion from './templates/OngFundacion';
 import {
   fetchActiveSubCached,
   fetchCatalogCached,
@@ -39,6 +9,11 @@ import {
   getHomeContent,
 } from './_components/fetchers';
 import { getTheme, TEMPLATE_DEFAULT_THEME } from '@/lib/themes';
+import {
+  renderTemplate,
+  templateNeedsCatalog,
+  templateNeedsItems,
+} from './_components/renderTemplate';
 
 // Los colores de marca se interpolan en <style> de las plantillas. Forzamos
 // formato hex acá (último chokepoint) para neutralizar cualquier valor malicioso
@@ -131,177 +106,28 @@ export default async function TenantHome({
   // plantilla si no se asignó ninguno.
   const theme = getTheme(site.theme_id ?? TEMPLATE_DEFAULT_THEME[template_id]);
 
-  if (template_id === 'sabor-urbano') {
-    return <SaborUrbano {...props} theme={theme} />;
-  }
-  if (template_id === 'portfolio-minimal') {
-    return <PortfolioMinimal {...props} theme={theme} />;
-  }
-  if (template_id === 'landing-pro') {
-    return (
-      <LandingPro
-        {...props}
-        ctaText={home?.content?.ctaText}
-        features={home?.content?.features}
-        theme={theme}
-      />
-    );
-  }
-  if (template_id === 'servicios-pro') {
-    return <ServiciosPro {...props} services={home?.content?.services} theme={theme} />;
-  }
-  if (template_id === 'tienda-express') {
-    return <TiendaExpress {...props} theme={theme} />;
-  }
+  // Solo se piden los datos que la plantilla realmente consume: antes cada
+  // rama del if hacía su propio fetch, ahora lo decide el registro.
+  const [items, catalog] = await Promise.all([
+    templateNeedsItems(template_id)
+      ? fetchSiteItemsCached(site.id, domain)
+      : Promise.resolve([]),
+    templateNeedsCatalog(template_id)
+      ? fetchCatalogCached(site.id, domain)
+      : Promise.resolve(undefined),
+  ]);
 
-  if (template_id === 'fotografia-estudio') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <FotografiaEstudio {...props} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'gimnasio-fitness') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <GimnasioFitness {...props} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'belleza-estetica') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <BellezaEstetica {...props} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'cafeteria') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <Cafeteria {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'bar-cerveceria') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <BarCerveceria {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'pasteleria') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <Pasteleria {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'barberia') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <Barberia {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'consultorio-medico') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <ConsultorioMedico {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'odontologia') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <Odontologia {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'spa') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <Spa {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'veterinaria') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <Veterinaria {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'estudio-juridico') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <EstudioJuridico {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'estudio-contable') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <EstudioContable {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'arquitectura') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <Arquitectura {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'taller-mecanico') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <TallerMecanico {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'tecnologia-reparaciones') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <TecnologiaReparaciones {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'academia') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <Academia {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'inmobiliaria') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <Inmobiliaria {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'hotel-cabanas') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <HotelCabanas {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'agencia-viajes') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <AgenciaViajes {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'floreria') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <Floreria {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'eventos-dj') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <EventosDj {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'ong-fundacion') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return <OngFundacion {...props} openingHours={home?.content?.openingHours} theme={theme} items={items} />;
-  }
-
-  if (template_id === 'comercio-local') {
-    const items = await fetchSiteItemsCached(site.id, domain);
-    return (
-      <ComercioLocal
-        {...props}
-        openingHours={home?.content?.openingHours}
-        theme={theme}
-        items={items}
-      />
-    );
-  }
-
-  if (template_id === 'tienda-catalogo') {
-    const catalog = await fetchCatalogCached(site.id, domain);
-    return (
-      <TiendaCatalogo
-        siteName={props.siteName}
-        logoUrl={props.logoUrl}
-        primaryColor={props.primaryColor}
-        planType={props.planType}
-        products={catalog.products}
-        categories={catalog.categories}
-        settings={catalog.settings}
-        theme={theme}
-      />
-    );
-  }
-
-  return (
-    <div style={{ padding: '4rem', textAlign: 'center', fontFamily: 'system-ui', minHeight: '100vh', background: '#f9fafb' }}>
-      <h1 style={{ color: primaryColor, fontSize: '3rem', fontWeight: 800 }}>{siteName}</h1>
-      <p style={{ marginTop: '1rem', fontSize: '1.2rem', color: '#4b5563' }}>Estamos preparando algo increíble.</p>
-      <div style={{ marginTop: '2rem', fontSize: '0.8rem', color: '#9ca3af' }}>Plantilla: {template_id}</div>
-    </div>
-  );
+  return renderTemplate({
+    templateId: template_id,
+    base: props,
+    theme,
+    items,
+    catalog,
+    content: {
+      openingHours: home?.content?.openingHours,
+      ctaText: home?.content?.ctaText,
+      features: home?.content?.features,
+      services: home?.content?.services,
+    },
+  });
 }
