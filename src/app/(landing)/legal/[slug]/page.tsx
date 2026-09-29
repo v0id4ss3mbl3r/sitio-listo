@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { SITE_URL } from '@/lib/env';
 import { LEGAL_DOCS, getLegalDoc } from '@/lib/legal';
 
 // Los documentos viven en el código, así que las tres rutas se prerenderizan.
@@ -21,7 +22,7 @@ export async function generateMetadata({
   return {
     title: doc.title,
     description: doc.summary,
-    alternates: { canonical: `/legal/${doc.slug}` },
+    alternates: { canonical: `${SITE_URL}/legal/${doc.slug}` },
   };
 }
 
